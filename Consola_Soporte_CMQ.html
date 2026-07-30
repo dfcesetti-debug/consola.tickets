@@ -1767,7 +1767,7 @@ async function pushState(){
  try{
   await fbWait();
   const {db,doc,setDoc}=window.__fb;
-  await setDoc(doc(db,'kb_state','main'),{overrides:OVERRIDES,clients:CLIENTS,fichas:FICHAS,tele:TELE,actualizado:new Date().toISOString()});
+  await setDoc(doc(db,'kb_state','main'),{overrides:OVERRIDES,clients:CLIENTS,fichas:FICHAS,tele:TELE,apiCfg:loadApiCfg(),actualizado:new Date().toISOString()});
  }catch(e){ console.error('Firebase (guardar):',e); }
 }
 async function pullState(){
@@ -1782,6 +1782,11 @@ async function pullState(){
   if(j&&j.overrides&&typeof j.overrides==='object'){OVERRIDES=j.overrides;ch=true;}
   if(j&&j.fichas&&typeof j.fichas==='object'){FICHAS={};Object.keys(j.fichas).forEach(k=>{FICHAS[k]=migrateFicha(j.fichas[k],k);});saveFichas();renderEjecutivos();}
   if(j&&Array.isArray(j.tele)){TELE=j.tele;saveTele();renderTelematica();}
+  if(j&&j.apiCfg&&typeof j.apiCfg==='object'&&j.apiCfg.url&&!loadApiCfg().url){
+   saveApiCfg(j.apiCfg);
+   const eu=document.getElementById('apiUrl'),eq=document.getElementById('apiQuery'),ep=document.getElementById('apiProj');
+   if(eu&&!eu.value)eu.value=j.apiCfg.url; if(eq&&j.apiCfg.q)eq.value=j.apiCfg.q; if(ep&&j.apiCfg.proj)ep.value=j.apiCfg.proj;
+  }
   if(ch){ persistCli(); retag(); rebuildAll(); log('↧ Datos cargados desde Firebase (clientes, reasignaciones y fichas de ejecutivos).','d'); }
  }catch(e){ console.error('Firebase (leer):',e); }
 }
@@ -1806,6 +1811,7 @@ async function fetchApi(){
  const url=document.getElementById('apiUrl').value.trim(), q=document.getElementById('apiQuery').value, proj=document.getElementById('apiProj').value;
  if(!url){ log('✖ Ingresá la URL de la función desplegada.','e'); return; }
  saveApiCfg({url,q,proj});
+ pushState();
  const full=url+(url.includes('?')?'&':'?')+'query='+encodeURIComponent(q)+(proj?'&proyecto='+encodeURIComponent(proj):'');
  log('⟳ Consultando '+full+' …','d');
  try{
