@@ -1,0 +1,16 @@
+# Por defecto no se sube nada; solo se habilitan explícitamente
+# los archivos del proyecto "Consola de Soporte CMQ".
+*
+!.gitignore
+!Consola_Soporte_CMQ.html
+
+!tablero/
+tablero/*
+!tablero/README.md
+!tablero/main.py
+!tablero/run_local.py
+
+# Nunca subir el token real ni los datos locales viejos (ver README).
+tablero/token_local.json
+tablero/kb_state.json
+tablero/__pycache__/

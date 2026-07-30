@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Consola de Soporte · Base de Conocimiento CMQ</title>
+<style>
+:root{
+ --ink:#0b1220;--rail:#0d1a2b;--railtx:#8aa0bd;--railon:#e8f1fb;
+ --bg:#eef2f7;--panel:#ffffff;--edge:#dbe3ee;--edge2:#eef2f8;--mut:#5c6b82;--mut2:#8593a8;
+ --accent:#0aa2c0;--accent2:#087f96;--accdim:#e2f5fa;
+ --sig:#16b364;--sigbg:#e6f7ee;--warnbg:#fdf3e3;--cli:#b4690e;
+ --r:14px;
+ --mono:ui-monospace,'SF Mono','Cascadia Code','JetBrains Mono',Consolas,monospace;
+ --sans:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+ --ease:cubic-bezier(.16,1,.3,1);
+}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.35s;animation-timing-function:cubic-bezier(.16,1,.3,1)}
+@media(prefers-reduced-motion:reduce){
+ *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;display:flex;height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#c3cede;border-radius:8px}
+
+.rail{width:210px;flex:none;background:linear-gradient(180deg,#0d1a2b,#0a1524);color:var(--railtx);display:flex;flex-direction:column;padding:16px 12px;height:100vh;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:6px 8px 16px;border-bottom:1px solid #1b2c44;margin-bottom:12px}
+.brand .dot{width:30px;height:30px;border-radius:8px;background:radial-gradient(circle at 30% 30%,#22d3ee,#0aa2c0);box-shadow:0 0 0 3px rgba(10,162,192,.18);flex:none}
+.brand b{color:#fff;font-size:14px;line-height:1.1}.brand span{font-size:10.5px;color:var(--mut2)}
+.nav{display:flex;flex-direction:column;gap:3px;margin-top:6px}
+.nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--railtx);cursor:pointer;font-weight:600;font-size:13.5px;text-decoration:none;transition:background .25s var(--ease),color .25s var(--ease),transform .15s var(--ease)}
+.nav a:hover{background:#12233a;color:var(--railon)}
+.nav a:active{transform:scale(.97)}
+.nav a.on{background:linear-gradient(90deg,rgba(10,162,192,.22),rgba(10,162,192,.05));color:#fff;box-shadow:inset 3px 0 0 var(--accent)}
+.nav a .ic{width:18px;text-align:center;opacity:.9}
+.nav a .cnt{margin-left:auto;font-family:var(--mono);font-size:11px;background:#12233a;color:#9fd7e6;padding:1px 7px;border-radius:20px}
+.railfoot{margin-top:auto;font-size:10.5px;color:#54658a;padding:10px 8px 2px;border-top:1px solid #1b2c44}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;overflow-y:auto;scroll-behavior:smooth;position:relative}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(238,242,247,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--edge);padding:14px 26px 0;display:flex;flex-direction:column;gap:12px}
+.toprow{display:flex;gap:14px;align-items:center}
+.search{flex:1;position:relative;max-width:720px}
+.search input{width:100%;padding:12px 14px 12px 40px;border:1.5px solid var(--edge);border-radius:12px;font-size:14.5px;background:#fff;outline:none;transition:box-shadow .2s var(--ease),border-color .2s var(--ease),transform .2s var(--ease)}
+.search input:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accdim);transform:translateY(-1px)}
+.search .mag{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--mut2)}
+.search .kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:10.5px;color:var(--mut2);border:1px solid var(--edge);border-radius:6px;padding:2px 6px;background:#fff}
+.btn{border:1.5px solid var(--edge);background:#fff;color:var(--ink);border-radius:11px;padding:10px 14px;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:transform .15s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease),color .2s var(--ease),background .2s var(--ease);white-space:nowrap}
+.btn:hover{border-color:var(--accent);color:var(--accent2);transform:translateY(-1px);box-shadow:0 3px 10px rgba(16,32,60,.08)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.primary:hover{background:var(--accent2)}
+.btn.sm{padding:6px 10px;font-size:12px}
+.clientbar{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-bottom:12px}
+.clientbar .lbl{font-size:11px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.05em;flex:none}
+.cchip{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border:1.5px solid var(--edge);background:#fff;border-radius:11px;cursor:pointer;font-weight:700;font-size:13px;color:var(--mut);white-space:nowrap;transition:transform .15s var(--ease),border-color .2s var(--ease)}
+.cchip:hover{border-color:var(--accent);transform:translateY(-1px)}
+.cchip:active{transform:scale(.97)}
+.cchip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.cchip .cdot{width:9px;height:9px;border-radius:50%;flex:none}
+.cchip .cc{font-family:var(--mono);font-size:11px;opacity:.75}
+
+.content{padding:20px 26px 70px;max-width:1180px;width:100%;margin:0 auto}
+.view{display:none;animation:fade .5s var(--ease)}.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+h2.vt{font-size:20px;margin:2px 0}
+.sub{color:var(--mut);font-size:13px;margin:0 0 18px}
+.scopenote{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--accent2);background:var(--accdim);border:1px solid #bfe6ef;border-radius:20px;padding:3px 12px;font-weight:650;margin-left:8px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:8px 0 22px}
+.kpi{background:var(--panel);border:1px solid var(--edge);border-radius:var(--r);padding:15px 17px;position:relative;overflow:hidden;transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(16,32,60,.1)}
+.kpi::after{content:'';position:absolute;right:-18px;top:-18px;width:60px;height:60px;border-radius:50%;background:var(--accdim);opacity:.6}
+.kpi .n{font-size:26px;font-weight:800;font-family:var(--mono);letter-spacing:-.5px;color:var(--ink);position:relative;z-index:1}
+.kpi .l{font-size:12px;color:var(--mut);margin-top:3px;position:relative;z-index:1}
+.kpi .n.up{animation:pop .5s}
+@keyframes pop{0%{transform:scale(.7);color:var(--accent)}100%{transform:none}}
+
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:var(--r);padding:18px 20px;margin:14px 0;box-shadow:0 1px 2px rgba(16,32,60,.04)}
+.lab{font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 5px}
+.eyebrow{font-family:var(--mono);font-size:11px;color:var(--accent2);font-weight:700;letter-spacing:.04em}
+
+.mtop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.mtitle{font-size:17px;font-weight:750;margin:2px 0}
+.pill{font-family:var(--mono);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--accdim);color:var(--accent2);white-space:nowrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+ul.clean{margin:5px 0;padding-left:18px}ul.clean li{margin:4px 0;line-height:1.42}
+ol.steps{margin:5px 0;padding-left:20px}ol.steps li{margin:5px 0;line-height:1.42}
+.tmpl{background:var(--sigbg);border:1px solid #bfe8cf;border-left:4px solid var(--sig);border-radius:10px;padding:12px 14px;position:relative;font-style:italic;color:#12432a;line-height:1.5}
+.tmpl .copy{position:absolute;top:9px;right:9px;background:var(--sig);color:#fff;border:none;border-radius:8px;padding:5px 11px;font-size:11.5px;cursor:pointer;font-style:normal;font-weight:600}
+.tmpl .copy:active{transform:scale(.94)}
+.assign{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--edge);border-radius:20px;padding:5px 12px;font-weight:600;font-size:12.5px}
+.avatar{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:10px;display:grid;place-items:center;font-weight:700;flex:none}
+.refline{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.refchip{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--accent2);background:var(--accdim);border:1px solid #bfe6ef;border-radius:7px;padding:2px 8px;cursor:pointer;text-decoration:none}
+.refchip:hover{background:var(--accent);color:#fff}
+
+.filters{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:4px 0 6px}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{padding:6px 13px;border:1px solid var(--edge);background:#fff;border-radius:20px;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--mut);white-space:nowrap;transition:transform .15s var(--ease),border-color .2s var(--ease)}
+.chip:hover{border-color:var(--accent);transform:translateY(-1px)}
+.chip:active{transform:scale(.97)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chip .c{font-family:var(--mono);opacity:.7;margin-left:5px}
+.chip.chipChk{padding-right:12px}
+.chip .chkmark{display:inline-block;min-width:13px;margin-left:6px;font-weight:800;color:#7be3c8}
+.sel{padding:8px 11px;border:1px solid var(--edge);border-radius:10px;background:#fff;font-size:12.5px;font-weight:600;color:var(--ink)}
+.count{color:var(--mut);font-size:12.5px;font-family:var(--mono)}
+.filtrow{display:flex;align-items:flex-start;gap:10px;margin:6px 0}
+.flab{font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.05em;min-width:82px;padding-top:7px;flex:none}
+.tk{border:1px solid var(--edge);border-radius:12px;padding:14px 16px;margin:10px 0;background:#fff;transition:transform .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease)}
+.tk:hover{border-color:#bcd2e6;box-shadow:0 10px 26px rgba(16,32,60,.1);transform:translateY(-2px)}
+.tk.flash{animation:flash 1.4s}
+@keyframes flash{0%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:none}}
+.tk .hd{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.tk .kk{font-family:var(--mono);font-weight:700;color:var(--accent2);font-size:13px}
+.tk .tt{font-weight:650;margin:2px 0}
+.ev{font-family:var(--mono);font-weight:700;font-size:12px;color:#fff;background:var(--ink);border-radius:20px;padding:3px 10px;white-space:nowrap}
+.ev.zero{background:#c3cede;color:#42506a}
+.tmeta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:7px 0}
+.tag{font-size:11px;padding:2px 9px;border-radius:6px;background:var(--accdim);color:var(--accent2);font-weight:650}
+.tag.st{background:var(--warnbg);color:var(--cli)}
+.tag.pr{background:#eef2f8;color:var(--mut)}
+.tag.cl{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--edge);color:var(--ink)}
+.tag.cl .cdot{width:8px;height:8px;border-radius:50%;flex:none}
+.tinfo{font-size:12.5px;color:var(--mut)}.tinfo b{color:var(--ink);font-weight:650}
+.desc{font-size:13px;color:#37455c;margin:7px 0;line-height:1.5}
+.reassign{font-size:11px;color:var(--mut);border:1px dashed var(--edge);border-radius:8px;padding:2px 6px;background:#fbfdff;margin-left:6px}
+details.cm summary{cursor:pointer;font-weight:650;color:var(--accent2);font-size:12.5px;margin-top:4px;list-style:none}
+details.cm summary::-webkit-details-marker{display:none}
+details.cm summary::before{content:'▸ ';color:var(--mut2)}
+details.cm[open] summary::before{content:'▾ '}
+.cmt{border-top:1px dashed var(--edge);padding:8px 0;font-size:13px;line-height:1.5}
+.who{font-weight:700}.who.int{color:var(--sig)}.who.cli{color:var(--cli)}
+.badge-int{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:1px 6px;border-radius:20px;background:var(--sigbg);color:var(--sig);margin-left:5px}
+.date{color:var(--mut2);font-family:var(--mono);font-size:11px}
+.loadmore{display:block;margin:16px auto}
+.hl{background:#ffe08a;border-radius:3px;padding:0 1px}
+.empty{text-align:center;color:var(--mut);padding:44px 20px}
+.empty .big{font-size:34px;margin-bottom:6px;opacity:.5}
+@keyframes cardin{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+.tk{animation:cardin .34s cubic-bezier(.22,.61,.36,1) both}
+.cmt.mine{background:#eefaf3;border-radius:8px;padding-left:8px;margin-left:-8px}
+.seg{display:inline-flex;border:1px solid var(--edge);border-radius:10px;overflow:hidden;background:#fff}
+.seg button{border:none;background:#fff;padding:6px 13px;font-size:12.5px;font-weight:700;color:var(--mut);cursor:pointer;border-right:1px solid var(--edge);transition:background .2s var(--ease),color .2s var(--ease),transform .15s var(--ease)}
+.seg button:last-child{border-right:none}
+.seg button:active{transform:scale(.97)}
+.seg button.on{background:var(--ink);color:#fff}
+.seg button.on.int{background:var(--sig)}.seg button.on.cli{background:var(--cli)}
+.rbar{cursor:pointer;transition:.12s}.rbar:hover .bn{color:var(--accent2);text-decoration:underline}.rbar:hover .fill{filter:brightness(1.08)}
+.respBanner{display:flex;align-items:center;gap:10px;background:var(--accdim);border:1px solid #bfe6ef;border-radius:12px;padding:10px 14px;margin:2px 0 10px;font-size:13px;color:var(--accent2);font-weight:650}
+.respBanner b{color:var(--ink)}
+.respBanner .x{margin-left:auto;background:#fff;border:1px solid #bfe6ef;border-radius:8px;padding:3px 10px;cursor:pointer;font-weight:700;color:var(--accent2)}
+.tkpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tkpi .box{border:1px solid var(--edge);border-radius:12px;padding:13px 15px;background:linear-gradient(180deg,#fff,#f7fbfd)}
+.tkpi .box .n{font-family:var(--mono);font-size:23px;font-weight:800}
+.tkpi .box .n .u{font-size:12px;font-weight:600;color:var(--mut);margin-left:3px}
+.tkpi .box .l{font-size:11.5px;color:var(--mut);margin-top:2px}
+.tkpi .box.int{border-left:3px solid var(--sig)}.tkpi .box.cli{border-left:3px solid var(--cli)}.tkpi .box.tot{border-left:3px solid var(--accent)}
+
+.drop{border:2.5px dashed #b9cbe0;border-radius:16px;background:linear-gradient(180deg,#fff,#f7fafd);padding:34px 26px;text-align:center;cursor:pointer;transition:.18s}
+.drop.hot{border-color:var(--accent);background:var(--accdim)}
+.drop .ic{font-size:40px}.drop h3{margin:10px 0 4px;font-size:17px}.drop p{margin:0;color:var(--mut);font-size:13px}
+.log{font-family:var(--mono);font-size:12px;background:#0d1a2b;color:#9fe3c4;border-radius:12px;padding:14px 16px;margin-top:16px;white-space:pre-wrap;max-height:230px;overflow:auto;line-height:1.5}
+.log .e{color:#ff9d9d}.log .w{color:#ffd479}.log .d{color:#8aa0bd}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+
+.clirow{display:grid;grid-template-columns:26px 180px 1fr auto;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid var(--edge)}
+.clirow input[type=text]{width:100%;padding:8px 10px;border:1px solid var(--edge);border-radius:9px;font-size:13px;font-family:var(--sans)}
+.clirow textarea{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--edge);border-radius:9px;font-size:12.5px;font-family:var(--mono);resize:vertical}
+.clidot{width:20px;height:20px;border-radius:6px;margin-top:6px}
+.cnt-pill{font-family:var(--mono);font-size:12px;color:var(--accent2);background:var(--accdim);border-radius:8px;padding:4px 9px;white-space:nowrap;margin-top:4px}
+
+.bar{display:grid;grid-template-columns:210px 1fr 42px;align-items:center;gap:10px;margin:6px 0}
+.bar .bn{font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .track{background:var(--edge2);border-radius:6px;height:20px;overflow:hidden}
+.bar .fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent),#22d3ee)}
+.bar .bv{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent2);text-align:right}
+.bar.cli .fill{background:linear-gradient(90deg,var(--cli),#e8a54e)}
+.bar.int .fill{background:linear-gradient(90deg,var(--sig),#4ade80)}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--mut);margin:6px 0 2px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:middle}
+
+.cmpTable{display:flex;flex-direction:column;gap:1px;margin-top:6px}
+.cmpRow{display:grid;grid-template-columns:1.4fr .7fr 1fr 1fr 1fr;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--edge2);font-size:12.5px}
+.cmpRow.cmpHead{font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--edge)}
+.cmpRow .cmpn{font-family:var(--mono);font-weight:700;color:var(--ink)}
+@media(max-width:640px){.cmpRow{grid-template-columns:1.1fr .6fr 1fr 1fr 1fr;font-size:11.5px;gap:6px}}
+
+.finput{width:100%;padding:8px 10px;border:1px solid var(--edge);border-radius:9px;font-size:13px;font-family:var(--sans);background:#fff;transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
+.finput:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accdim)}
+.ftextarea{width:100%;min-height:70px;padding:8px 10px;border:1px solid var(--edge);border-radius:9px;font-size:13px;font-family:var(--sans);resize:vertical}
+.fRow{margin:10px 0}
+.seg button.on.demo{background:var(--cli)}
+.seg button.on.fijo{background:var(--sig)}
+.tag.demo{background:var(--warnbg);color:var(--cli)}
+.tag.fijo{background:var(--sigbg);color:var(--sig)}
+.seg button.on.yes{background:var(--sig)}
+.seg button.on.no{background:var(--cli)}
+.execFichaCard{border:1px solid var(--edge);border-radius:12px;padding:12px 14px;margin:10px 0;background:#fff;transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.execFichaCard:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(16,32,60,.1)}
+.efHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
+.efTitle{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13.5px}
+.efGrid{display:grid;grid-template-columns:1fr 1fr;gap:2px 18px;font-size:12.5px;color:var(--mut)}
+.efRefs{font-size:12.5px;color:var(--mut);margin-top:4px}
+.efRefs b{color:var(--ink)}
+.cfgSec{border:1px solid var(--edge);border-radius:10px;padding:2px 14px 12px;margin:10px 0;background:#fbfdff}
+.cfgSec summary{cursor:pointer;font-weight:700;font-size:13px;padding:10px 0;list-style:none;color:var(--ink)}
+.cfgSec summary::-webkit-details-marker{display:none}
+.cfgSec summary::before{content:'▸ ';color:var(--mut2)}
+.cfgSec[open] summary::before{content:'▾ '}
+.cfgTableWrap{overflow-x:auto}
+.cfgTable{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:2px;min-width:520px}
+.cfgTable th{text-align:left;font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.04em;padding:4px 6px}
+.cfgTable td{padding:3px 6px;vertical-align:middle}
+.cfgTable input.finput{padding:6px 8px;font-size:12.5px}
+.histList{margin:6px 0;padding-left:0;list-style:none;font-size:12.5px}
+.histList li{padding:6px 0;border-bottom:1px dashed var(--edge2);color:var(--mut)}
+.histList li:last-child{border-bottom:none}
+.histList .hd{font-family:var(--mono);color:var(--accent2);font-weight:700;margin-right:8px}
+.jcard .mtop{margin-bottom:4px}
+.cliGroup{border-bottom:1px solid var(--edge);padding-bottom:8px;margin-bottom:2px}
+.cliGroup .clirow{border-bottom:none;padding-bottom:6px}
+.cliJiraLine{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 0 4px 38px;font-size:12.5px;color:var(--mut)}
+
+.modalOverlay{position:fixed;inset:0;background:rgba(11,18,32,.6);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+.modalOverlay.on{display:flex}
+.modalBox{background:#fff;border-radius:16px;max-width:920px;width:100%;padding:28px 30px 34px;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.35);animation:modalIn .35s var(--ease)}
+@keyframes modalIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+.modalBar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px}
+.pfDoc h1{font-size:22px;margin:0 0 2px;color:var(--ink)}
+.pfDoc h2{font-size:14px;color:var(--mut);margin:0 0 18px;font-weight:600}
+.pfDoc h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--accent2);border-bottom:1px solid var(--edge);padding-bottom:4px;margin:20px 0 8px}
+.pfDoc table.pfTable{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:6px}
+.pfDoc table.pfTable th,.pfDoc table.pfTable td{border:1px solid var(--edge);padding:5px 7px;text-align:left}
+.pfDoc table.pfTable th{background:var(--edge2)}
+.pfDoc .pfGrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:13px;margin-bottom:4px}
+.pfDoc .pfEmpty{font-size:12px;color:var(--mut2);font-style:italic;margin:0 0 6px}
+.pfDoc ul.pfHist,.pfDoc ul.pfRefs{font-size:12px;padding-left:18px;margin:4px 0}
+.pfDoc .pfMeta{font-size:11px;color:var(--mut2);margin-bottom:12px}
+@media print{
+ body.printingFicha>*:not(.modalOverlay){display:none!important}
+ body.printingFicha .modalOverlay{position:static!important;background:none!important;padding:0!important;display:block!important;z-index:auto}
+ body.printingFicha .modalBox{box-shadow:none!important;max-width:none!important;animation:none!important}
+ body.printingFicha .modalBar{display:none!important}
+}
+
+@media(max-width:720px){
+ .rail{position:fixed;bottom:0;top:auto;left:0;right:0;width:100%;height:auto;flex-direction:row;padding:6px;z-index:50;overflow-x:auto}
+ .brand,.railfoot{display:none}.nav{flex-direction:row;gap:2px}.nav a{flex-direction:column;gap:2px;padding:7px 10px;font-size:10.5px}.nav a .cnt{display:none}
+ .main{padding-bottom:66px}.bar{grid-template-columns:130px 1fr 38px}
+ .clirow{grid-template-columns:20px 1fr;gap:8px}
+}
+</style>
+<script type="module">
+ /* Firebase (Firestore) — guarda/lee clientes, fichas y tickets de Telemática para que
+    la consola funcione hosteada (ej. GitHub Pages) y no dependa de un servidor local.
+    El proxy de Jira (localhost:8787, con el token) queda completamente aparte — esto
+    NO lo reemplaza, solo reemplaza el guardado que antes iba a kb_state.json. */
+ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+ import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+ const firebaseConfig = {
+  apiKey: "AIzaSyB8hG8XJSfkCdN6HXMUAfrpz04lBlVnixI",
+  authDomain: "tickets-be0af.firebaseapp.com",
+  projectId: "tickets-be0af",
+  storageBucket: "tickets-be0af.firebasestorage.app",
+  messagingSenderId: "626226127295",
+  appId: "1:626226127295:web:f34b97e0aa6025b929410a",
+  measurementId: "G-8HDJQ4F9WC"
+ };
+ const app = initializeApp(firebaseConfig);
+ const db = getFirestore(app);
+ window.__fb = { db, doc, getDoc, setDoc };
+ window.dispatchEvent(new Event('fb-ready'));
+</script>
+</head>
+<body>
+<aside class="rail">
+ <div class="brand"><div class="dot"></div><div><b>Consola CMQ</b><br><span>Soporte · Base de conocimiento</span></div></div>
+ <nav class="nav" id="nav">
+  <a data-v="panel" class="on"><span class="ic">&#9622;</span> Panel</a>
+  <a data-v="matriz"><span class="ic">&#9672;</span> Matriz N1 <span class="cnt" id="c-matriz">0</span></a>
+  <a data-v="tickets"><span class="ic">&#9636;</span> Tickets <span class="cnt" id="c-tickets">0</span></a>
+  <a data-v="clientes"><span class="ic">&#9707;</span> Clientes <span class="cnt" id="c-clientes">0</span></a>
+  <a data-v="ejecutivos"><span class="ic">&#9733;</span> Ejecutivos <span class="cnt" id="c-ejecutivos">0</span></a>
+  <a data-v="telematica"><span class="ic">&#9742;</span> Telemática <span class="cnt" id="c-telematica">0</span></a>
+ </nav>
+ <div class="railfoot">Funciona sin conexión.<br>Los datos se guardan en este navegador.</div>
+</aside>
+
+<div class="main">
+ <div class="topbar">
+  <div class="toprow">
+   <div class="search"><span class="mag">&#9906;</span><input id="q" placeholder="Buscar ticket, cliente, síntoma, respuesta…" autocomplete="off"><span class="kbd">/</span></div>
+   <button class="btn" id="btnReset" title="Volver a la base original">&#8635; Restablecer</button>
+  </div>
+  <div class="clientbar" id="clientbar"></div>
+ </div>
+ <div class="content">
+
+  <section class="view on" id="v-panel">
+   <div class="eyebrow">RESUMEN OPERATIVO</div>
+   <h2 class="vt">Panel de la mesa de ayuda <span class="scopenote" id="scope1"></span></h2>
+   <p class="sub">Todos los indicadores en un solo lugar. Usá el selector de cliente de arriba para acotar todo, y hacé clic en una persona de “Quién respondió” para saltar a su historial de tickets.</p>
+   <div class="kpis" id="kpis"></div>
+   <div id="analisis"></div>
+  </section>
+
+  <section class="view" id="v-matriz">
+   <div class="eyebrow">GUÍA DE RESPUESTA RÁPIDA</div>
+   <h2 class="vt">Matriz de respuestas · Nivel 1 <span class="scopenote" id="scope2"></span></h2>
+   <p class="sub">Los tickets de referencia se acotan al cliente elegido. Pedí los datos, seguí los pasos, respondé con la plantilla.</p>
+   <div id="matrix"></div>
+  </section>
+
+  <section class="view" id="v-tickets">
+   <div class="eyebrow">HISTORIAL</div>
+   <h2 class="vt">Tickets anteriores <span class="scopenote" id="scope3"></span></h2>
+   <p class="sub">Buscá arriba y filtrá abajo. Podés elegir varios tipos a la vez. Cada ticket muestra su cliente y podés reasignarlo.</p>
+
+   <details class="cfgSec" id="dataConnSec" open>
+    <summary>Conexión con Jira / Cargar datos</summary>
+    <p class="tinfo" style="margin:6px 0 10px">Conectá la función desplegada para traer los datos reales de Jira, o subí un export/respaldo. Todo se combina sin duplicar, se etiqueta por cliente (CERVEPAR→Cervepar, SG→Quilmes) y recalcula tiempos con las fechas reales.</p>
+    <div class="card" style="margin-top:0">
+     <div class="lab" style="margin-top:0">Conexión por API (en vivo)</div>
+     <p class="tinfo" style="margin:0 0 10px">Pegá la URL pública de tu cloud function. Una consulta trae ambos proyectos y se separan por el prefijo del ticket.</p>
+     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <input id="apiUrl" type="text" placeholder="https://tu-cloud-function-url" style="flex:1;min-width:240px;padding:10px 12px;border:1px solid var(--edge);border-radius:10px;font-family:var(--mono);font-size:12.5px">
+      <select class="sel" id="apiQuery">
+       <option value="todos">todos</option><option value="abiertos">abiertos</option><option value="en_progreso">en_progreso</option>
+       <option value="resueltos_semana">resueltos_semana</option><option value="resueltos_mes">resueltos_mes</option>
+       <option value="creados_semana">creados_semana</option><option value="sin_asignar">sin_asignar</option>
+       <option value="alta_prioridad">alta_prioridad</option><option value="vencidos_sla">vencidos_sla</option><option value="comparativa">comparativa</option>
+      </select>
+      <select class="sel" id="apiProj"><option value="">Ambos proyectos</option><option value="CMQ">CMQ (SG)</option><option value="CERVEPAR">CERVEPAR</option></select>
+      <button class="btn primary" id="btnApi">Traer datos</button>
+      <button class="btn" id="btnClearData" title="Empezar de cero">Vaciar base</button>
+     </div>
+     <p class="tinfo" style="margin:8px 0 0">Cada consulta <b>reemplaza</b> la base para que coincida exacto con Jira.</p>
+    </div>
+    <div class="lab">O subí un archivo</div>
+    <div class="drop" id="drop">
+     <div class="ic">&#11123;</div><h3>Soltá el archivo acá</h3>
+     <p>o hacé clic para elegirlo · Jira (.doc/.html) o respaldo (.json)</p>
+     <input type="file" id="file" accept=".doc,.html,.htm,.xml,.json" style="display:none" multiple>
+    </div>
+    <div class="tools">
+     <button class="btn" id="btnJson">&#8675; Descargar respaldo (.json)</button>
+     <button class="btn" id="btnCsv">&#8675; Exportar tickets (.csv)</button>
+    </div>
+    <div class="log" id="log">Esperando archivo…</div>
+   </details>
+
+   <div id="respBanner"></div>
+   <div class="filtrow"><span class="flab">Tipo</span><div class="chips" id="chipsTipo"></div></div>
+   <div class="filtrow"><span class="flab">Estado</span><div class="chips" id="chipsEstado"></div></div>
+   <div class="filtrow"><span class="flab">Responsable</span><div class="chips" id="chipsAsig"></div></div>
+   <div class="filters">
+    <select class="sel" id="fSort">
+     <option value="ev">Ordenar: más respuestas</option>
+     <option value="recent">Ordenar: más recientes</option>
+     <option value="key">Ordenar: por ticket</option>
+    </select>
+    <button class="btn sm" id="btnClearFilters" style="display:none">Limpiar filtros ✕</button>
+    <span class="count" id="tkCount"></span>
+   </div>
+   <div id="tickets"></div>
+   <button class="btn loadmore" id="loadmore" style="display:none">Cargar más</button>
+  </section>
+
+  <section class="view" id="v-clientes">
+   <div class="eyebrow">CONFIGURACIÓN · CUENTAS</div>
+   <h2 class="vt">Clientes</h2>
+   <p class="sub">Cada ticket se asigna por el <b>prefijo de su código</b> (ej. <code>SG-</code> → Quilmes, <code>CERVEPAR-</code> → Cervepar). Las palabras clave son un respaldo opcional si el prefijo no coincide. Editá y guardá para re-etiquetar toda la base. Las reasignaciones manuales que hagas en un ticket se respetan. Debajo de cada cliente vas a ver su estado de cuenta (según su ficha técnica) con accesos directos a la ficha y a sus tickets.</p>
+   <div class="kpis" id="kpisClientes"></div>
+   <div class="card"><div id="clientes"></div>
+    <div class="tools">
+     <button class="btn" id="btnAddCli">+ Agregar cliente</button>
+     <button class="btn primary" id="btnSaveCli">Guardar y re-etiquetar</button>
+    </div>
+   </div>
+  </section>
+
+  <section class="view" id="v-ejecutivos">
+   <div class="eyebrow">CUENTAS</div>
+   <h2 class="vt">Ejecutivos de cuenta</h2>
+   <p class="sub">Ficha técnica histórica de cada cliente (datos generales + configuración), historial de cambios, y cartera agrupada por referente comercial CSTT (ejecutivo de cuenta).</p>
+   <div class="seg" style="margin-bottom:14px">
+    <button id="btnEjecFichas" class="on" onclick="setEjecView('fichas')">Fichas</button>
+    <button id="btnEjecCartera" onclick="setEjecView('cartera')">Cartera por ejecutivo</button>
+   </div>
+   <div id="ejecFichas"></div>
+   <div id="ejecCartera" style="display:none"></div>
+  </section>
+
+  <section class="view" id="v-telematica">
+   <div class="eyebrow">SEGUIMIENTO SIN JIRA</div>
+   <h2 class="vt">Referente Telemática</h2>
+   <p class="sub">Carga manual de solicitudes atendidas para clientes que <b>no</b> pasan por Jira (marcados como "Referente Telemática" en la pestaña Clientes), para empezar a medir tiempos reales de atención.</p>
+   <div class="kpis" id="kpisTele"></div>
+   <div class="card">
+    <div class="lab" style="margin-top:0">Cargar ticket</div>
+    <div class="grid2">
+     <div class="fRow"><div class="lab" style="margin-top:0">Cliente</div><select class="finput" id="teleCliente"></select></div>
+     <div class="fRow"><div class="lab" style="margin-top:0">Tipo de solicitud</div>
+      <select class="finput" id="teleTipo"></select>
+     </div>
+     <div class="fRow"><div class="lab" style="margin-top:0">Fecha y hora de inicio</div>
+      <div style="display:flex;gap:8px">
+       <input type="date" class="finput" id="teleFechaSol">
+       <input type="time" class="finput" id="teleHoraIni" style="max-width:120px" title="Hora en que se empezó a atender la solicitud — junto con la hora de fin permite medir el tiempo asignado real">
+      </div>
+     </div>
+     <div class="fRow"><div class="lab" style="margin-top:0">Fecha y hora de fin (opcional)</div>
+      <div style="display:flex;gap:8px">
+       <input type="date" class="finput" id="teleFechaRes">
+       <input type="time" class="finput" id="teleHoraRes" style="max-width:120px" title="Hora de fin — se usa para medir el tiempo asignado real y para saber si cayó en horario laboral (8 a 17 hs, lunes a viernes) o excedido de jornada">
+      </div>
+     </div>
+     <div class="fRow"><div class="lab" style="margin-top:0">Estado</div>
+      <select class="finput" id="teleEstado"><option>Pendiente</option><option>En curso</option><option>Resuelto</option></select>
+     </div>
+     <div class="fRow"><div class="lab" style="margin-top:0">Responsable</div><input class="finput" id="teleResp" list="dlUsuariosTele" placeholder="Quién lo atendió"><datalist id="dlUsuariosTele"></datalist></div>
+    </div>
+    <div class="fRow"><div class="lab" style="margin-top:0">Detalle</div><textarea class="ftextarea" id="teleDetalle" placeholder="Descripción de la solicitud"></textarea></div>
+    <button class="btn primary" id="btnTeleGuardar">+ Cargar ticket</button>
+    <details class="cfgSec" style="margin-top:14px">
+     <summary>¿Qué diferencia hay entre Reportes N°1, N°2 y N°3?</summary>
+     <ul class="clean" style="padding-bottom:4px">
+      <li><b>N°1:</b> se elaboran exclusivamente con los datos ya disponibles en una tabla dinámica.</li>
+      <li><b>N°2:</b> requieren la aplicación de fórmulas, la combinación de varias tablas dinámicas, segmentaciones de datos, múltiples pruebas de uso, la creación de reglas específicas para medir la información solicitada, tableros de visualización y configuración de envío por correo electrónico.</li>
+      <li><b>N°3:</b> requieren llamados a API, fórmulas con lógica matemática para conciliar la información solicitada según la lógica de negocio correspondiente, y el uso de Power Query.</li>
+     </ul>
+     <p class="tinfo" style="margin:6px 0 8px;font-style:italic">Para el detalle específico de los reportes vigentes de cada cliente, revisar la sección "Reportes" en su ficha técnica (Ejecutivos → Fichas).</p>
+    </details>
+   </div>
+   <div id="analisisTele"></div>
+   <div class="card"><div class="lab" style="margin-top:0">Tickets cargados</div><div id="teleList"></div></div>
+  </section>
+
+ </div>
+</div>
+
+<div class="modalOverlay" id="fichaModal">
+ <div class="modalBox">
+  <div class="modalBar">
+   <button class="btn sm" id="fichaModalPrint">&#128438; Imprimir / Guardar PDF</button>
+   <button class="btn sm" id="fichaModalClose">&#10005; Cerrar</button>
+  </div>
+  <div class="pfDoc" id="fichaModalBody"></div>
+ </div>
+</div>
+
+<div class="modalOverlay" id="teleModal">
+ <div class="modalBox">
+  <div class="modalBar">
+   <button class="btn sm primary" id="teleModalSave">Guardar cambios</button>
+   <button class="btn sm" id="teleModalClose">&#10005; Cerrar</button>
+  </div>
+  <div id="teleModalBody"></div>
+ </div>
+</div>
+
+<script>
+const APP = {"seed": [{"key": "SG-3346", "title": "Rio de las vueltas Rosario", "creada": "10/jun/26", "actualizada": "17/jun/26", "tipo": "Desagios", "estado": "Esperando por ayuda", "prioridad": "Medium", "informador": "riovueltasrosario@gmail.com", "asignado": "Soporte Técnico", "descripcion": "Buenos dias como están ? me colocaron en la mayoría de los camiones el sensor de marcha atrás por lo que noto tengo muchos desvíos y no solo eso desvíos que me generan mucha duda y siento que no esta tomando bien o funcionando bien", "comments": [{"author": "Melisa Aranda", "date": "17/jun/26", "text": "No impacta en el POWER BI"}]}, {"key": "SG-3347", "title": "TRANSPORTE ANIBAL VALDES- MZA", "creada": "10/jun/26", "actualizada": "12/jun/26", "tipo": "Límites de velocidad", "estado": "Esperando por ayuda", "prioridad": "Medium", "informador": "telemetria@transanibalvaldes.com.ar", "asignado": "Diego Ferreira", "descripcion": "Buenos días. Me podrían explicar  cual es la velocidad que tengo que tomar en esa ruta? 80 o 60, por que hay dos excesos sobre la misma ruta Quedo atenta Saludos Rocio", "comments": [{"author": "telemetria@transanibalvaldes.com.ar", "date": "10/jun/26", "text": ""}, {"author": "Diego Ferreira", "date": "12/jun/26", "text": "Buenos días, nos podrías enviar el reporte. Aguardo tu respuesta."}, {"author": "telemetria@transanibalvaldes.com.ar", "date": "12/jun/26", "text": "T1 - Detalle de todas las infracciones_20260610_100200.xlsx"}]}, {"key": "SG-3081", "title": "Rio de las vueltas Rosario", "creada": "07/abr/26", "actualizada": "15/abr/26", "tipo": "Otros", "estado": "En curso", "prioridad": "Medium", "informador": "riovueltasrosario@gmail.com", "asignado": "Soporte Técnico", "descripcion": "Buenos días , levanto ticket por los camiones que tenemos en rio de las vueltas rosario , el cual son iveco y necesitamos que cambiemos los bastones que tiene por bastones mas largos", "comments": []}, {"key": "SG-3349", "title": "Liderma - Quilmes", "creada": "11/jun/26", "actualizada": "18/jun/26", "tipo": "Dispositivo de coaching audible", "estado": "Esperando por ayuda", "prioridad": "Medium", "informador": "Sofia Terreno", "asignado": "Melisa Aranda", "descripcion": "Buen dia, como va? Debido a la gran cantida de excesos que estamos teniendo en la dirección Av. Ejercito Argentino 3660, S3016BLL Santo Tomé, Santa Fe, Argentina queriamos incorporar el couching audible en ese tramo para analizar si sirve de ayuda/advertencia y asi poder evitar las infracciones o al menos reducirlas. A continuación adjunto captura del mapa del tramos en el que pretendo activar el coaching audible del limite de velocidad +40 km/h. Por cualquier consulta me conecto a la semanal.", "comments": [{"author": "Sofia Terreno", "date": "11/jun/26", "text": ""}, {"author": "Melisa Aranda", "date": "17/jun/26", "text": "Buenas tardes, Se realizo la creacion de la geocerca solicitada con una alerta audible “Alerta zona 40“, en caso de tener audible, en caso de no disponer uno, el go pitara 3 veces. Muchas gracias, Melisa,"}, {"author": "Sofia Terreno", "date": "18/jun/26", "text": "Gracias Melisa, quedo atenta al seguimiento…"}]}, {"key": "SG-3300", "title": "Revision de dispositivos TDU santos lugares", "creada": "29/may/26", "actualizada": "05/jun/26", "tipo": "Cinturón de seguridad", "estado": "Esperando por el cliente", "prioridad": "Medium", "informador": "Emanuel Resiglione", "asignado": "Agustina Vallejos", "descripcion": "el vehiculo FZK807  presenta desvios del cinturon desde el 27/05/2026 hasta la fecha, validamos con el chofer y lo esta usando correctamente. Necesitamos validar el funcionamiento y el desagio de corresponder obviamente", "comments": [{"author": "Diego Ferreira", "date": "02/jun/26", "text": "Buenos días, se verifica el mal funcionamiento del sensor. Se genera el servicio de mantenimiento para la unidad y se descartan los eventos desde el 27/05. Saludos."}, {"author": "Emanuel Resiglione", "date": "03/jun/26", "text": "Buenos días, vi que los eventos del 27/05 se desagiarion pero aparecieron nuevos desde el 30/05 hasta el 01/06 del mismo vehículo, necesitaríamos si podemos desagiarlo también  o bien que no impacten hasta su mantenimiento. Aguardo comentarios, saludos"}, {"author": "Diego Ferreira", "date": "05/jun/26", "text": "Buenos días Emanuel, ya fueron realizados los desagios. Desde el 02/06 no impactan los eventos de cinturon."}]}, {"key": "SG-3340", "title": "Transporte Levon SRL / Quilmes", "creada": "10/jun/26", "actualizada": "17/jun/26", "tipo": "Dispositivo de coaching audible", "estado": "Esperando por el cliente", "prioridad": "Medium", "informador": "Hernán Barboza", "asignado": "Agustina Vallejos", "descripcion": "Estimados; Buenos días! Solicito revisión de sistema audible de la patente AC056GP, esta presentado fallas en el mismo, por favor, coordinar reunion. Saludos!!", "comments": [{"author": "Diego Ferreira", "date": "10/jun/26", "text": "Buenos días, nos podías enviar un video o reporte que muestre la falla indicada."}, {"author": "Hernán Barboza", "date": "11/jun/26", "text": "Hola Diego!!  Buenas tardes!! Me pasaron este video de hoy en la mañana muy temprano. Saludos!!"}, {"author": "Lucas Di Luca", "date": "17/jun/26", "text": "Buenos días, Se genera el servicio de mantenimiento para el mismo. Saludos cordiales."}]}, {"key": "SG-3367", "title": "TOL MC", "creada": "16/jun/26", "actualizada": "19/jun/26", "tipo": "Otros", "estado": "Esperando por el cliente", "prioridad": "Medium", "informador": "paula cerrudo", "asignado": "Agustina Vallejos", "descripcion": "Buenos dias, solicito visita de técnico para las unidades AC806NC, AF506HS y AF338ZC. A ninguna de estas unidades le funciona el sensor de la llave y el audible.", "comments": [{"author": "Melisa Aranda", "date": "17/jun/26", "text": "Buenos dias, La identificacion del vehiculo AC806NC, funciona correctamente: La identificacion del vehiculo funciona incorrectamente: AF506HS La identificacion del cehivulo funciona correctamente: Te pidi por favor si nos podras enviar un video de como funcionan los audible, Muchas gracias,"}, {"author": "paula cerrudo", "date": "17/jun/26", "text": "Buen dias, disculpa la unidad es la AC806ND la que no funciona el sensor de la llave te pase mal la patente. El resto de las unidades que te pase no funciona el audible."}, {"author": "paula cerrudo", "date": "17/jun/26", "text": "Te paso tambien la unidad AD886NV, en esta el chofer se logea y el audible sigue diciendole que es conductor desconocido. Adjunto video del dia 12/6"}, {"author": "Diego Ferreira", "date": "19/jun/26", "text": "Buenos días, ya fue cargado el servicio de mantenimiento para las unidades. Saludos."}]}, {"key": "SG-3371", "title": "Liderma - Quilmes", "creada": "17/jun/26", "actualizada": "17/jun/26", "tipo": "Desagios", "estado": "Esperando por ayuda", "prioridad": "Medium", "informador": "Sofia Terreno", "asignado": "Marcos Marin", "descripcion": "Buenas, como va?? Solicito desagio de esta calle debiado a que es una de las calles frecuentes mal tomadas por demasiada cercania a una calle principal AV. Circunvalacion. El camion no tiene ruta por esa calle.", "comments": []}, {"key": "SG-3372", "title": "Exceso de velocidad  vehiculo IVC008", "creada": "17/jun/26", "actualizada": "17/jun/26", "tipo": "Otros", "estado": "Esperando por ayuda", "prioridad": "Medium", "informador": "Emanuel Resiglione", "asignado": "Marcos Marin", "descripcion": "Buenos días, el vehículo mencionado en el día de ayer reporto tres excesos de velocidad +80 km/hs en el horario de las 16 hs, el camión es fletero y termino el recorrido para nosotros a las 15 hs (adjunto captura) y además no realizo entregas por las zonas donde figuran los excesos, por lo tanto necesitaríamos el desagio de los mismos. Aguardo comentarios, saludos", "comments": [{"author": "Emanuel Resiglione", "date": "17/jun/26", "text": ""}]}, {"key": "SG-3373", "title": "Rio de las vueltas/ MC nwv 101", "creada": "17/jun/26", "actualizada": "17/jun/26", "tipo": "Límites de velocidad", "estado": "Esperando por ayuda", "prioridad": "Medium", "informador": "Romina rdv", "asignado": "Marcos Marin", "descripcion": "Estimados Necesito desagiar un desvio de velocidad en la av. mariano acosta.  No se observa carteles donde indica que no es 60 KM/H Por lo tanto la maxima permitida es de 60 km/H Adjunto  imagen Saludos", "comments": [{"author": "Romina rdv", "date": "17/jun/26", "text": "Chofer Paulo Fernandez, de la fecha 16/6/2026"}]}, {"key": "SG-3220", "title": "MENDOZA- TRANSPORTE ANIBAL VALDES", "creada": "08/may/26", "actualizada": "04/jun/26", "tipo": "Solicitud de revisión de hardware", "estado": "Esperando por el cliente", "prioridad": "Medium", "informador": "Lucas Agustin Badiali", "asignado": "Julian Toros", "descripcion": "Buenas tardes. El satelital me marca varios cortes en los recorridos largos del camión PAG520, el recorrido me lo marca de forma completa, solo que se corta en varios puntos donde el camión no frena ni nada por el estilo. En la imagen se puede ver que el recorrido del camión, volviendo de San Luis, tiene varios puntos de paradas/cortes, no se si será la señal del satelital o algún problema dentro del camión. Quedo a la espera de su respuesta. Saludos.", "comments": [{"author": "Lucas Agustin Badiali", "date": "08/may/26", "text": ""}, {"author": "Diego Ferreira", "date": "13/may/26", "text": "Buenos días, se verifica el funcionamiento erróneo del GPS. Se genera el servicio de mantenimiento para la unidad. Saludos"}]}, {"key": "SG-3374", "title": "Cargo Servicios Industriales. S.A", "creada": "17/jun/26", "actualizada": "17/jun/26", "tipo": "Desagios", "estado": "Esperando por ayuda", "prioridad": "Medium", "informador": "pzurita@grupocargo.com", "asignado": "Marcos Marin", "descripcion": "Buen dia Solicito desagio de un excesos de velocidad del dia 19/06 de 40km en Avenida Gobernador del campo, el cual el limite de velocidad es de 60km. Adjunto evidencia a desagiar. Saludos", "comments": []}, {"key": "SG-3375", "title": "Cargo Servicios Industriales. S.A", "creada": "17/jun/26", "actualizada": "17/jun/26", "tipo": "Desagios", "estado": "Esperando por ayuda", "prioridad": "Medium", "informador": "pzurita@grupocargo.com", "asignado": "Marcos Marin", "descripcion": "Buen día Solicito desagio de un exceso de velocidad del camión AA 173 HZ, el cual tuvo exceso de 40km en Avenida Virgen la cual el limite es de 60km. Adjunto evidencia a desagiar. Saludos", "comments": []}, {"key": "SG-3332", "title": "no funciona el NFC unidad EQM346 - solicito revision", "creada": "08/jun/26", "actualizada": "17/jun/26", "tipo": "Solicitud de revisión de hardware", "estado": "Esperando por el cliente", "prioridad": "Medium", "informador": "Rodrigo Ariza", "asignado": "Agustina Vallejos", "descripcion": "Estimados buenos dias, Solicitamos revisión de la unidad EQM346 ya que no funciona el NFC.", "comments": [{"author": "Diego Ferreira", "date": "09/jun/26", "text": "Buenos días, ¿De qué día es el video? Consulto, ya que tengo datos de conductor registrado"}, {"author": "Diego Ferreira", "date": "09/jun/26", "text": ""}, {"author": "Lucas Di Luca", "date": "16/jun/26", "text": "Buenos días, No hemos recibido respuesta respecto a este caso. ¿Podrían confirmarnos si el inconveniente persiste o si ya ha sido resuelto? Quedo atento a su respuesta para poder continuar con la gestión correspondiente. Saludos cordiales, Lucas Di Luca"}, {"author": "Rodrigo Ariza", "date": "16/jun/26", "text": "Buenos dias El video es de la fecha que se cargo, actualmente es el chofer con mas no uso de adherencia a la llave, corrobore si la llave funciona y esta Ok. Por eso solicitamos si pueden corroborar el equipo."}, {"author": "Melisa Aranda", "date": "17/jun/26", "text": "Buenas tardes, Se solicito la revision, el equipo de coordinacion se va a estar contactando a la brevedad. Muchas gracias, Melisa,"}]}, {"key": "SG-3331", "title": "no funciona el NFC de la unidad JKQ294 - solicito revision", "creada": "08/jun/26", "actualizada": "17/jun/26", "tipo": "Solicitud de revisión de hardware", "estado": "Esperando por el cliente", "prioridad": "Medium", "informador": "Rodrigo Ariza", "asignado": "Agustina Vallejos", "descripcion": "Estimados buenos dias, Solicitamos revisión de la unidad JKQ294, no funciona el NFC. Adjunto evidencia.", "comments": [{"author": "Diego Ferreira", "date": "09/jun/26", "text": "Buenos días, ¿De qué día es el video? Ya que tengo datos de conductor identificado"}, {"author": "Lucas Di Luca", "date": "16/jun/26", "text": "Buenos días, Nos encontramos a la espera de su respuesta para poder continuar con el análisis y avanzar con la gestión correspondiente. Quedamos atentos a sus comentarios. Saludos cordiales, Lucas Di Luca"}, {"author": "Rodrigo Ariza", "date": "16/jun/26", "text": "Buen dia. El chofer indica que se loguea pero que el dispositivo no lo toma, tiene q intentar varias veces que es por eso despues que termina impactando en el no uso de adherencia a la llave. El video es el del 5/6"}, {"author": "Lucas Di Luca", "date": "17/jun/26", "text": "Buenos días, Se verifica el mal funcionamiento del sensor NFC, se gestiona el servicio de mantenimiento correspondiente. Saludos cordiales."}, {"author": "Melisa Aranda", "date": "17/jun/26", "text": "Buenas tardes, Se solicita el mantenimiento del IOX-NFC, el equipo de coordinacion se va a estar contactando a la brevedad, Muchas gracias, Melisa,"}]}, {"key": "SG-3376", "title": "Solicitud de desagio de excesos de velocidad en calles aledañas a circunvalaciòn -CD SF", "creada": "17/jun/26", "actualizada": "17/jun/26", "tipo": "Desagios", "estado": "Esperando por ayuda", "prioridad": "Medium", "informador": "Sofia Terreno", "asignado": "Marcos Marin", "descripcion": "Buenas tardes. Solicito desagio de esta direccion por una calle mal tomada que toma el GPS frecuentemente. El camion no circulo por esa calle", "comments": []}, {"key": "SG-3370", "title": "Instalacion dispositivo TDU Santos Lugares", "creada": "17/jun/26", "actualizada": "17/jun/26", "tipo": "Nueva instalación / Desinstalación", "estado": "Esperando por ayuda", "prioridad": "Medium", "informador": "Emanuel Resiglione", "asignado": "Agustina Vallejos", "descripcion": "Buenos días, necesitaríamos instalar el dispositivo de geolocalización en el vehículo AF642OT (reemplaza al AF066NU dado de baja) con caracte de urgente. Saludos", "comments": [{"author": "Melisa Aranda", "date": "17/jun/26", "text": "Buenos dias, Se realiza la solicitud al equipo de coordninación, se estaran contactando a la brevedad. Muchas gracias,"}, {"author": "Emanuel Resiglione", "date": "17/jun/26", "text": "Buenas tardes, adjunto aprobacion de yanina fernandez."}]}, {"key": "SG-3109", "title": "CD CBA - OL CARGO Sisa - Desinstalacion", "creada": "13/abr/26", "actualizada": "26/may/26", "tipo": "Nueva instalación / Desinstalación", "estado": "Esperando por el cliente", "prioridad": "Medium", "informador": "Angel David Velez", "asignado": "Julian Toros", "descripcion": "Necesitamos dar de “BAJA” en el Sistema Satelital de Geotab a las siguientes Patentes ya que los Camiones fueron dados ala Venta, Renovacion de Flota y cambio de Camiones en Terceros. Los dispositivos fisicos estan todos retirados de la unidades y necesitamos que se lo lleven. ID Activo Empresa Dominio K90 TRUCK AE188TR K73 TRUCK AE273VH C41 TRUCK FWS200 C21 TRUCK FWS218 C49 TRUCK HYF289 C48 TRUCK HYF291 C28 TRUCK HYF293 TRUCK JAL034 TRUCK KYE215 TRUCK HYF277 TRUCK FWS221 BATELLO AE910FA", "comments": [{"author": "Lucas Di Luca", "date": "15/abr/26", "text": "Buenos días, Genial, el ticket quedara en curso hasta que los equipos sean retirados. Desde ya muchas gracias. Quedamos a disposición. Saludos cordiales. Lucas Di Luca"}, {"author": "Diego Ferreira", "date": "22/abr/26", "text": "Buenos dúas estimados, sumo Julian Toros que es quien está llevando el retiro de los equipos."}, {"author": "Diego Ferreira", "date": "26/may/26", "text": "Buenas tardes, queda pendiente retirar el FWS221 y AE910FA. En base a la respuesta del [ SG-3045 Resolved Retiro de Equipos CD Cordoba - Jira|https://geotab-cesetti.atlassian.net/jira/servicedesk/projects/SG/queues/custom/19/SG-3045] . Saludos."}]}, {"key": "SG-3324", "title": "CD CBA - OL CARGO Sisa - Desinstalacion", "creada": "04/jun/26", "actualizada": "09/jun/26", "tipo": "Nueva instalación / Desinstalación", "estado": "Esperando por el cliente", "prioridad": "Medium", "informador": "Angel David Velez", "asignado": "Agustina Vallejos", "descripcion": "Realizo Tickets nuevamente para que se pueda efectivizar la desinstalacion de las patentes… FWJ232 AG046NI Hay que desconectar GPS, Cinturón y llave de identificación. por favor sumar a las actividades para este viernes, de acuerdo a la posibilidad del tecnico. Ya esta coordinada la disponibilidad de los Camiones. Gracias!", "comments": [{"author": "Diego Ferreira", "date": "05/jun/26", "text": "buenas tardes, cargamos el servicio de desinstalación para las unidades. Saludos."}, {"author": "Agustina Vallejos", "date": "09/jun/26", "text": "Buenos días. En el día de ayer 08/06 se realizo la desinstalación de la unidad AG046NI. Queda pendiente la desinstalación de la unidad FWJ232, la cual no se  encontraba en el CD. Saludos."}]}, {"key": "SG-3343", "title": "TRANSPORTE ANIBAL VALDES- MZA", "creada": "10/jun/26", "actualizada": "16/jun/26", "tipo": "Otros", "estado": "Esperando por el cliente", "prioridad": "Medium", "informador": "telemetria@transanibalvaldes.com.ar", "asignado": "Lucas Di Luca", "descripcion": "Buenos días. Mi consulta es por las unidades de T1 (LAS CUALES SON 11), Saber que alarmas tienen? Que le avisa al conductor? Por que ellos no tienen coaching audible, y me envía un audio un chofer donde lo pone a 80 y el satelital le dice velocidad excedida. Quedo atenta Saludos Rocío", "comments": [{"author": "Lucas Di Luca", "date": "11/jun/26", "text": "Buenos días, Rocío: Es posible que el inconveniente se haya producido debido a un error de mi parte durante la configuración de las alertas audibles. La configuración fue corregida y desactivada durante la mañana de ayer. ¿Podrías confirmarme si el problema continúa ocurriendo o si ya no se ha vuelto a presentar? Quedo atento a tu respuesta. Saludos cordiales, Lucas Di Luca"}, {"author": "Lucas Di Luca", "date": "16/jun/26", "text": "Buenos días, Rocío: Quisiera consultarte si el inconveniente continúa manifestándose. En caso de que el problema haya sido resuelto, procederemos al cierre del ticket. Aguardo tu respuesta. Saludos cordiales, Lucas Di Luca"}, {"author": "telemetria@transanibalvaldes.com.ar", "date": "16/jun/26", "text": "Buenos dias. las alarmas comienzan a sonar a los 77…no se si esta bien eso? la maxima es 80…no tendriamos q configurarlo que comience a sonar a partir d los 79? Saludos rocio"}, {"author": "Lucas Di Luca", "date": "16/jun/26", "text": "Buenos días, Entiendo. Tu consulta hace referencia a la alarma local del dispositivo GO. Efectivamente, las alertas locales por exceso de velocidad se encuentran configuradas de esa manera como medida preventiva, con el objetivo de advertir al conductor antes de cometer el exceso. Adjunto una captura de como esta configurada actualmente. Quedo atento ante cualquier duda o consulta. Saludos cordial"}]}, {"key": "SG-3378", "title": "Rio de las vueltas Rosario", "creada": "18/jun/26", "actualizada": "19/jun/26", "tipo": "Desagios", "estado": "Esperando por ayuda", "prioridad": "Medium", "informador": "riovueltasrosario@gmail.com", "asignado": "Lucas Di Luca", "descripcion": "Hola buenos dias como estan? tengo los camiones el cual no funciona el cinturon de seguridad, lo que debemos hacer es comprar o tenes bastones mas largos y venir a colocarlos, en que quedo esa gestion?", "comments": []}, {"key": "SG-3379", "title": "Quilmes", "creada": "18/jun/26", "actualizada": "19/jun/26", "tipo": "Solicitud de capacitación / reunión", "estado": "Esperando por el cliente", "prioridad": "Medium", "informador": "Lucas Montagner", "asignado": "Diego Ferreira", "descripcion": "Hola buenos días. Mi nombre es Lucas Montagner. Me gustaría realizar una reunión con el objetivo de poder ver la posibilidad de implementar un sistema de bloqueo en el camión en el caso de que un NOK critico en el checklist de GINFO. Basicamente ver la posibilidad de que se hable con GINFO para imposibilitar el encendido del camión. Cabe considerar que el checklist se realiza dentro del CD asi que no ha ningun tipo de peligro o circunstancia que pueda llegar a complicar. El objetivo de implement", "comments": [{"author": "Diego Ferreira", "date": "19/jun/26", "text": "Buenos días, Lucas Nos podemos en contacto para realizar una reunión y entender mejor el requerimiento. Saludos."}]}, {"key": "SG-3380", "title": "CMQ", "creada": "18/jun/26", "actualizada": "18/jun/26", "tipo": "Geocercas / Zonas", "estado": "Esperando por ayuda", "prioridad": "Medium", "informador": "Gustavo Vergara", "asignado": "Lucas Di Luca", "descripcion": "Buenos tardes En base a lo conversado ayer en la reunion semanal, quería agregar una geo cerca debido a una multiplicidad de excesos de velocidad. La zona indicada es la ruta N° 21 a la altura de General Lagos y de Alvear Adjunto captura de pantalla del mapa de calor Gracias Gustavo Vergara Analista HSMA - Rosario 2", "comments": [{"author": "Gustavo Vergara", "date": "18/jun/26", "text": ""}]}, {"key": "SG-3291", "title": "MENDOZA- TRANSPORTE ANIBAL VALDES", "creada": "27/may/26", "actualizada": "27/may/26", "tipo": "Solicitud de revisión de hardware", "estado": "Esperando por el cliente", "prioridad": "Medium", "informador": "Lucas Agustin Badiali", "asignado": "Julian Toros", "descripcion": "Buen día. el camión JYL919 tuvo mantenimiento el 12/5/26 sobre un problema con el reporte de su ubicación en tiempo real, ese día salió todo OK, pero hoy vuelve a surgir el mismo problema. El camión en estos momentos esta haciendo su recorrido asignado, pero el satelital reporta que no se ha movido de cervecería.", "comments": [{"author": "Lucas Agustin Badiali", "date": "27/may/26", "text": ""}, {"author": "Diego Ferreira", "date": "27/may/26", "text": "Buenas tardes, Lucas se puede ver que sucede la perdida de datos en los viajes posteriores las 12/05. Vamos a generar una solicitud de mantenimiento para la unidad. Saludos."}]}, {"key": "SG-3369", "title": "CD Mercado Central/ Cerveceria y Malteria Quilmes", "creada": "16/jun/26", "actualizada": "17/jun/26", "tipo": "Geocercas / Zonas", "estado": "Esperando por el cliente", "prioridad": "Medium", "informador": "Nahir Duarte", "asignado": "Melisa Aranda", "descripcion": "Adjunto archivo kml coordenadas: -34.70605357647362, -58.469963494532 Grupos a los que aplica la zona: CD MERCADO CENTRAL La zona debe ser visible en el mapa? Si Se requiere algún reporte de ingreso/egreso o de permanencia en ella? Especificar. - Si, requiero un reporte de hora de ingreso , egreso y duración por patente y fecha", "comments": [{"author": "Nahir Duarte", "date": "16/jun/26", "text": "ZONAS TML CD MC.kml"}, {"author": "Melisa Aranda", "date": "17/jun/26", "text": "Buenas tardes, Para iniciar con el pedido se creo una regla de ingreso y egreso a la geocerca, se informara por este medio cuando el reporte este listo. Muchas gracias, Melisa,"}]}, {"key": "SG-3377", "title": "CD CBA - OL CARGO Sisa - Instalacion y Desinstalacion", "creada": "18/jun/26", "actualizada": "18/jun/26", "tipo": "Nueva instalación / Desinstalación", "estado": "Esperando por el cliente", "prioridad": "Medium", "informador": "Angel David Velez", "asignado": "Lucas Di Luca", "descripcion": "Buenos dias, necesitamos por favor realizar las siguientes instalaciones de satelitales y la desintslacion de una unidad, paso detalles… INSTALACION Dominio: AF448IQ - Chasis: 8ATA1RMH0PX119326 - Marca: Iveco - Modelo: 170E28 MLC - Año: 2022 Dominio: MDI224 - Chasis: S/N - Marca: Ford DESINSTALACION: Dominio: JSP289 - Chasis: 9533172S7BR101497 - Marca: Volkswagen - Modelo: 13-180 - Año 2011", "comments": [{"author": "Lucas Di Luca", "date": "18/jun/26", "text": "Buenas tardes, Para poder llevar a cabo las instalaciones, necesitamos el OK del referente. En cuanto a la desinstalación, se genera el servicio para la misma. Quedamos a la espera. Saludos cordiales."}]}, {"key": "SG-3382", "title": "Rio de las vueltas/ MC AF047UT", "creada": "19/jun/26", "actualizada": "19/jun/26", "tipo": "Límites de velocidad", "estado": "Esperando por ayuda", "prioridad": "Medium", "informador": "Romina rdv", "asignado": "sin asignar", "descripcion": "Estimados Necesito desagiar  un desvio de velocidad de la unidad sobre la av. bufalo 4277 siendo su maxima permitida de 60 km/h. chofer Naranjo Juan Generado a las Fri Jun 19 13:51:32 UTC 2026 por Diego Ferreira usando JIRA 1001.0.0-SNAPSHOT#100292-rev:cbff30aed2cd56c458fcc9520324d47b256bb3f5.", "comments": []}], "matrix": {"Desagios": {"sintoma": "El cliente pide 'desagiar' (descartar) excesos de velocidad porque el GPS toma mal una calle cercana, o por sensores mal instalados que generan desvíos.", "datos": ["Unidad (patente)", "Chofer", "Fecha y hora del evento", "Dirección/calle exacta", "Límite de velocidad indicado", "Reporte adjunto (Excel de infracciones)"], "pasos": ["Confirmar que el cliente aporte: unidad, fecha/hora, dirección y chofer. Sin estos datos NO se puede desagiar.", "Verificar en el mapa si la calle está 'mal tomada' por el GPS (evento sobre una calle paralela con distinto límite).", "Si corresponde, aplicar el desagío del evento y confirmar al cliente.", "Si el desvío se repite por la misma calle, escalar para revisar el límite/geocerca de la zona."], "plantilla": "Buenos días, gracias por el detalle. Verificamos el evento de la unidad {UNIDAD} del {FECHA} sobre {DIRECCION}. Se confirma que la calle fue mal tomada por el GPS y se procede al desagío del exceso. Cualquier otra novedad quedamos a disposición. Saludos.", "asignar": "Marcos Marin (desagíos de velocidad)"}, "Límites de velocidad": {"sintoma": "Consulta sobre qué límite aplica en una ruta, o pedido de desagío por un límite mal configurado (p. ej. tramo tomado como 60 cuando corresponde 80).", "datos": ["Unidad (patente)", "Chofer", "Fecha", "Dirección/ruta", "Reporte de infracciones adjunto"], "pasos": ["Pedir el reporte de infracciones y la dirección exacta del evento.", "Verificar el límite real de la ruta vs el límite configurado en la plataforma.", "Si el límite estaba mal, corregir la configuración y desagiar los eventos afectados.", "Informar al cliente el límite correcto de la ruta."], "plantilla": "Buenos días, nos podrías enviar el reporte con la unidad, chofer y fecha del evento. Con eso verificamos el límite correcto de la ruta y, de corresponder, aplicamos el desagío. Aguardo tu respuesta. Saludos.", "asignar": "Marcos Marin / Diego Ferreira"}, "Solicitud de revisión de hardware": {"sintoma": "Un dispositivo no funciona: NFC/identificación de conductor no registra, o el GPS marca cortes/pérdida de datos en los recorridos.", "datos": ["Unidad (patente)", "Fecha del video/evidencia", "Descripción de la falla", "Video o reporte adjunto"], "pasos": ["Pedir evidencia (video/reporte) y la FECHA exacta de la falla.", "Cruzar contra los datos de conductor registrado / posición del equipo en esa fecha.", "Si se confirma el mal funcionamiento (GPS erróneo, NFC sin registrar), generar el servicio de mantenimiento para la unidad.", "Informar al cliente que se generó el servicio y quedar a la espera del retiro/visita."], "plantilla": "Buenos días, ¿de qué día es el video/evidencia? Lo consulto para cruzar con los datos de conductor registrado. Si se confirma la falla, generamos el servicio de mantenimiento para la unidad {UNIDAD}. Saludos.", "asignar": "Agustina Vallejos / Julian Toros (mantenimiento)"}, "Nueva instalación / Desinstalación": {"sintoma": "Pedido de instalar un satelital en una unidad nueva, o dar de baja/retirar equipos de unidades vendidas o renovadas.", "datos": ["Patentes (alta y/o baja)", "OK del referente/aprobación", "Qué se desconecta (GPS, cinturón, NFC)", "Fecha deseada"], "pasos": ["Confirmar patentes y el OK del referente antes de coordinar (sin aprobación no se avanza).", "Generar la solicitud al equipo de coordinación para la visita del técnico.", "Dejar el ticket EN CURSO hasta que los equipos sean instalados/retirados.", "Confirmar al cliente cuando la instalación/desinstalación esté efectivizada."], "plantilla": "Buenos días, para avanzar necesitamos el OK del referente y las patentes involucradas. Con eso generamos la solicitud al equipo de coordinación, que se contactará a la brevedad. El ticket queda en curso hasta concretar. Saludos.", "asignar": "Julian Toros (retiros) / Agustina Vallejos"}, "Dispositivo de coaching audible": {"sintoma": "Pedido de alerta audible por excesos en una dirección, o revisión del sistema audible que presenta fallas.", "datos": ["Unidad (patente)", "Dirección/zona", "Video o reporte que muestre la falla"], "pasos": ["Si es pedido de alerta: crear geocerca con alerta audible (ej. 'Alerta zona 40').", "Si es falla del audible: pedir video/reporte que muestre el problema.", "Verificar el funcionamiento y, si hay falla de hardware, generar servicio de mantenimiento.", "Confirmar al cliente la creación de la alerta o el diagnóstico."], "plantilla": "Buenas tardes, nos podrías enviar un video o reporte que muestre la falla del audible en la unidad {UNIDAD}. Con eso verificamos y, de confirmarse, generamos el servicio correspondiente. Saludos.", "asignar": "Melisa Aranda / Agustina Vallejos"}, "Geocercas / Zonas": {"sintoma": "Pedido de crear/agregar una geocerca o zona por multiplicidad de excesos, con reglas de ingreso/egreso.", "datos": ["Archivo KML con coordenadas", "Grupos a los que aplica la zona", "Tipo de regla (ingreso/egreso/velocidad)"], "pasos": ["Solicitar el KML con coordenadas y los grupos a los que aplica.", "Crear la zona y la regla de ingreso/egreso solicitada.", "Informar por el mismo ticket cuando la zona quede activa."], "plantilla": "Buenas tardes, para iniciar el pedido necesitamos el archivo KML con las coordenadas y los grupos a los que aplica. Creamos la geocerca con la regla solicitada y te informamos por este medio cuando quede activa. Saludos.", "asignar": "Melisa Aranda / Lucas Di Luca"}, "Cinturón de seguridad": {"sintoma": "La unidad presenta desvíos de cinturón aunque el chofer lo usa correctamente (sospecha de sensor con falla).", "datos": ["Unidad (patente)", "Rango de fechas de los desvíos", "Validación con el chofer"], "pasos": ["Validar con el cliente que el chofer usa el cinturón correctamente.", "Verificar el funcionamiento del sensor de cinturón.", "Si el sensor falla, generar servicio de mantenimiento y descartar/desagiar los eventos del período.", "Atención: pueden aparecer eventos nuevos posteriores; revisar el rango completo."], "plantilla": "Buenos días, se verifica el mal funcionamiento del sensor de cinturón de la unidad {UNIDAD}. Generamos el servicio de mantenimiento y descartamos los eventos del período informado. Si aparecen nuevos eventos, avisanos para revisarlos. Saludos.", "asignar": "Agustina Vallejos"}, "Otros": {"sintoma": "Consultas varias: alarmas/coaching de las unidades, cambio de sensores, excesos puntuales, dudas de configuración.", "datos": ["Unidad (patente)", "Descripción del requerimiento", "Reporte/evidencia si aplica"], "pasos": ["Leer bien el requerimiento y pedir el dato faltante (unidad, fecha, reporte).", "Si es una duda de configuración/alarmas, explicar o escalar al técnico que configuró.", "Derivar al responsable según el tema (instalación, velocidad, hardware)."], "plantilla": "Buenos días, para ayudarte necesitamos {DATO FALTANTE} (unidad, fecha o reporte). Con eso revisamos el caso y te respondemos a la brevedad. Saludos.", "asignar": "Según tema (Agustina/Marcos/Lucas)"}, "Solicitud de capacitación / reunión": {"sintoma": "El cliente solicita una reunión o capacitación para implementar o entender mejor una funcionalidad.", "datos": ["Nombre y contacto del solicitante", "Objetivo de la reunión", "Disponibilidad horaria"], "pasos": ["Agradecer y pedir disponibilidad y objetivo concreto.", "Coordinar la reunión con el referente interno.", "Confirmar día y hora."], "plantilla": "Buenos días, {NOMBRE}. Nos ponemos en contacto para coordinar una reunión y entender mejor el requerimiento. ¿Qué disponibilidad horaria tenés esta semana? Saludos.", "asignar": "Diego Ferreira"}}};
+const MATRIX_CONTENT = APP.matrix;
+const STORE='kb_cmq_v3', CSTORE='kb_cmq_clients_v2', OSTORE='kb_cmq_overrides_v1';
+const TEAM=new Set(["Diego Ferreira","Lucas Di Luca","Melisa Aranda","Agustina Vallejos","Marcos Marin","Julian Toros","Soporte Técnico"]);
+const MONTHS={ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,nov:10,dic:11};
+const PALETTE=['#0aa2c0','#7c3aed','#e8912a','#16b364','#e11d48','#2563eb','#0d9488','#b45309','#db2777','#4f46e5'];
+const UNASSIGNED='Sin asignar';
+
+const DEFAULT_CLIENTS=[
+ {name:'Quilmes',color:'#0aa2c0',prefix:'SG',keywords:[],origen:'jira'},
+ {name:'Cervepar',color:'#7c3aed',prefix:'CERVEPAR',keywords:[],origen:'jira'}
+];
+
+let DATA=[], CLIENTS=[], OVERRIDES={}, scopeCli='';
+
+function load(){ try{const s=localStorage.getItem(STORE); DATA=s?JSON.parse(s):APP.seed.slice();}catch(e){DATA=APP.seed.slice();}
+ try{const c=localStorage.getItem(CSTORE); CLIENTS=c?JSON.parse(c):DEFAULT_CLIENTS.map(x=>({...x}));}catch(e){CLIENTS=DEFAULT_CLIENTS.map(x=>({...x}));}
+ CLIENTS.forEach(c=>{ if(!c.origen) c.origen='jira'; });
+ loadTele();
+ try{OVERRIDES=JSON.parse(localStorage.getItem(OSTORE))||{};}catch(e){OVERRIDES={};}
+ loadFichas(); }
+function persist(){ try{localStorage.setItem(STORE,JSON.stringify(DATA.map(({_blob,_cblob,_n,_d,_cli,...r})=>r)));}catch(e){} }
+function persistCli(){ try{localStorage.setItem(CSTORE,JSON.stringify(CLIENTS));localStorage.setItem(OSTORE,JSON.stringify(OVERRIDES));}catch(e){} }
+
+/* Referente Telemática — carga manual de solicitudes de clientes que no pasan por Jira */
+const TELESTORE='kb_cmq_tele_v1';
+let TELE=[];
+const TELE_TIPO_GROUPS=[
+ ['Operación',['Carga de usuarios','Revisión de activo','Revisión de mediciones','Solicitud de video','Asignación de grupos a vehículos','Asignación de grupos a usuarios','Creación de reglas']],
+ ['Capacitaciones',['Capacitación por área','Capacitación general','Capacitación de reportes','Capacitación de sala logística']],
+ ['Reportes',['Reportes N°1','Reportes N°2','Reportes N°3']]
+];
+const TELE_REPORT_TITLES={
+ 'Reportes N°1':'Se elaboran exclusivamente con los datos ya disponibles en una tabla dinámica.',
+ 'Reportes N°2':'Requieren la aplicación de fórmulas, la combinación de varias tablas dinámicas, segmentaciones de datos, múltiples pruebas de uso, la creación de reglas específicas para medir la información solicitada, tableros de visualización y configuración de envío por correo electrónico.',
+ 'Reportes N°3':'Requieren llamados a API, fórmulas con lógica matemática para conciliar la información solicitada según la lógica de negocio correspondiente, y el uso de Power Query.'
+};
+function teleTipoOptionsHtml(selected){
+ return TELE_TIPO_GROUPS.map(([label,opts])=>`<optgroup label="${esc(label)}">${opts.map(o=>`<option ${TELE_REPORT_TITLES[o]?`title="${esc(TELE_REPORT_TITLES[o])}"`:''} ${o===selected?'selected':''}>${esc(o)}</option>`).join('')}</optgroup>`).join('');
+}
+function loadTele(){ try{TELE=JSON.parse(localStorage.getItem(TELESTORE))||[];}catch(e){TELE=[];} }
+function saveTele(){ try{localStorage.setItem(TELESTORE,JSON.stringify(TELE));}catch(e){} }
+function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function nowHHMM(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+/* Clasifica la hora de resolución de un ticket de Telemática: horario laboral (L-V 8 a 17hs)
+   vs. excedido de jornada (fuera de ese rango entre semana), y separa sábado/domingo aparte
+   porque ahí puede corresponder contar hora extra. Sin hora cargada no se clasifica (null). */
+function jornadaClass(fecha,hora){
+ if(!fecha||!hora)return null;
+ const d=new Date(fecha+'T'+hora+':00'); if(isNaN(d.getTime()))return null;
+ const dow=d.getDay();
+ if(dow===0)return 'domingo';
+ if(dow===6)return 'sabado';
+ const mins=d.getHours()*60+d.getMinutes();
+ return (mins>=8*60&&mins<=17*60)?'laboral':'excedido';
+}
+const JORNADA_LABEL={laboral:'Horario laboral',excedido:'Excedido de jornada',sabado:'Sábado (posible hora extra)',domingo:'Domingo (posible hora extra)'};
+const JORNADA_TAGCLS={laboral:'fijo',excedido:'st',sabado:'demo',domingo:'demo'};
+/* Tiempo real que el recurso quedó asignado a la solicitud: diferencia de reloj entre
+   inicio y fin (no se ajusta a horario hábil como tdays — es la duración real). Requiere
+   las 4 partes (fecha+hora de inicio y de fin); si falta alguna, no se calcula. */
+function tiempoAsignadoMs(t){
+ if(!(t.fecha_solicitud&&t.hora_inicio&&t.fecha_resolucion&&t.hora_resolucion))return null;
+ const ini=new Date(t.fecha_solicitud+'T'+t.hora_inicio+':00').getTime();
+ const fin=new Date(t.fecha_resolucion+'T'+t.hora_resolucion+':00').getTime();
+ if(isNaN(ini)||isNaN(fin)||fin<ini)return null;
+ return fin-ini;
+}
+/* Tiempo estimado (hábil) de una solicitud de Telemática: igual que el tiempo hábil que ya
+   se usa para los tickets de Jira, pero tomando la fecha+HORA precisa de inicio y de fin
+   cuando están cargadas (antes se comparaban solo las fechas a medianoche, ignorando la
+   hora — por eso dos tickets del mismo día siempre daban 0h, o una diferencia de horas
+   dentro del mismo día daba un número chico sin sentido, tipo "1h" en vez de reflejar
+   las horas reales trabajadas). Sin hora cargada, cae a medianoche de esa fecha (igual
+   que antes) para no romper tickets viejos que solo tienen fecha. */
+function teleEstimadoMs(t){
+ if(!t.fecha_solicitud||!t.fecha_resolucion)return null;
+ const ini=new Date(t.fecha_solicitud+'T'+(t.hora_inicio||'00:00')+':00').getTime();
+ const fin=new Date(t.fecha_resolucion+'T'+(t.hora_resolucion||'00:00')+':00').getTime();
+ if(isNaN(ini)||isNaN(fin))return null;
+ return businessMsBetween(Math.min(ini,fin),Math.max(ini,fin));
+}
+function teleClientStats(){
+ const byCli={};
+ TELE.forEach(t=>{ (byCli[t.cliente]=byCli[t.cliente]||[]).push(t); });
+ return Object.entries(byCli).map(([cli,items])=>{
+  const nResueltos=items.filter(t=>t.estado==='Resuelto').length;
+  const estimados=items.map(teleEstimadoMs).filter(x=>x!=null);
+  const asignados=items.map(tiempoAsignadoMs).filter(x=>x!=null);
+  return { cliente:cli, n:items.length, nResueltos,
+   avgEstMs:estimados.length?estimados.reduce((s,x)=>s+x,0)/estimados.length:null, nEst:estimados.length,
+   avgAsignadoMs:asignados.length?asignados.reduce((s,x)=>s+x,0)/asignados.length:null, nAsignado:asignados.length };
+ }).sort((a,b)=>b.n-a.n);
+}
+
+function clientColor(name){ if(name===UNASSIGNED)return '#9aa7bd'; const c=CLIENTS.find(x=>x.name===name); return c?c.color:'#9aa7bd'; }
+function detectClient(i){ if(OVERRIDES[i.key])return OVERRIDES[i.key];
+ const pref=String((i.key||'').split('-')[0]||'').toUpperCase();
+ for(const c of CLIENTS){ if(c.prefix && pref===String(c.prefix).toUpperCase().replace(/-$/,'')) return c.name; }
+ const b=i._cblob; for(const c of CLIENTS){ if((c.keywords||[]).some(k=>k&&b.includes(k.toLowerCase()))) return c.name; }
+ return UNASSIGNED; }
+function prep(i){ i._cblob=(i.title+' '+i.descripcion+' '+i.informador+' '+i.tipo).toLowerCase();
+ i._blob=(i.key+' '+i.title+' '+i.tipo+' '+i.estado+' '+i.informador+' '+i.asignado+' '+i.descripcion+' '+i.comments.map(c=>c.author+' '+c.text).join(' ')).toLowerCase();
+ i._n=i.comments.length; i._d=parseDate(i.actualizada)||parseDate(i.creada)||0; i._cli=detectClient(i); return i; }
+function retag(){ DATA.forEach(i=>i._cli=detectClient(i)); }
+function parseDate(s){ if(!s)return 0; s=String(s); const m=s.match(/(\d{1,2})\/([a-zA-Z]{3})\/(\d{2,4})/); if(m){let y=+m[3]; if(y<100)y+=2000; const mo=MONTHS[m[2].toLowerCase()]; if(mo!=null)return new Date(y,mo,+m[1]).getTime();} const t=Date.parse(s); return isNaN(t)?0:t; }
+function tsOf(s){ const t=s?Date.parse(s):NaN; return isNaN(t)?0:t; }
+function fmtDisp(ts){ if(!ts)return ''; const d=new Date(ts); const mn=Object.keys(MONTHS)[d.getMonth()]; return d.getDate()+'/'+mn+'/'+String(d.getFullYear()).slice(2); }
+const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function hl(t,q){ t=esc(t); if(!q)return t; q.split(/\s+/).filter(w=>w.length>1).forEach(w=>{ t=t.replace(new RegExp('('+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<span class="hl">$1</span>'); }); return t; }
+const initials=n=>{const p=String(n||'?').replace(/@.*/,'').trim().split(/\s+/);return((p[0]||'?')[0]+(p[1]?p[1][0]:'')).toUpperCase();};
+
+function parseJiraHTML(text){
+ const doc=new DOMParser().parseFromString(text,'text/html');
+ const holder=document.createElement('div');
+ holder.style.cssText='position:absolute;left:-99999px;top:0;width:1200px;white-space:pre-wrap';
+ holder.innerHTML=doc.body?doc.body.innerHTML:text;
+ document.body.appendChild(holder);
+ const raw=holder.innerText||holder.textContent||'';
+ document.body.removeChild(holder);
+ const lines=raw.split('\n').map(s=>s.trim()).filter(Boolean);
+ const KEY=/^\[([A-Z]{2,10}-\d+)\]/;
+ const starts=[]; lines.forEach((l,i)=>{ if(KEY.test(l)) starts.push(i); }); starts.push(lines.length);
+ const FIELDS={estado:'Estado',tipo:'Request Type',prioridad:'Prioridad',informador:'Informador',asignado:'Persona asignada'};
+ const out=[];
+ for(let s=0;s<starts.length-1;s++){
+  const blk=lines.slice(starts[s],starts[s+1]);
+  const key=blk[0].match(KEY)[1];
+  let title=blk[0].replace(/^\[[A-Z]{2,10}-\d+\]/,'').replace(/Creada:.*$/,'').trim();
+  if(!title){ for(let k=1;k<blk.length;k++){ const c=blk[k]; if(/^Creada:/.test(c)||/:$/.test(c)||Object.values(FIELDS).includes(c.replace(/:$/,''))) break; title=c; break; } }
+  const rec={key,title,creada:'',actualizada:'',tipo:'',estado:'',prioridad:'',informador:'',asignado:'',descripcion:'',comments:[]};
+  const joined=blk.join('\n');
+  let m=joined.match(/Creada:\s*(\d{1,2}\/[a-zA-Z]{3}\/\d{2,4})/); if(m)rec.creada=m[1];
+  m=joined.match(/Actualizada:\s*(\d{1,2}\/[a-zA-Z]{3}\/\d{2,4})/); if(m)rec.actualizada=m[1];
+  function fieldVal(label){
+   for(let k=0;k<blk.length;k++){ const l=blk[k];
+    if(l===label||l===label+':'){ let v=blk[k+1]||''; if(v===label||(/:$/.test(v)&&v.length<24)) v=''; return v.trim(); }
+    if(l.indexOf(label+':')===0){ const v=l.slice(label.length+1).trim(); if(v) return v; }
+   } return '';
+  }
+  for(const f in FIELDS){ rec[f]=fieldVal(FIELDS[f]); }
+  let di=blk.indexOf('Descripción'); if(di<0)di=blk.indexOf('Descripcion');
+  let ci=blk.indexOf('Comentarios');
+  if(di>=0){ const end=ci>di?ci:blk.length; rec.descripcion=blk.slice(di+1,end).join(' ').slice(0,600); }
+  if(ci>=0){
+   const seg=blk.slice(ci+1).join('\n');
+   const parts=seg.split(/Comentado por/).slice(1);
+   for(const ch of parts){
+    let a='',d='',tx='';
+    const mm=ch.match(/^\s*([\s\S]*?)\s*\[\s*(\d{1,2}\/[a-zA-Z]{3}\/\d{2,4})\s*\]([\s\S]*)$/);
+    if(mm){ a=mm[1].trim(); d=mm[2]; tx=mm[3].trim(); }
+    else { const ls=ch.split('\n').map(x=>x.trim()).filter(Boolean); a=ls[0]||''; tx=ls.slice(1).join(' '); }
+    a=a.split('\n')[0].trim();
+    rec.comments.push({author:a,date:d,text:tx.slice(0,600)});
+   }
+  }
+  if(key) out.push(rec);
+ }
+ return out;
+}
+
+function mergeIn(incoming){
+ const byKey={}; DATA.forEach(i=>byKey[i.key]=i);
+ let added=0,updated=0;
+ incoming.forEach(n=>{ if(byKey[n.key])updated++; else added++; byKey[n.key]=n; });
+ DATA=Object.values(byKey); DATA.forEach(prep); persist(); rebuildAll();
+ return {added,updated};
+}
+function scoped(){ return scopeCli? DATA.filter(i=>i._cli===scopeCli) : DATA; }
+function analytics(arr){
+ const by=(f)=>{const m={};arr.forEach(i=>{const k=(f(i)||'—');m[k]=(m[k]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);};
+ const resp={}; arr.forEach(i=>i.comments.forEach(c=>{const a=(c.author||'').trim();if(a)resp[a]=(resp[a]||0)+1;}));
+ return {byType:by(i=>i.tipo),reporters:by(i=>i.informador),assignees:by(i=>i.asignado),status:by(i=>i.estado),
+  responders:Object.entries(resp).sort((a,b)=>b[1]-a[1]),totalComments:Object.values(resp).reduce((a,b)=>a+b,0)};
+}
+function clientCounts(){ const m={}; DATA.forEach(i=>m[i._cli]=(m[i._cli]||0)+1); return m; }
+
+let A={}, SC=[], FSET=[];
+function clearFilters(){ curTypes.clear(); curEstados.clear(); curAsig.clear(); respFilter=null; const qi=document.getElementById('q'); if(qi)qi.value=''; }
+function matchDims(i,skip){ const q=qv().toLowerCase();
+ return (skip==='tipo'||curTypes.size===0||curTypes.has(i.tipo))
+   &&(skip==='estado'||curEstados.size===0||curEstados.has(i.estado))
+   &&(skip==='asig'||curAsig.size===0||curAsig.has(i.asignado))
+   &&passResp(i)&&(!q||i._blob.includes(q)); }
+function FS(){ return SC.filter(i=>matchDims(i,null)); }
+function facet(dim){ const m={}; SC.forEach(i=>{ if(matchDims(i,dim)){ const k=dim==='tipo'?i.tipo:dim==='estado'?i.estado:i.asignado; if(k!==''&&k!=null)m[k]=(m[k]||0)+1; } }); return m; }
+function rebuildAll(){ SC=scoped(); renderClientBar(); renderEjecutivos(); renderTelematica(); refresh(); }
+function refresh(){ FSET=FS(); A=analytics(FSET); renderScopeNotes(); renderKPIs(); buildFilters(); renderMatrix(qv()); renderAnalisis(); applyTickets(); updateCounts(); renderClearBtn(); }
+function renderClearBtn(){ const b=document.getElementById('btnClearFilters'); if(!b)return; const active=curTypes.size||curEstados.size||curAsig.size||respFilter||qv(); b.style.display=active?'inline-flex':'none'; }
+function updateCounts(){ document.getElementById('c-tickets').textContent=FSET.length; document.getElementById('c-matriz').textContent=A.byType.length; document.getElementById('c-clientes').textContent=CLIENTS.length; }
+function animate(el){ if(!el)return; el.classList.remove('up'); void el.offsetWidth; el.classList.add('up'); }
+function renderScopeNotes(){
+ const parts=[];
+ if(scopeCli) parts.push('<span class="cdot" style="width:8px;height:8px;border-radius:50%;background:'+clientColor(scopeCli)+'"></span> '+esc(scopeCli));
+ if(curAsig.size) parts.push('Responsable: '+[...curAsig].map(esc).join(', '));
+ if(respFilter&&respFilter.mode==='author') parts.push('Respondió: '+esc(respFilter.value));
+ const t=parts.join(' &nbsp;·&nbsp; ');
+ ['scope1','scope2','scope3'].forEach(id=>{const e=document.getElementById(id); if(!e)return; e.innerHTML=t; e.style.display=t?'inline-flex':'none';});
+}
+
+function renderClientBar(){
+ const cc=clientCounts(); const bar=document.getElementById('clientbar');
+ let chips=`<span class="lbl">Cliente</span>`;
+ chips+=`<div class="cchip ${scopeCli===''?'on':''}" data-c="">Todos <span class="cc">${DATA.length}</span></div>`;
+ const names=CLIENTS.map(c=>c.name).concat(cc[UNASSIGNED]?[UNASSIGNED]:[]);
+ names.forEach(n=>{ const col=clientColor(n); chips+=`<div class="cchip ${scopeCli===n?'on':''}" data-c="${esc(n)}"><span class="cdot" style="background:${col}"></span>${esc(n)} <span class="cc">${cc[n]||0}</span></div>`; });
+ bar.innerHTML=chips;
+ bar.querySelectorAll('.cchip').forEach(c=>c.onclick=()=>{scopeCli=c.dataset.c;clearFilters();shown=PAGE;rebuildAll();});
+}
+
+function renderKPIs(){
+ const k=[['Tickets',FSET.length],['Tipos de desagío',A.byType.length],['Respuestas',A.totalComments],['Clientes que cargaron',A.reporters.length],['Personas que respondieron',A.responders.length]];
+ document.getElementById('kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="n">${x[1]}</div><div class="l">${x[0]}</div></div>`).join('');
+}
+function barRows(rows,max,cls){ return rows.map(r=>{const w=Math.max(3,Math.round(r[1]/max*100));return `<div class="bar ${cls||''}"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${r[1]}</span></div>`;}).join(''); }
+function cliBarRows(){ const cc=clientCounts(); const rows=Object.entries(cc).sort((a,b)=>b[1]-a[1]); const mx=Math.max(...rows.map(x=>x[1]),1);
+ return rows.map(r=>{const w=Math.max(3,Math.round(r[1]/mx*100));return `<div class="bar"><span class="bn"><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r[0])};margin-right:6px"></span>${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%;background:${clientColor(r[0])}"></div></div><span class="bv">${r[1]}</span></div>`;}).join(''); }
+function renderMini(){
+ document.getElementById('miniCli').innerHTML=cliBarRows();
+ const t=A.byType.slice(0,6),mx=Math.max(...t.map(x=>x[1]),1);
+ document.getElementById('miniType').innerHTML=t.length?barRows(t,mx):'<p class="tinfo">Sin datos.</p>';
+}
+function refsOf(tipo){ return FSET.filter(i=>i.tipo===tipo).map(i=>i.key); }
+function renderMatrix(q){
+ q=(q||'').toLowerCase();
+ const tipos=A.byType.map(x=>x[0]).filter(Boolean);
+ const box=document.getElementById('matrix'); let html='';
+ tipos.forEach(tp=>{
+  const c=MATRIX_CONTENT[tp]; const refs=refsOf(tp);
+  const searchable=(tp+' '+(c?c.sintoma+' '+c.pasos.join(' ')+' '+c.plantilla+' '+c.datos.join(' '):'')).toLowerCase();
+  if(q&&!searchable.includes(q))return;
+  const refChips=refs.slice(0,12).map(r=>`<a class="refchip" onclick="goTicket('${r}')">${r}</a>`).join('')+(refs.length>12?` <span class="tinfo">+${refs.length-12} más</span>`:'');
+  if(c){
+   html+=`<div class="card"><div class="mtop"><div class="mtitle">${hl(tp,q)}</div><span class="pill">${refs.length} tickets${scopeCli?' · '+esc(scopeCli):''}</span></div>
+    <p class="desc">${hl(c.sintoma,q)}</p>
+    <div class="grid2">
+     <div><div class="lab">Datos a solicitar</div><ul class="clean">${c.datos.map(d=>'<li>'+hl(d,q)+'</li>').join('')}</ul></div>
+     <div><div class="lab">Pasos Nivel 1</div><ol class="steps">${c.pasos.map(p=>'<li>'+hl(p,q)+'</li>').join('')}</ol></div>
+    </div>
+    <div class="lab">Plantilla de respuesta</div>
+    <div class="tmpl"><button class="copy" data-t="${esc(c.plantilla)}">Copiar</button>${esc(c.plantilla)}</div>
+    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;align-items:flex-end">
+     <div><div class="lab" style="margin:0 0 4px">Escalar a</div><span class="assign"><span class="avatar">${initials(c.asignar)}</span>${esc(c.asignar)}</span></div>
+     <div style="flex:1;min-width:200px"><div class="lab" style="margin:0 0 4px">Tickets de referencia</div><div class="refline">${refChips||'<span class="tinfo">— sin tickets para este cliente</span>'}</div></div>
+    </div></div>`;
+  } else {
+   html+=`<div class="card"><div class="mtop"><div class="mtitle">${hl(tp,q)}</div><span class="pill">${refs.length} tickets</span></div>
+    <p class="desc">Tipo detectado en la carga, sin plantilla curada. Revisá los tickets de referencia y creá una respuesta modelo.</p>
+    <div class="lab">Tickets de referencia</div><div class="refline">${refChips||'—'}</div></div>`;
+  }
+ });
+ box.innerHTML=html||'<div class="empty"><div class="big">&#9672;</div>Sin coincidencias.</div>';
+ box.querySelectorAll('.copy').forEach(b=>b.onclick=()=>{navigator.clipboard.writeText(b.dataset.t);const o=b.textContent;b.textContent='✓ Copiado';setTimeout(()=>b.textContent=o,1200);});
+}
+
+let curTypes=new Set(), curEstados=new Set(), curAsig=new Set(), PAGE=40, shown=40, filtered=[], respFilter=null;
+function chipRow(elId,dim,sel,chk){
+ const counts=facet(dim); const vals=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]); const total=Object.values(counts).reduce((a,b)=>a+b,0);
+ const box=document.getElementById(elId); if(!box)return;
+ box.innerHTML=`<div class="chip ${sel.size===0?'on':''}" data-v="">Todos <span class="c">${total}</span></div>`+
+  vals.map(v=>`<div class="chip${chk?' chipChk':''} ${sel.has(v)?'on':''}" data-v="${esc(v)}">${esc(v)} <span class="c">${counts[v]}</span>${chk?`<span class="chkmark">${sel.has(v)?'&#10003;':''}</span>`:''}</div>`).join('');
+ box.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{ const v=c.dataset.v; if(v===''){sel.clear();} else { sel.has(v)?sel.delete(v):sel.add(v); } shown=PAGE; refresh(); });
+}
+function buildFilters(){ chipRow('chipsTipo','tipo',curTypes); chipRow('chipsEstado','estado',curEstados); chipRow('chipsAsig','asig',curAsig,true); }
+function qv(){return document.getElementById('q').value.trim();}
+function passResp(i){ if(!respFilter)return true;
+ if(respFilter.mode==='author')return i.comments.some(c=>c.author===respFilter.value);
+ if(respFilter.mode==='int')return i.comments.some(c=>TEAM.has(c.author));
+ if(respFilter.mode==='cli')return i.comments.some(c=>c.author&&!TEAM.has(c.author));
+ return true; }
+function renderRespBanner(){ const el=document.getElementById('respBanner'); if(!respFilter){el.innerHTML='';return;}
+ const lbl=respFilter.mode==='author'?('respondidos por <b>'+esc(respFilter.value)+'</b>'):respFilter.mode==='int'?'con <b>respuesta interna</b>':'con <b>respuesta de cliente</b>';
+ el.innerHTML=`<div class="respBanner">Mostrando tickets ${lbl}<span class="x" onclick="clearResp()">Quitar filtro ✕</span></div>`; }
+function _applyTicketsImpl(){
+ const so=document.getElementById('fSort').value;
+ filtered=FSET.slice().sort((a,b)=> so==='recent'? b._d-a._d : so==='key'? a.key.localeCompare(b.key,undefined,{numeric:true}) : (b._n-a._n)||(b._d-a._d));
+ document.getElementById('tkCount').textContent=filtered.length+' de '+SC.length+' tickets';
+ renderRespBanner(); renderTickets();
+}
+function applyTickets(){
+ if(document.startViewTransition){ document.startViewTransition(()=>_applyTicketsImpl()); } else { _applyTicketsImpl(); }
+}
+function cliOptions(sel){ return CLIENTS.map(c=>`<option ${c.name===sel?'selected':''}>${esc(c.name)}</option>`).join('')+`<option ${sel===UNASSIGNED?'selected':''}>${UNASSIGNED}</option>`; }
+function renderTickets(){
+ const q=qv(); const box=document.getElementById('tickets');
+ if(!filtered.length){ box.innerHTML='<div class="empty"><div class="big">&#9636;</div>No hay tickets que coincidan.</div>'; document.getElementById('loadmore').style.display='none'; return; }
+ const openAll=!!respFilter;
+ const mineOf=(c)=>{ if(!respFilter)return false; const int=TEAM.has(c.author); return respFilter.mode==='author'? c.author===respFilter.value : respFilter.mode==='int'? int : respFilter.mode==='cli'? !int : false; };
+ box.innerHTML=filtered.slice(0,shown).map((i,idx)=>{
+  const resp=[...new Set(i.comments.map(c=>c.author).filter(a=>TEAM.has(a)))];
+  const delay=Math.min(idx,18)*28;
+  return `<div class="tk" id="tk-${i.key}" style="animation-delay:${delay}ms">
+   <div class="hd"><div><span class="kk">${i.key}</span><div class="tt">${hl(i.title,q)}</div></div><span class="ev ${i._n?'':'zero'}">${i._n} ${i._n===1?'respuesta':'respuestas'}</span></div>
+   <div class="tmeta"><span class="tag cl"><span class="cdot" style="background:${clientColor(i._cli)}"></span>${esc(i._cli)}</span><span class="tag">${esc(i.tipo||'—')}</span>${i.estado?`<span class="tag st">${esc(i.estado)}</span>`:''}${i.prioridad?`<span class="tag pr">${esc(i.prioridad)}</span>`:''}
+    <select class="reassign" onchange="setClient('${i.key}',this.value)" title="Reasignar cliente">${cliOptions(i._cli)}</select></div>
+   ${slaLine(i.sla)}
+   <div class="tinfo"><b>Cargó:</b> ${hl(i.informador,q)} &nbsp;·&nbsp; <b>Asignado:</b> ${esc(i.asignado||'—')} &nbsp;·&nbsp; <b>Creada:</b> ${esc(i.creada||'—')}${resp.length?` &nbsp;·&nbsp; <b>Respondió:</b> ${resp.map(esc).join(', ')}`:''}</div>
+   ${i.descripcion?`<div class="desc">${hl(i.descripcion.slice(0,280),q)}${i.descripcion.length>280?'…':''}</div>`:''}
+   ${i.comments.length?`<details class="cm" ${openAll?'open':''}><summary>Ver ${i.comments.length} respuesta(s)</summary>${i.comments.map(c=>{const int=TEAM.has(c.author);return `<div class="cmt${mineOf(c)?' mine':''}"><span class="who ${int?'int':'cli'}">${esc(c.author||'—')}</span>${int?'<span class="badge-int">interno</span>':''} <span class="date">${esc(c.date)}</span><br>${hl(c.text,q)||'<span class="tinfo">(sin texto)</span>'}</div>`;}).join('')}</details>`:'<div class="tinfo" style="color:#a9b4c6;margin-top:4px">Sin respuestas registradas</div>'}
+  </div>`;
+ }).join('');
+ const lm=document.getElementById('loadmore'); lm.style.display=filtered.length>shown?'block':'none';
+ lm.textContent=`Cargar más (${filtered.length-shown} restantes)`;
+}
+document.getElementById('loadmore').onclick=()=>{shown+=PAGE;renderTickets();};
+window.setClient=(key,name)=>{ OVERRIDES[key]=name; persistCli(); const it=DATA.find(x=>x.key===key); if(it)it._cli=name; rebuildAll(); pushState(); };
+window.goTicket=k=>{ clearFilters(); document.getElementById('q').value=k; navTo('tickets'); shown=PAGE; refresh();
+ setTimeout(()=>{const el=document.getElementById('tk-'+k);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),1500);}},120); };
+window.goResponder=(name)=>{ clearFilters(); respFilter={mode:'author',value:name}; navTo('tickets'); shown=PAGE; refresh(); };
+window.goRespType=(mode)=>{ clearFilters(); respFilter={mode}; navTo('tickets'); shown=PAGE; refresh(); };
+window.clearResp=()=>{ respFilter=null; refresh(); };
+
+/* Horario laboral: lunes a viernes, 8:00 a 17:00. Sábado y domingo no cuentan.
+   Solo se usa como respaldo cuando un ticket no tiene el SLA correspondiente de
+   Jira (el elapsed_ms que manda main.py ya respeta el calendario del SLA, así
+   que ese camino no necesita este cálculo). */
+const BIZ_START_H=8, BIZ_END_H=17;
+function businessMsBetween(start,end){
+ if(!start||!end||end<=start)return 0;
+ let total=0, d=new Date(start); d.setHours(0,0,0,0);
+ let guard=0;
+ while(d.getTime()<end && guard<5000){
+  const dow=d.getDay();
+  if(dow>=1&&dow<=5){
+   const dayStart=new Date(d.getFullYear(),d.getMonth(),d.getDate(),BIZ_START_H,0,0,0).getTime();
+   const dayEnd=new Date(d.getFullYear(),d.getMonth(),d.getDate(),BIZ_END_H,0,0,0).getTime();
+   const segStart=Math.max(dayStart,start), segEnd=Math.min(dayEnd,end);
+   if(segEnd>segStart)total+=segEnd-segStart;
+  }
+  d.setDate(d.getDate()+1); guard++;
+ }
+ return total;
+}
+/* Mismo "día" (ms/86400000) que usa el SLA de Jira, para que ambos caminos
+   promedien y formateen igual con fmtDur(x*864e5). No confundir con "1 día
+   hábil" — es solo la unidad de acumulación antes de reconvertir a ms. */
+function tdays(a,b){ if(!a||!b)return null; const s=Math.min(a,b),e=Math.max(a,b); return Math.round(businessMsBetween(s,e)/864e5*1000)/1000; }
+function ticketTimes(i){
+ const c0=i._createdTs||parseDate(i.creada);
+ const coms=i.comments.map(c=>({t:c._ts||parseDate(c.date),int:TEAM.has(c.author)})).filter(x=>x.t).sort((a,b)=>a.t-b.t);
+ const fi=coms.find(x=>x.int), fc=coms.find(x=>!x.int);
+ const last=coms.length?coms[coms.length-1].t:0; const end=i._resolvedTs||parseDate(i.actualizada)||last;
+ const sla=i.sla||{};
+ const slaInt=sla.first_response, slaCli=sla.waiting_customer, slaTot=sla.resolution;
+ const intFromSla=!!(slaInt&&slaInt.elapsed_ms!=null), cliFromSla=!!(slaCli&&slaCli.elapsed_ms!=null), totFromSla=!!(slaTot&&slaTot.elapsed_ms!=null);
+ const intResp=intFromSla?slaInt.elapsed_ms/86400000:tdays(c0,fi&&fi.t);
+ const cliResp=cliFromSla?slaCli.elapsed_ms/86400000:tdays(c0,fc&&fc.t);
+ const total=totFromSla?slaTot.elapsed_ms/86400000:tdays(c0,end);
+ return {intResp, cliResp, total, fromSla:intFromSla||totFromSla,
+  intIncumplido:intFromSla&&!!slaInt.breached, totIncumplido:totFromSla&&!!slaTot.breached};
+}
+const avg=a=>{const v=a.filter(x=>x!=null);return v.length?v.reduce((s,x)=>s+x,0)/v.length:null;};
+const fmtD=x=>x==null?'—':x<1?(Math.round(x*24)+'<span class="u">h</span>'):(Math.round(x*10)/10)+'<span class="u">d</span>';
+function fmtDur(ms){ if(ms==null)return '—'; let s=Math.round(ms/1000); const neg=s<0; s=Math.abs(s);
+ const d=Math.floor(s/86400); s-=d*86400; const h=Math.floor(s/3600); s-=h*3600; const m=Math.floor(s/60);
+ const out= d?(d+'d '+h+'h') : h?(h+'h '+m+'m') : (m+'m'); return (neg?'-':'')+out; }
+function slaChip(lbl,sname){ if(!sname||sname.elapsed_ms==null)return ''; const br=sname.breached; return `<span class="tag" title="${esc(sname.name||lbl)}" style="${br?'background:var(--warnbg);color:var(--cli);font-weight:700':''}">${lbl}: ${fmtDur(sname.elapsed_ms)}${br?' ⚠':''}</span>`; }
+function slaLine(sla){ if(!sla)return ''; const c=[slaChip('1ª resp.',sla.first_response),slaChip('Espera cliente',sla.waiting_customer),slaChip('Resolución',sla.resolution)].filter(Boolean).join(''); return c?`<div class="tmeta" style="margin-top:2px">${c}</div>`:''; }
+/* Rango de fechas para "Tiempos de respuesta y resolución" en Panel — mismas opciones que
+   el selector de rango de los reportes de Jira. "Por día/semana/mes" en Jira controla el
+   agrupamiento de un gráfico de tendencia que acá no existe todavía; por ahora las dos
+   variantes de un mismo período (trimestre/año) recortan la misma ventana de fechas. */
+const RANGE_OPTS=[['','Todos los tickets'],['48h','Últimas 48 horas'],['7d','Últimos 7 días'],['14d','Últimos 14 días'],['30d','Últimos 30 días'],['q_d','Último trimestre por día'],['q_w','Último trimestre por semana'],['y_w','Último año por semana'],['y_m','Último año por mes']];
+function rangeStart(key){
+ if(!key)return null;
+ const d=new Date();
+ if(key==='48h'){ d.setTime(d.getTime()-48*3600*1000); return d.getTime(); }
+ if(key==='7d'){ d.setDate(d.getDate()-7); return d.getTime(); }
+ if(key==='14d'){ d.setDate(d.getDate()-14); return d.getTime(); }
+ if(key==='30d'){ d.setDate(d.getDate()-30); return d.getTime(); }
+ if(key==='q_d'||key==='q_w'){ d.setMonth(d.getMonth()-3); return d.getTime(); }
+ if(key==='y_w'||key==='y_m'){ d.setFullYear(d.getFullYear()-1); return d.getTime(); }
+ return null;
+}
+function clientTimeStats(){
+ const start=rangeStart(panelRange);
+ const groups={};
+ DATA.forEach(i=>{ if(!matchDims(i,null))return; if(start){const c=i._createdTs||parseDate(i.creada); if(!c||c<start)return;} (groups[i._cli]=groups[i._cli]||[]).push(i); });
+ const order=CLIENTS.filter(c=>c.origen!=='telematica').map(c=>c.name).concat([UNASSIGNED]);
+ return order.filter(cli=>groups[cli]&&groups[cli].length).map(cli=>{
+  const items=groups[cli], T=items.map(ticketTimes);
+  return { cli, n:items.length,
+   aInt:avg(T.map(t=>t.intResp)), nInt:T.filter(t=>t.intResp!=null).length,
+   aCli:avg(T.map(t=>t.cliResp)), nCli:T.filter(t=>t.cliResp!=null).length,
+   aTot:avg(T.map(t=>t.total)) };
+ });
+}
+let respView='all', panelRange='';
+window.setRespView=v=>{ respView=v; renderAnalisis(); };
+window.setPanelRange=v=>{ panelRange=v; renderAnalisis(); };
+/* SLA acordado con cada cliente — solo de referencia por ahora: la app no distingue
+   la gravedad de cada ticket (Jira trae "prioridad" casi siempre en "Medium", sin
+   variación real), así que estos umbrales todavía NO se aplican para marcar
+   cumple/incumple. Quedan cargados acá para consulta hasta que se pueda clasificar
+   la gravedad ticket por ticket. Única diferencia entre clientes: resolución de
+   Crítico (Quilmes/CMQ 24 horas, Cervepar 12 horas) — el resto es idéntico. */
+const SLA_DEFS={
+ Quilmes:[
+  {g:'Crítico',desc:'Sistema/módulo caído, impacto total en producción',r1:'—',res:'24 horas',medio:'Operativa',disp:'L-V 08-02AM hs'},
+  {g:'Alto',desc:'Funcionalidad principal degradada, impacto parcial',r1:'4 horas hábiles',res:'1 día hábil',medio:'Ticketera',disp:'L-V 08-17 hs'},
+  {g:'Medio',desc:'Funcionalidad secundaria afectada, existe alternativa',r1:'1 día hábil',res:'2 – 3 días hábiles',medio:'Ticketera',disp:'L-V 08-17 hs'},
+  {g:'Bajo',desc:'Consultas, mejoras, nuevas funcionalidades, tareas menores',r1:'2 días hábiles',res:'A coordinar según alcance',medio:'Ticketera',disp:'L-V 08-17 hs'}
+ ],
+ Cervepar:[
+  {g:'Crítico',desc:'Sistema/módulo caído, impacto total en producción',r1:'—',res:'12 horas',medio:'Operativa',disp:'L-V 08-02AM hs'},
+  {g:'Alto',desc:'Funcionalidad principal degradada, impacto parcial',r1:'4 horas hábiles',res:'1 día hábil',medio:'Ticketera',disp:'L-V 08-17 hs'},
+  {g:'Medio',desc:'Funcionalidad secundaria afectada, existe alternativa',r1:'1 día hábil',res:'2 – 3 días hábiles',medio:'Ticketera',disp:'L-V 08-17 hs'},
+  {g:'Bajo',desc:'Consultas, mejoras, nuevas funcionalidades, tareas menores',r1:'2 días hábiles',res:'A coordinar según alcance',medio:'Ticketera',disp:'L-V 08-17 hs'}
+ ]
+};
+const SLA_GRAV_COLOR={'Crítico':'#e11d48','Alto':'#c2410c','Medio':'#b45309','Bajo':'#16a34a'};
+function slaTableHtml(cliente){
+ const rows=SLA_DEFS[cliente]; if(!rows)return '';
+ return `<div class="lab" style="margin-top:12px">${esc(cliente)}</div>
+  <div class="cfgTableWrap"><table class="cfgTable">
+   <thead><tr><th>Gravedad</th><th>Descripción</th><th>1ª respuesta</th><th>Resolución</th><th>Medio</th><th>Disponibilidad</th></tr></thead>
+   <tbody>${rows.map(r=>`<tr><td><b style="color:${SLA_GRAV_COLOR[r.g]}">${esc(r.g)}</b></td><td>${esc(r.desc)}</td><td>${esc(r.r1)}</td><td>${esc(r.res)}</td><td>${esc(r.medio)}</td><td>${esc(r.disp)}</td></tr>`).join('')}</tbody>
+  </table></div>`;
+}
+function renderAnalisis(){
+ const box=document.getElementById('analisis');
+ const bt=A.byType,mx1=Math.max(...bt.map(x=>x[1]),1);
+ const rep=A.reporters.slice(0,12),mx2=Math.max(...rep.map(x=>x[1]),1);
+ const asg=A.assignees,mx4=Math.max(...asg.map(x=>x[1]),1);
+ // tiempos — respetan el rango de fechas elegido arriba de esta sección (no afecta el resto del Panel)
+ const rStart=rangeStart(panelRange);
+ const TF=rStart?FSET.filter(i=>{const c=i._createdTs||parseDate(i.creada);return c&&c>=rStart;}):FSET;
+ const hasSla=TF.some(i=>i.sla);
+ const wcComputed=TF.some(i=>i.sla&&i.sla.waiting_customer&&i.sla.waiting_customer.computed);
+ const T=TF.map(ticketTimes);
+ const aInt=avg(T.map(t=>t.intResp)), aCli=avg(T.map(t=>t.cliResp)), aTot=avg(T.map(t=>t.total));
+ const nInt=T.filter(t=>t.intResp!=null).length, nCli=T.filter(t=>t.cliResp!=null).length;
+ const nIntBreach=T.filter(t=>t.intIncumplido).length, nTotBreach=T.filter(t=>t.totIncumplido).length;
+ const tt={}; TF.forEach((i,ix)=>{(tt[i.tipo]=tt[i.tipo]||[]).push(T[ix].intResp);});
+ const rowsTT=Object.entries(tt).map(([k,a])=>[k,avg(a)]).filter(r=>r[1]!=null).sort((a,b)=>b[1]-a[1]);
+ const mxT=Math.max(...rowsTT.map(x=>x[1]),1);
+ const cts=clientTimeStats();
+ const teleCli=teleClientStats();
+ const rangeSel=`<select class="sel" onchange="setPanelRange(this.value)">${RANGE_OPTS.map(([v,l])=>`<option value="${v}" ${panelRange===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
+ // responders con filtro interno/cliente
+ const rv=respView;
+ const rf = rv==='int'? A.responders.filter(r=>TEAM.has(r[0])) : rv==='cli'? A.responders.filter(r=>!TEAM.has(r[0])) : A.responders;
+ const resp=rf.slice(0,16), mx3=Math.max(...resp.map(x=>x[1]),1);
+ const jump = rv==='all'?'' : `<span class="respBanner" style="margin:0 0 0 auto;padding:5px 11px;cursor:pointer" onclick="goRespType('${rv}')">Ver historial de estos tickets →</span>`;
+ box.innerHTML=`
+  <div class="card">
+   <div class="mtop" style="align-items:center;margin-bottom:2px">
+    <div class="lab" style="margin:0">Tiempos de respuesta y resolución${scopeCli?' · '+esc(scopeCli):''} <span class="tinfo" style="text-transform:none;font-weight:400">${hasSla?'(SLA de Jira)':'(estimado, horario hábil lun-vie 8-17h)'}</span></div>
+    ${rangeSel}
+   </div>
+   <p class="tinfo" style="margin:0 0 10px">${panelRange?RANGE_OPTS.find(r=>r[0]===panelRange)[1]+' · '+TF.length+' ticket'+(TF.length===1?'':'s')+' en este rango':'Sin rango de fechas — se están usando todos los tickets cargados.'}</p>
+   <div class="tkpi">
+    <div class="box int"><div class="n">${hasSla?fmtDur(aInt*864e5):fmtD(aInt)}</div><div class="l">${hasSla?'Tiempo de 1ª respuesta (SLA, prom.)':'1ª respuesta interna (prom.)'} · ${nInt} tickets${nIntBreach?` · <span style="color:var(--cli)">${nIntBreach} incumplidos</span>`:''}</div></div>
+    <div class="box cli"><div class="n">${hasSla?fmtDur(aCli*864e5):fmtD(aCli)}</div><div class="l">${hasSla?('Espera de respuesta del cliente '+(wcComputed?'(tiempo en estado)':'(SLA)')+', prom.'):'1ª respuesta del cliente (prom.)'} · ${nCli} tickets</div></div>
+    <div class="box tot"><div class="n">${hasSla?fmtDur(aTot*864e5):fmtD(aTot)}</div><div class="l">${hasSla?'Tiempo de resolución (SLA, prom.)':'Resolución total (creación → última actualización)'}${nTotBreach?` · <span style="color:var(--cli)">${nTotBreach} incumplidos</span>`:''}</div></div>
+   </div>
+   <div class="lab" style="margin-top:16px">${hasSla?'Tiempo de 1ª respuesta promedio por tipo — dónde mejorar':'1ª respuesta interna promedio por tipo — dónde mejorar'}</div>
+   ${rowsTT.length?rowsTT.map(r=>{const w=Math.max(3,Math.round(r[1]/mxT*100));return `<div class="bar"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1]*864e5)}</span></div>`;}).join(''):'<p class="tinfo">Sin fechas suficientes.</p>'}
+   <details class="cfgSec" style="margin-top:14px">
+    <summary>📋 SLA acordado (referencia — todavía no se aplica automáticamente)</summary>
+    <p class="tinfo" style="margin:4px 0 0">La app todavía no distingue la gravedad de cada ticket (Jira trae casi todo en prioridad "Medium"), así que estos umbrales no se usan para marcar cumple/incumple — quedan acá solo como consulta. Única diferencia entre clientes: la resolución de Crítico (Quilmes 24h, Cervepar 12h).</p>
+    ${scopeCli?slaTableHtml(scopeCli):['Quilmes','Cervepar'].map(slaTableHtml).join('')}
+   </details>
+  </div>
+  <div class="card"><div class="lab">Tiempos por cliente · vía Jira <span class="tinfo" style="text-transform:none;font-weight:400">(SLA de Jira — no depende del filtro de cliente de arriba, sí respeta el rango de fechas de arriba)</span></div>
+   <div class="cmpTable">
+    <div class="cmpRow cmpHead"><span>Cliente</span><span>Tickets</span><span>1ª respuesta</span><span>Espera cliente</span><span>Resolución</span></div>
+    ${cts.length?cts.map(r=>`<div class="cmpRow"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cli)};margin-right:6px"></span>${esc(r.cli)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${fmtDur(r.aInt*864e5)} <span class="tinfo">(${r.nInt})</span></span><span class="cmpn">${fmtDur(r.aCli*864e5)} <span class="tinfo">(${r.nCli})</span></span><span class="cmpn">${fmtDur(r.aTot*864e5)}</span></div>`).join(''):'<p class="tinfo">Sin datos.</p>'}
+   </div>
+  </div>
+  <div class="card"><div class="lab">Tiempos por cliente · vía Referente Telemática <span class="tinfo" style="text-transform:none;font-weight:400">(clientes sin Jira, cargados manualmente en el módulo Telemática)</span></div>
+   <div class="cmpTable">
+    <div class="cmpRow cmpHead"><span>Cliente</span><span>Tickets</span><span>Resueltos</span><span>Tiempo estimado (hábil)</span><span>Tiempo asignado (real)</span></div>
+    ${teleCli.length?teleCli.map(r=>`<div class="cmpRow"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cliente)};margin-right:6px"></span>${esc(r.cliente)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${r.nResueltos}</span><span class="cmpn">${r.avgEstMs==null?'—':fmtDur(r.avgEstMs)+' ('+r.nEst+')'}</span><span class="cmpn">${r.avgAsignadoMs==null?'—':fmtDur(r.avgAsignadoMs)+' ('+r.nAsignado+')'}</span></div>`).join(''):'<p class="tinfo">Todavía no hay clientes marcados como "Referente Telemática" con tickets cargados. Se configura en Clientes, y se cargan tickets en el módulo Telemática.</p>'}
+   </div>
+  </div>
+  <div class="card"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div class="lab" style="margin:0">Quién respondió los tickets</div>
+    <div class="seg"><button class="${rv==='all'?'on':''}" onclick="setRespView('all')">Todos</button><button class="${rv==='int'?'on int':''}" onclick="setRespView('int')">Internos</button><button class="${rv==='cli'?'on cli':''}" onclick="setRespView('cli')">Clientes</button></div>${jump}</div>
+   <p class="tinfo" style="margin:6px 0 4px">Hacé clic en una persona para ver en el historial los tickets que respondió.</p>
+   ${resp.length?resp.map(r=>{const w=Math.max(3,Math.round(r[1]/mx3*100));const cls=TEAM.has(r[0])?'int':'cli';return `<div class="bar ${cls} rbar" data-n="${esc(r[0])}" onclick="goResponder(this.dataset.n)" title="Ver tickets respondidos por ${esc(r[0])}"><span class="bn">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${r[1]}</span></div>`;}).join(''):'<p class="tinfo">Sin datos.</p>'}</div>
+  <div class="card"><div class="lab">Tickets por cliente (toda la base)</div>${cliBarRows()}</div>
+  <div class="card"><div class="lab">Tickets por tipo de desagío${scopeCli?' · '+esc(scopeCli):''}</div>${bt.length?barRows(bt,mx1):'<p class="tinfo">Sin datos.</p>'}</div>
+  <div class="card"><div class="lab">Clientes que más cargaron tickets</div>${rep.length?barRows(rep,mx2):'<p class="tinfo">Sin datos.</p>'}</div>
+  <div class="card"><div class="lab">Responsables asignados</div>${asg.length?barRows(asg,mx4):'<p class="tinfo">Sin datos.</p>'}</div>`;
+}
+
+/* ejecutivos de cuenta — ficha técnica histórica por cliente + cartera por referente comercial CSTT */
+const FICHASTORE='kb_cmq_fichas_v1';
+const LASTUSER_KEY='kb_cmq_lastuser_v1';
+function getLastUser(){ try{return localStorage.getItem(LASTUSER_KEY)||'';}catch(e){return '';} }
+function setLastUser(v){ try{localStorage.setItem(LASTUSER_KEY,v);}catch(e){} }
+// compara una foto de la ficha antes de editar contra el estado actual y arma un resumen legible de qué cambió
+function diffFicha(before,after){
+ const changes=[]; const d0=before.datos, d1=after.datos;
+ [['estado','Estado'],['pais','País'],['tipo_logistica','Tipo de logística'],['ubicacion','Ubicación'],['ref_comercial','Referente comercial CSTT'],['notas','Notas']].forEach(([k,l])=>{
+  if((d0[k]||'')!==(d1[k]||'')) changes.push(`${l}: "${d0[k]||'—'}" → "${d1[k]||'—'}"`);
+ });
+ if(JSON.stringify((d0.medios||[]).slice().sort())!==JSON.stringify((d1.medios||[]).slice().sort())){
+  changes.push(`Medios: [${(d0.medios||[]).join(', ')||'—'}] → [${(d1.medios||[]).join(', ')||'—'}]`);
+ }
+ if(JSON.stringify(d0.referentes_cliente||[])!==JSON.stringify(d1.referentes_cliente||[])) changes.push(`Referente(s) del cliente modificados (${(d1.referentes_cliente||[]).length})`);
+ if(JSON.stringify(d0.referentes_telematica||[])!==JSON.stringify(d1.referentes_telematica||[])) changes.push(`Referente(s) de telemática modificados (${(d1.referentes_telematica||[]).length})`);
+ CONFIG_SECTIONS.forEach(sec=>{
+  const r0=(before.configuracion||{})[sec.key]||[], r1=(after.configuracion||{})[sec.key]||[];
+  if(JSON.stringify(r0)!==JSON.stringify(r1)){
+   changes.push(r0.length!==r1.length ? `${sec.label}: ${r0.length} → ${r1.length} filas` : `${sec.label} editado`);
+  }
+ });
+ return changes;
+}
+let FICHAS={};
+const MEDIOS_OPCIONES=['WhatsApp','Teams','Correo','Jira','Llamada','Otro'];
+const LOGISTICA_SUGERENCIAS=['Distribución','Última milla','Larga distancia','Interno','Reparto urbano'];
+const PAIS_SUGERENCIAS=['Argentina','Paraguay','Uruguay','Brasil','Chile','Bolivia'];
+const CAMARA_MODELOS=['IA12','Go Focus Plus','Otro'];
+const CAMARA_BD_DEFAULTS={
+ 'IA12':'Base de datos IA12 — detección estándar (vehículos, peatones, ciclistas).',
+ 'Go Focus Plus':'Base de datos Go Focus Plus — detección avanzada (fatiga, distracción, uso de celular).',
+ 'Otro':''
+};
+const GO_TIPOS_VEHICULO=['Livianos','Pesados','Personal','Otro'];
+const CONFIG_SECTIONS=[
+ {key:'dispositivos_go',label:'Dispositivos GO',fields:[
+  {k:'tipo_vehiculo',l:'Tipo de vehículo',type:'select',options:GO_TIPOS_VEHICULO},
+  {k:'avisos_audio',l:'Avisos de audio',type:'toggle'},
+  {k:'recordatorio_id_conductor',l:'Recordatorio identificación conductor',type:'toggle'},
+  {k:'exceso_velocidad',l:'Exceso de velocidad',type:'toggle'},
+  {k:'inicia_pitido_kmh',l:'Inicia pitido (km/h)',type:'number'},
+  {k:'detiene_pitido_kmh',l:'Detiene pitido (km/h)',type:'number'}
+ ]},
+ {key:'camaras',label:'Cámaras',fields:[{k:'unidad',l:'Unidad'},{k:'modelo',l:'Modelo',type:'select',options:CAMARA_MODELOS},{k:'cantidad',l:'Cantidad'},{k:'tipo',l:'Tipo'},{k:'instalado',l:'Instalado'},{k:'config_bd',l:'Config. base de datos'}]},
+ {key:'reportes',label:'Reportes',fields:[{k:'nombre',l:'Nombre'},{k:'frecuencia',l:'Frecuencia'},{k:'destinatarios',l:'Destinatarios'},{k:'medio_envio',l:'Medio de envío'}]},
+ {key:'reuniones',label:'Reuniones recurrentes',fields:[
+  {k:'tema',l:'Tema / motivo'},
+  {k:'categoria',l:'Categoría',type:'select',options:['Proceso de implementación','Seguimiento con referentes']},
+  {k:'etapa',l:'Etapa (proceso de implementación)',type:'select',options:['Kickoff','Configuración inicial','Capacitación','Prueba piloto','Cierre']},
+  {k:'proxima_fecha',l:'Próxima fecha',type:'date'},
+  {k:'hora',l:'Hora',type:'time'},
+  {k:'link',l:'Link de reunión',type:'url'},
+  {k:'frecuencia',l:'Frecuencia'},
+  {k:'participantes',l:'Referentes / participantes'}
+ ]},
+ {key:'grupos',label:'Grupos',fields:[{k:'nombre',l:'Nombre'},{k:'descripcion',l:'Descripción'}]},
+ {key:'autorizaciones',label:'Autorizaciones de seguridad',fields:[{k:'usuario',l:'Usuario'},{k:'rol',l:'Rol'},{k:'nivel_acceso',l:'Nivel de acceso'},{k:'alcance',l:'Alcance'}]},
+ {key:'reglas',label:'Reglas',fields:[{k:'nombre',l:'Nombre'},{k:'tipo',l:'Tipo'},{k:'accion_alerta',l:'Acción / alerta'},{k:'observaciones',l:'Observaciones'}]},
+ {key:'zonas',label:'Zonas',fields:[{k:'nombre',l:'Nombre'},{k:'tipo_zona',l:'Tipo de zona'},{k:'coordenadas_kml',l:'Coordenadas / KML'},{k:'grupos_aplica',l:'Grupos a los que aplica'}]},
+ {key:'tipos_zona',label:'Tipos de zona',fields:[{k:'nombre',l:'Nombre'},{k:'descripcion',l:'Descripción'}]}
+];
+const REF_SECTIONS=[
+ {key:'referentes_cliente',label:'Referente(s) del cliente',fields:[{k:'nombre',l:'Nombre'},{k:'cargo',l:'Cargo'},{k:'telefono',l:'Teléfono'},{k:'email',l:'Email'}]},
+ {key:'referentes_telematica',label:'Referente(s) de telemática',fields:[{k:'nombre',l:'Nombre'},{k:'contacto',l:'Contacto (tel/email)'}]}
+];
+function emptyFicha(name){
+ return {
+  schema:'cstt.ficha.v1', cliente:name, actualizado:'',
+  datos:{estado:'Demo',pais:'',tipo_logistica:'',ubicacion:'',
+   referentes_cliente:[{nombre:'',cargo:'',telefono:'',email:''}],
+   referentes_telematica:[{nombre:'',contacto:''}],
+   ref_comercial:'',medios:[],notas:''},
+  configuracion:{
+   dispositivos_go:GO_TIPOS_VEHICULO.slice(0,3).map(tv=>({tipo_vehiculo:tv,avisos_audio:'',recordatorio_id_conductor:'',exceso_velocidad:'',inicia_pitido_kmh:'',detiene_pitido_kmh:''})),
+   camaras:[],reportes:[],reuniones:[],grupos:[],autorizaciones:[],reglas:[],zonas:[],tipos_zona:[]
+  },
+  historial:[]
+ };
+}
+// convierte fichas viejas (formato plano, pre-v2, o v2 con referente único pre-v3) a la forma actual
+function migrateFicha(raw,name){
+ if(raw&&raw.schema==='cstt.ficha.v1'&&raw.datos){
+  const f=raw; const d=f.datos;
+  d.estado=d.estado||'Demo'; d.pais=d.pais||''; d.tipo_logistica=d.tipo_logistica||''; d.ubicacion=d.ubicacion||'';
+  if(!Array.isArray(d.referentes_cliente)){ d.referentes_cliente=[d.ref_cliente||{nombre:'',cargo:'',telefono:'',email:''}]; }
+  delete d.ref_cliente;
+  if(!Array.isArray(d.referentes_telematica)){ d.referentes_telematica=[d.ref_telematica||{nombre:'',contacto:''}]; }
+  delete d.ref_telematica;
+  d.ref_comercial=d.ref_comercial||''; d.medios=d.medios||[]; d.notas=d.notas||'';
+  f.configuracion=f.configuracion||{};
+  CONFIG_SECTIONS.forEach(s=>{ f.configuracion[s.key]=f.configuracion[s.key]||[]; });
+  f.historial=f.historial||[];
+  f.cliente=f.cliente||name;
+  return f;
+ }
+ const nf=emptyFicha(name);
+ if(raw){
+  nf.actualizado=raw.actualizado||'';
+  nf.datos.estado=raw.estado||'Demo';
+  nf.datos.pais=raw.pais||'';
+  nf.datos.tipo_logistica=raw.tipo_logistica||'';
+  nf.datos.ubicacion=raw.ubicacion||'';
+  if(raw.ref_cliente) nf.datos.referentes_cliente=[raw.ref_cliente];
+  if(raw.ref_telematica) nf.datos.referentes_telematica=[raw.ref_telematica];
+  nf.datos.ref_comercial=raw.ref_comercial||'';
+  nf.datos.medios=raw.medios||[];
+  nf.datos.notas=raw.notas||'';
+  if(nf.actualizado) nf.historial.push({fecha:nf.actualizado,usuario:'',resumen:'Ficha migrada al formato técnico histórico (v2).'});
+ }
+ return nf;
+}
+function loadFichas(){
+ try{ const raw=JSON.parse(localStorage.getItem(FICHASTORE))||{}; FICHAS={}; Object.keys(raw).forEach(k=>{ FICHAS[k]=migrateFicha(raw[k],k); }); }
+ catch(e){FICHAS={};}
+}
+function saveFichas(){ try{localStorage.setItem(FICHASTORE,JSON.stringify(FICHAS));}catch(e){} }
+function ejecutivosSugeridos(){ const s=new Set(); Object.values(FICHAS).forEach(f=>{ if(f.datos.ref_comercial)s.add(f.datos.ref_comercial); }); return [...s].sort(); }
+function esJira(nombre){
+ if(CLIENTS.some(c=>c.name===nombre&&c.prefix)) return true;
+ const f=FICHAS[nombre]; return !!(f&&(f.datos.medios||[]).includes('Jira'));
+}
+
+let ejecView='fichas', ejecCliente='', ejecOpenSections=new Set();
+// borradores en memoria (no persistidos) para fichas nuevas todavía no guardadas — evita que cada re-render (ej. "+ Agregar fila") las reinicie en blanco, sin ensuciar FICHAS/Cartera/KPIs antes de Guardar
+let _newFichaDrafts={};
+window.setEjecView=v=>{
+ ejecView=v;
+ document.getElementById('btnEjecFichas').classList.toggle('on',v==='fichas');
+ document.getElementById('btnEjecCartera').classList.toggle('on',v==='cartera');
+ document.getElementById('ejecFichas').style.display=v==='fichas'?'block':'none';
+ document.getElementById('ejecCartera').style.display=v==='cartera'?'block':'none';
+ if(v==='fichas')renderFichas(); else renderCartera();
+};
+function renderEjecutivos(){ document.getElementById('c-ejecutivos').textContent=Object.keys(FICHAS).length; if(ejecView==='fichas')renderFichas(); else renderCartera(); renderClientes(); }
+
+function cfgFieldInput(cls,sec,ri,field,val){
+ if(field.type==='select'){
+  const opts=['<option value="">—</option>'].concat((field.options||[]).map(o=>`<option value="${esc(o)}" ${val===o?'selected':''}>${esc(o)}</option>`));
+  return `<select class="finput ${cls}" data-sec="${sec}" data-ri="${ri}" data-k="${field.k}">${opts.join('')}</select>`;
+ }
+ if(field.type==='toggle'){
+  return `<div class="seg cfgToggle" data-sec="${sec}" data-ri="${ri}" data-k="${field.k}">
+   <button type="button" data-v="Activado" class="${val==='Activado'?'on yes':''}">Activado</button>
+   <button type="button" data-v="Desactivado" class="${val==='Desactivado'?'on no':''}">Desactivado</button>
+  </div>`;
+ }
+ if(field.type==='number'){
+  return `<input type="number" class="finput ${cls}" data-sec="${sec}" data-ri="${ri}" data-k="${field.k}" value="${esc(val==null?'':val)}">`;
+ }
+ if(field.type==='date'||field.type==='time'){
+  return `<input type="${field.type}" class="finput ${cls}" data-sec="${sec}" data-ri="${ri}" data-k="${field.k}" value="${esc(val||'')}">`;
+ }
+ if(field.type==='url'){
+  return `<input type="url" class="finput ${cls}" data-sec="${sec}" data-ri="${ri}" data-k="${field.k}" value="${esc(val||'')}" placeholder="https://...">`;
+ }
+ return `<input class="finput ${cls}" data-sec="${sec}" data-ri="${ri}" data-k="${field.k}" value="${esc(val||'')}">`;
+}
+function cfgSectionHtml(sec,rows){
+ const openAttr=ejecOpenSections.has(sec.key)?' open':'';
+ return `<details class="cfgSec" data-sec="${sec.key}"${openAttr}>
+  <summary>${esc(sec.label)} <span class="tinfo">(${rows.length})</span></summary>
+  <div class="cfgTableWrap">
+   ${rows.length?`<table class="cfgTable"><thead><tr>${sec.fields.map(x=>`<th>${esc(x.l)}</th>`).join('')}<th></th></tr></thead><tbody>
+    ${rows.map((r,ri)=>`<tr>${sec.fields.map(x=>`<td>${cfgFieldInput('cfgInput',sec.key,ri,x,r[x.k])}</td>`).join('')}<td><button class="btn sm cfgDelRow" data-sec="${sec.key}" data-ri="${ri}" title="Quitar fila">✕</button></td></tr>`).join('')}
+   </tbody></table>`:'<p class="tinfo">Sin registros todavía.</p>'}
+   <button class="btn sm cfgAddRow" data-sec="${sec.key}" style="margin-top:8px">+ Agregar</button>
+  </div>
+ </details>`;
+}
+function refSectionHtml(sec,rows){
+ return `<div class="fRow">
+  <div class="lab" style="margin-top:0">${esc(sec.label)}</div>
+  <div class="cfgTableWrap">
+   ${rows.length?`<table class="cfgTable"><thead><tr>${sec.fields.map(x=>`<th>${esc(x.l)}</th>`).join('')}<th></th></tr></thead><tbody>
+    ${rows.map((r,ri)=>`<tr>${sec.fields.map(x=>`<td><input class="finput refInput" data-sec="${sec.key}" data-ri="${ri}" data-k="${x.k}" value="${esc(r[x.k]||'')}"></td>`).join('')}<td><button class="btn sm refDelRow" data-sec="${sec.key}" data-ri="${ri}" title="Quitar">✕</button></td></tr>`).join('')}
+   </tbody></table>`:'<p class="tinfo">Sin referentes cargados.</p>'}
+   <button class="btn sm refAddRow" data-sec="${sec.key}" style="margin-top:8px">+ Agregar referente</button>
+  </div>
+ </div>`;
+}
+
+function renderFichas(){
+ const box=document.getElementById('ejecFichas');
+ if(!CLIENTS.length){ box.innerHTML='<div class="card"><p class="tinfo">Configurá al menos un cliente en la pestaña Clientes antes de cargar fichas.</p></div>'; return; }
+ if(!ejecCliente||!CLIENTS.some(c=>c.name===ejecCliente)) ejecCliente=CLIENTS[0].name;
+ const opts=CLIENTS.map(c=>`<option value="${esc(c.name)}" ${ejecCliente===c.name?'selected':''}>${esc(c.name)}</option>`).join('');
+ const f=FICHAS[ejecCliente]||(_newFichaDrafts[ejecCliente]=_newFichaDrafts[ejecCliente]||emptyFicha(ejecCliente));
+ const _before=JSON.parse(JSON.stringify(f));
+ const d=f.datos;
+ const cfg=f.configuracion;
+ const hist=(f.historial||[]).slice().reverse();
+ box.innerHTML=`
+  <div class="card">
+   <div class="lab" style="margin-top:0">Cliente</div>
+   <select class="sel" id="ejecSelCliente" style="min-width:220px">${opts}</select>
+   ${f.actualizado?` <span class="tinfo">Última actualización: ${esc(f.actualizado)}</span>`:''}
+   <span class="tinfo" id="fichaSavedNote" style="margin-left:10px;color:var(--sig);font-weight:700"></span>
+   <div class="fRow" style="margin-top:12px;max-width:280px"><div class="lab" style="margin-top:0">Guardado por</div>
+    <input class="finput" id="fUsuario" list="dlUsuarios" value="${esc(getLastUser())}" placeholder="Tu nombre">
+    <datalist id="dlUsuarios">${[...TEAM].sort().map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+   </div>
+   <div class="tools" style="margin-top:12px">
+    <button class="btn sm" id="btnExportJson">&#8675; Descargar JSON</button>
+    <button class="btn sm" id="btnPrintFicha">&#128438; Imprimir / PDF</button>
+   </div>
+  </div>
+  <div class="card">
+   <div class="lab" style="margin-top:0">Estado del cliente</div>
+   <div class="seg" id="segEstado">
+    <button data-v="Demo" class="${d.estado==='Demo'?'on demo':''}">Demo</button>
+    <button data-v="Cliente fijo" class="${d.estado==='Cliente fijo'?'on fijo':''}">Cliente fijo</button>
+   </div>
+
+   <div class="grid2" style="margin-top:14px;grid-template-columns:1fr 1fr 1fr">
+    <div class="fRow"><div class="lab" style="margin-top:0">País</div>
+     <input class="finput" id="fPais" list="dlPais" value="${esc(d.pais)}" placeholder="Ej: Argentina">
+     <datalist id="dlPais">${PAIS_SUGERENCIAS.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+    </div>
+    <div class="fRow"><div class="lab" style="margin-top:0">Tipo de logística</div>
+     <input class="finput" id="fLogistica" list="dlLogistica" value="${esc(d.tipo_logistica)}" placeholder="Ej: Distribución">
+     <datalist id="dlLogistica">${LOGISTICA_SUGERENCIAS.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+    </div>
+    <div class="fRow"><div class="lab" style="margin-top:0">Ubicación</div>
+     <input class="finput" id="fUbicacion" value="${esc(d.ubicacion)}" placeholder="Ciudad / provincia">
+    </div>
+   </div>
+
+   ${refSectionHtml(REF_SECTIONS[0],d.referentes_cliente)}
+   ${refSectionHtml(REF_SECTIONS[1],d.referentes_telematica)}
+
+   <div class="fRow"><div class="lab">Referente comercial CSTT (ejecutivo de cuenta)</div>
+    <input class="finput" id="fRefComercial" list="dlEjecutivos" value="${esc(d.ref_comercial)}" placeholder="Nombre del ejecutivo">
+    <datalist id="dlEjecutivos">${ejecutivosSugeridos().map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+   </div>
+
+   <div class="fRow"><div class="lab">Medio de gestión de tickets</div>
+    <div class="chips" id="chipsMedios">${MEDIOS_OPCIONES.map(m=>`<div class="chip ${d.medios.includes(m)?'on':''}" data-m="${esc(m)}">${esc(m)}</div>`).join('')}</div>
+   </div>
+
+   <div class="fRow"><div class="lab">Notas / observaciones</div>
+    <textarea class="ftextarea" id="fNotas" placeholder="Observaciones libres…">${esc(d.notas)}</textarea>
+   </div>
+  </div>
+
+  <div class="card">
+   <div class="lab" style="margin-top:0">Configuración técnica</div>
+   <p class="tinfo" style="margin:0 0 6px">Toda la configuración realizada para este cliente. Agregá o quitá filas por sección.</p>
+   ${CONFIG_SECTIONS.map(sec=>cfgSectionHtml(sec,cfg[sec.key])).join('')}
+  </div>
+
+  <div class="card">
+   <div class="lab" style="margin-top:0">Historial de cambios</div>
+   ${hist.length?`<ul class="histList">${hist.map(h=>`<li><span class="hd">${esc(h.fecha||'')}</span> <b>${esc(h.usuario||'Sin identificar')}</b> — ${esc(h.resumen||'Ficha actualizada')}</li>`).join('')}</ul>`:'<p class="tinfo">Sin cambios registrados todavía.</p>'}
+  </div>
+
+  <div class="card">
+   <div class="tools">
+    <button class="btn primary" id="btnGuardarFicha">Guardar ficha</button>
+    <button class="btn sm" id="btnEliminarFicha">Eliminar ficha</button>
+   </div>
+  </div>`;
+
+ document.getElementById('ejecSelCliente').onchange=e=>{ ejecCliente=e.target.value; renderFichas(); };
+ document.getElementById('fPais').oninput=e=>d.pais=e.target.value;
+ document.getElementById('fLogistica').oninput=e=>d.tipo_logistica=e.target.value;
+ document.getElementById('fUbicacion').oninput=e=>d.ubicacion=e.target.value;
+ document.getElementById('fRefComercial').oninput=e=>d.ref_comercial=e.target.value;
+ document.getElementById('fNotas').oninput=e=>d.notas=e.target.value;
+ document.getElementById('segEstado').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  d.estado=b.dataset.v;
+  document.getElementById('segEstado').querySelectorAll('button').forEach(x=>x.className=(x.dataset.v===d.estado?('on '+(d.estado==='Demo'?'demo':'fijo')):''));
+ });
+ box.querySelectorAll('#chipsMedios .chip').forEach(c=>c.onclick=()=>{
+  c.classList.toggle('on');
+  const m=c.dataset.m;
+  if(c.classList.contains('on')){ if(!d.medios.includes(m))d.medios.push(m); }
+  else{ d.medios=d.medios.filter(x=>x!==m); }
+ });
+ box.querySelectorAll('.cfgInput').forEach(inp=>{
+  inp.oninput=e=>{
+   const t=e.target, sec=t.dataset.sec, ri=+t.dataset.ri, k=t.dataset.k;
+   cfg[sec][ri][k]=t.value;
+   if(sec==='camaras'&&k==='modelo'){
+    const row=cfg[sec][ri];
+    if(!row.config_bd){
+     row.config_bd=CAMARA_BD_DEFAULTS[t.value]||'';
+     const bdInput=box.querySelector(`.cfgInput[data-sec="camaras"][data-ri="${ri}"][data-k="config_bd"]`);
+     if(bdInput)bdInput.value=row.config_bd;
+    }
+   }
+  };
+ });
+ box.querySelectorAll('.cfgToggle button').forEach(btn=>{
+  btn.onclick=()=>{
+   const wrap=btn.parentElement, sec=wrap.dataset.sec, ri=+wrap.dataset.ri, k=wrap.dataset.k, v=btn.dataset.v;
+   cfg[sec][ri][k]=v;
+   wrap.querySelectorAll('button').forEach(b=>b.className=(b.dataset.v===v?('on '+(v==='Activado'?'yes':'no')):''));
+  };
+ });
+ box.querySelectorAll('.cfgAddRow').forEach(btn=>{
+  btn.onclick=()=>{ const sec=btn.dataset.sec; const secDef=CONFIG_SECTIONS.find(s=>s.key===sec); const row={}; secDef.fields.forEach(x=>row[x.k]=''); cfg[sec].push(row); ejecOpenSections.add(sec); renderFichas(); };
+ });
+ box.querySelectorAll('.cfgDelRow').forEach(btn=>{
+  btn.onclick=()=>{ const sec=btn.dataset.sec, ri=+btn.dataset.ri; cfg[sec].splice(ri,1); ejecOpenSections.add(sec); renderFichas(); };
+ });
+ box.querySelectorAll('.cfgSec').forEach(det=>{
+  det.addEventListener('toggle',()=>{ if(det.open)ejecOpenSections.add(det.dataset.sec); else ejecOpenSections.delete(det.dataset.sec); });
+ });
+ box.querySelectorAll('.refInput').forEach(inp=>{
+  inp.oninput=e=>{ const t=e.target; d[t.dataset.sec][+t.dataset.ri][t.dataset.k]=t.value; };
+ });
+ box.querySelectorAll('.refAddRow').forEach(btn=>{
+  btn.onclick=()=>{ const sec=btn.dataset.sec; const secDef=REF_SECTIONS.find(s=>s.key===sec); const row={}; secDef.fields.forEach(x=>row[x.k]=''); d[sec].push(row); renderFichas(); };
+ });
+ box.querySelectorAll('.refDelRow').forEach(btn=>{
+  btn.onclick=()=>{ const sec=btn.dataset.sec, ri=+btn.dataset.ri; d[sec].splice(ri,1); renderFichas(); };
+ });
+ document.getElementById('btnExportJson').onclick=()=>downloadFichaJson(f);
+ document.getElementById('btnPrintFicha').onclick=()=>printFicha(f);
+ document.getElementById('fUsuario').oninput=e=>setLastUser(e.target.value);
+ document.getElementById('btnGuardarFicha').onclick=()=>{
+  const usuario=(document.getElementById('fUsuario').value||'').trim();
+  setLastUser(usuario);
+  f.actualizado=new Date().toISOString();
+  f.historial=f.historial||[];
+  const changes=diffFicha(_before,f);
+  f.historial.push({fecha:f.actualizado,usuario:usuario||'Sin identificar',resumen:changes.length?changes.join(' · '):'Sin cambios detectados'});
+  FICHAS[ejecCliente]=f;
+  delete _newFichaDrafts[ejecCliente];
+  saveFichas(); pushState();
+  renderEjecutivos();
+  const note=document.getElementById('fichaSavedNote'); if(note){ note.textContent='✔ Guardado'; setTimeout(()=>{ if(note.isConnected) note.textContent=''; },2000); }
+ };
+ document.getElementById('btnEliminarFicha').onclick=()=>{
+  if(!confirm('¿Eliminar la ficha de '+ejecCliente+'?'))return;
+  delete FICHAS[ejecCliente]; delete _newFichaDrafts[ejecCliente]; saveFichas(); pushState();
+  ejecCliente='';
+  renderEjecutivos();
+ };
+}
+
+function downloadFichaJson(f){
+ const blob=new Blob([JSON.stringify(f,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a'); a.href=url; a.download=`ficha_${String(f.cliente||'cliente').replace(/[^a-z0-9]+/gi,'_')}.json`;
+ document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+
+function fichaBodyHtml(f){
+ const d=f.datos;
+ const rowsTable=(rows,fields)=>rows.length?`<table class="pfTable"><thead><tr>${fields.map(x=>`<th>${esc(x.l)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${fields.map(x=>`<td>${esc(r[x.k]||'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'<p class="pfEmpty">Sin registros.</p>';
+ const cfgHtml=CONFIG_SECTIONS.map(s=>`<h3>${esc(s.label)}</h3>${rowsTable(f.configuracion[s.key]||[],s.fields)}`).join('');
+ const hist=(f.historial||[]).slice().reverse();
+ const histHtml=hist.length?hist.map(h=>`<li>${esc(h.fecha||'')} — <b>${esc(h.usuario||'Sin identificar')}</b> — ${esc(h.resumen||'')}</li>`).join(''):'<li>Sin historial.</li>';
+ return `
+<h1>Ficha técnica · ${esc(f.cliente)}</h1>
+<h2>Estado: ${esc(d.estado)}${d.pais?(' · '+esc(d.pais)):''}${d.tipo_logistica?(' · '+esc(d.tipo_logistica)):''}${d.ubicacion?(' · '+esc(d.ubicacion)):''}</h2>
+<div class="pfMeta">Actualizado: ${esc(f.actualizado||'—')} · Esquema: ${esc(f.schema||'cstt.ficha.v1')}</div>
+<h3>Datos generales</h3>
+<div class="pfGrid">
+ <div><b>Referente comercial CSTT:</b> ${esc(d.ref_comercial||'—')}</div>
+ <div><b>Medios:</b> ${esc((d.medios||[]).join(', ')||'—')}</div>
+</div>
+<b style="font-size:13px">Referente(s) del cliente:</b>
+${(d.referentes_cliente||[]).length?`<ul class="pfRefs">${d.referentes_cliente.map(r=>`<li>${esc(r.nombre||'—')}${r.cargo?(' ('+esc(r.cargo)+')'):''} — ${esc(r.telefono||'')} ${esc(r.email||'')}</li>`).join('')}</ul>`:'<p class="pfEmpty">Sin referentes cargados.</p>'}
+<b style="font-size:13px">Referente(s) de telemática:</b>
+${(d.referentes_telematica||[]).length?`<ul class="pfRefs">${d.referentes_telematica.map(r=>`<li>${esc(r.nombre||'—')}${r.contacto?(' — '+esc(r.contacto)):''}</li>`).join('')}</ul>`:'<p class="pfEmpty">Sin referentes cargados.</p>'}
+${d.notas?`<p style="font-size:12px"><b>Notas:</b> ${esc(d.notas)}</p>`:''}
+${cfgHtml}
+<h3>Historial de cambios</h3>
+<ul class="pfHist">${histHtml}</ul>`;
+}
+function fichaDocHtml(f){
+ return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Ficha técnica · ${esc(f.cliente)}</title>
+<style>
+body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#0b1220;padding:30px;max-width:900px;margin:0 auto}
+h1{font-size:22px;margin:0 0 2px}
+h2{font-size:14px;color:#5c6b82;margin:0 0 20px;font-weight:600}
+h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#087f96;border-bottom:1px solid #dbe3ee;padding-bottom:4px;margin:22px 0 8px}
+table.pfTable{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:6px}
+table.pfTable th,table.pfTable td{border:1px solid #dbe3ee;padding:5px 7px;text-align:left}
+table.pfTable th{background:#eef2f8}
+.pfGrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:13px;margin-bottom:4px}
+.pfEmpty{font-size:12px;color:#8593a8;font-style:italic;margin:0 0 6px}
+ul.pfHist,ul.pfRefs{font-size:12px;padding-left:18px}
+.pfMeta{font-size:11px;color:#8593a8;margin-bottom:16px}
+.pfBar{margin-bottom:16px}
+.pfBar button{background:#087f96;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer}
+@media print{ body{padding:0} .pfNoPrint{display:none} }
+</style></head><body>
+<div class="pfBar pfNoPrint"><button onclick="window.print()">&#128438; Imprimir / Guardar PDF</button></div>
+${fichaBodyHtml(f)}
+</body></html>`;
+}
+function printFicha(f){
+ const w=window.open('','_blank');
+ if(!w){ alert('El navegador bloqueó la ventana de impresión. Habilitá pop-ups para este sitio e intentá de nuevo.'); return; }
+ w.document.write(fichaDocHtml(f)); w.document.close();
+ w.onload=()=>{ w.focus(); w.print(); };
+}
+function openFichaModal(f){
+ document.getElementById('fichaModalBody').innerHTML=fichaBodyHtml(f);
+ document.getElementById('fichaModal').classList.add('on');
+}
+function closeFichaModal(){ document.getElementById('fichaModal').classList.remove('on'); }
+document.getElementById('fichaModalClose').onclick=closeFichaModal;
+document.getElementById('fichaModal').addEventListener('click',e=>{ if(e.target.id==='fichaModal') closeFichaModal(); });
+document.getElementById('fichaModalPrint').onclick=()=>{ document.body.classList.add('printingFicha'); window.print(); };
+window.addEventListener('afterprint',()=>document.body.classList.remove('printingFicha'));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeFichaModal(); closeTeleModal(); } });
+
+function fichaStaticHtml(f){
+ const d=f.datos;
+ const refCli=(d.referentes_cliente||[]).filter(r=>r.nombre||r.cargo||r.telefono||r.email);
+ const refTel=(d.referentes_telematica||[]).filter(r=>r.nombre||r.contacto);
+ const cfgCounts=CONFIG_SECTIONS.filter(s=>(f.configuracion[s.key]||[]).length).map(s=>`<span class="tag">${esc(s.label)}: ${f.configuracion[s.key].length}</span>`).join(' ');
+ return `
+  <div class="efGrid">
+   ${d.pais?`<div><b>País:</b> ${esc(d.pais)}</div>`:''}
+   ${d.tipo_logistica?`<div><b>Logística:</b> ${esc(d.tipo_logistica)}</div>`:''}
+   ${d.ubicacion?`<div><b>Ubicación:</b> ${esc(d.ubicacion)}</div>`:''}
+  </div>
+  ${d.ref_comercial?`<div class="efRefs"><b>Referente comercial CSTT:</b> ${esc(d.ref_comercial)}</div>`:''}
+  ${refCli.length?`<div class="efRefs"><b>Referente(s) del cliente:</b> ${refCli.map(r=>`${esc(r.nombre||'—')}${r.cargo?(' ('+esc(r.cargo)+')'):''}${r.telefono?(' · '+esc(r.telefono)):''}${r.email?(' · '+esc(r.email)):''}`).join(' &nbsp;·&nbsp; ')}</div>`:''}
+  ${refTel.length?`<div class="efRefs"><b>Referente(s) telemática:</b> ${refTel.map(r=>`${esc(r.nombre||'—')}${r.contacto?(' — '+esc(r.contacto)):''}`).join(' &nbsp;·&nbsp; ')}</div>`:''}
+  ${(d.medios||[]).length?`<div class="efRefs"><b>Medios:</b> ${(d.medios||[]).map(m=>`<span class="tag" style="background:var(--edge2);color:var(--mut)">${esc(m)}</span>`).join(' ')}</div>`:''}
+  ${d.notas?`<div class="efRefs"><b>Notas:</b> ${esc(d.notas)}</div>`:''}
+  ${cfgCounts?`<div class="efRefs" style="margin-top:4px">${cfgCounts}</div>`:''}
+ `;
+}
+
+let carteraPais='', carteraLogistica='', carteraEjecutivo='', carteraRefTele='';
+const SUGGEST_KEYS=['reglas','reportes','zonas','tipos_zona','dispositivos_go','camaras'];
+// junta, para clientes que compartan país y/o tipo de logística, las filas de configuración ya cargadas (sin duplicar) como punto de partida para un cliente nuevo
+function suggestConfigFor(pais,logistica){
+ const matches=Object.values(FICHAS).filter(f=>{
+  const d=f.datos;
+  if(pais && (d.pais||'')!==pais) return false;
+  if(logistica && (d.tipo_logistica||'')!==logistica) return false;
+  return true;
+ });
+ const sug={};
+ SUGGEST_KEYS.forEach(key=>{
+  const seen=new Set(); const rows=[];
+  matches.forEach(f=>{ (f.configuracion[key]||[]).forEach(r=>{
+   if(!Object.values(r).some(v=>v)) return;
+   const sig=JSON.stringify(r);
+   if(!seen.has(sig)){ seen.add(sig); rows.push({...r}); }
+  }); });
+  sug[key]=rows;
+ });
+ return {matches,sug};
+}
+function applyCarteraSuggestion(pais,logistica){
+ const name=(prompt('Nombre del nuevo cliente:')||'').trim();
+ if(!name) return;
+ if(CLIENTS.some(c=>c.name.toLowerCase()===name.toLowerCase())){ alert('Ya existe un cliente con ese nombre.'); return; }
+ const {sug}=suggestConfigFor(pais,logistica);
+ CLIENTS.push({name,color:PALETTE[CLIENTS.length%PALETTE.length],prefix:'',keywords:[],origen:'jira'});
+ persistCli();
+ const f=emptyFicha(name);
+ f.datos.pais=pais||''; f.datos.tipo_logistica=logistica||'';
+ SUGGEST_KEYS.forEach(k=>{ if((sug[k]||[]).length) f.configuracion[k]=sug[k].map(r=>({...r})); });
+ f.actualizado=new Date().toISOString();
+ f.historial.push({fecha:f.actualizado,usuario:getLastUser()||'Sin identificar',resumen:`Cliente creado a partir de la sugerencia de cartera (${[pais,logistica].filter(Boolean).join(' · ')||'sin filtro'})`});
+ FICHAS[name]=f;
+ saveFichas(); pushState();
+ retag();
+ ejecCliente=name;
+ rebuildAll();
+ setEjecView('fichas');
+ log('✔ Cliente "'+name+'" creado con configuración sugerida ('+([pais,logistica].filter(Boolean).join(' · ')||'sin filtro')+').');
+}
+function renderCartera(){
+ const box=document.getElementById('ejecCartera');
+ // todo cliente configurado aparece en Cartera, tenga ficha o no — a los que no tienen
+ // se les arma un "ficha" liviana marcada pendiente:true, solo para mostrar el cartel
+ const allFichas=CLIENTS.map(c=>FICHAS[c.name]||{cliente:c.name,pendiente:true,datos:{pais:'',tipo_logistica:'',ref_comercial:'',referentes_telematica:[]},configuracion:{},historial:[]});
+ const paises=[...new Set(allFichas.map(f=>f.datos.pais).filter(Boolean))].sort();
+ const logisticas=[...new Set(allFichas.map(f=>f.datos.tipo_logistica).filter(Boolean))].sort();
+ const ejecutivos=[...new Set(allFichas.map(f=>(f.datos.ref_comercial||'').trim()).filter(Boolean))].sort();
+ const refsTele=[...new Set(allFichas.flatMap(f=>(f.datos.referentes_telematica||[]).map(r=>(r.nombre||'').trim()).filter(Boolean)))].sort();
+ if(carteraPais && !paises.includes(carteraPais)) carteraPais='';
+ if(carteraLogistica && !logisticas.includes(carteraLogistica)) carteraLogistica='';
+ if(carteraEjecutivo && !ejecutivos.includes(carteraEjecutivo)) carteraEjecutivo='';
+ if(carteraRefTele && !refsTele.includes(carteraRefTele)) carteraRefTele='';
+ const fichas=allFichas.filter(f=>{
+  if(carteraPais && (f.datos.pais||'')!==carteraPais) return false;
+  if(carteraLogistica && (f.datos.tipo_logistica||'')!==carteraLogistica) return false;
+  if(carteraEjecutivo && (f.datos.ref_comercial||'').trim()!==carteraEjecutivo) return false;
+  if(carteraRefTele && !(f.datos.referentes_telematica||[]).some(r=>(r.nombre||'').trim()===carteraRefTele)) return false;
+  return true;
+ });
+ const totalDemo=fichas.filter(f=>f.datos.estado==='Demo').length;
+ const totalFijo=fichas.filter(f=>f.datos.estado==='Cliente fijo').length;
+ const totalPend=fichas.filter(f=>f.pendiente).length;
+ const nEjec=new Set(fichas.map(f=>(f.datos.ref_comercial||'').trim()).filter(Boolean)).size;
+ const kpis=[['Clientes',fichas.length],['Pendientes de ficha',totalPend],['Demo',totalDemo],['Cliente fijo',totalFijo],['Ejecutivos',nEjec]];
+
+ const filtersHtml=`<div class="filtrow" style="flex-wrap:wrap">
+   <span class="flab">País</span>
+   <select class="sel" id="carteraFiltroPais"><option value="">Todos</option>${paises.map(p=>`<option value="${esc(p)}" ${carteraPais===p?'selected':''}>${esc(p)}</option>`).join('')}</select>
+   <span class="flab" style="margin-left:14px">Tipo de logística</span>
+   <select class="sel" id="carteraFiltroLogistica"><option value="">Todos</option>${logisticas.map(l=>`<option value="${esc(l)}" ${carteraLogistica===l?'selected':''}>${esc(l)}</option>`).join('')}</select>
+   <span class="flab" style="margin-left:14px">Ejecutivo comercial</span>
+   <select class="sel" id="carteraFiltroEjecutivo"><option value="">Todos</option>${ejecutivos.map(e=>`<option value="${esc(e)}" ${carteraEjecutivo===e?'selected':''}>${esc(e)}</option>`).join('')}</select>
+   <span class="flab" style="margin-left:14px">Referente Telemática</span>
+   <select class="sel" id="carteraFiltroRefTele"><option value="">Todos</option>${refsTele.map(r=>`<option value="${esc(r)}" ${carteraRefTele===r?'selected':''}>${esc(r)}</option>`).join('')}</select>
+  </div>`;
+
+ let sugHtml='';
+ if(carteraPais||carteraLogistica){
+  const {matches,sug}=suggestConfigFor(carteraPais,carteraLogistica);
+  const sugSections=CONFIG_SECTIONS.filter(s=>SUGGEST_KEYS.includes(s.key));
+  const sugCounts=sugSections.map(s=>`<span class="tag">${esc(s.label)}: ${(sug[s.key]||[]).length}</span>`).join(' ');
+  const label=[carteraPais,carteraLogistica].filter(Boolean).join(' · ');
+  sugHtml=`<div class="card" style="border-left:3px solid var(--accent)">
+   <div class="mtop"><div class="mtitle">&#128161; Sugerencia para clientes nuevos · ${esc(label)}</div><span class="pill">${matches.length} cliente${matches.length===1?'':'s'} de referencia</span></div>
+   <p class="tinfo" style="margin:4px 0 8px">Reglas, reportes, zonas, tipos de zona, alertas de velocidad del GO y alertas de cámaras que ya usan los clientes con este país y/o tipo de logística — se pueden aplicar como punto de partida a un cliente nuevo.</p>
+   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${sugCounts||'<span class="tinfo">Sin datos todavía para esta combinación.</span>'}</div>
+   <button class="btn sm primary" id="btnAplicarSugerencia">+ Aplicar a un cliente nuevo</button>
+  </div>`;
+ }
+
+ const sorted=fichas.slice().sort((a,b)=>a.cliente.localeCompare(b.cliente));
+ box.innerHTML=`
+  <div class="kpis">${kpis.map(k=>`<div class="kpi"><div class="n">${k[1]}</div><div class="l">${esc(k[0])}</div></div>`).join('')}</div>
+  ${filtersHtml}
+  ${sugHtml}
+  <div class="card">
+   ${sorted.length?sorted.map(f=>f.pendiente?`
+     <div class="execFichaCard" style="border-left:3px solid var(--cli)">
+      <div class="efHead">
+       <div class="efTitle">
+        <span class="cdot" style="width:9px;height:9px;border-radius:50%;background:${clientColor(f.cliente)};display:inline-block"></span>
+        <b>${esc(f.cliente)}</b>
+        <span class="tag" style="background:var(--warnbg);color:var(--cli)">&#9888; Pendiente de cargar datos del cliente</span>
+       </div>
+       <div style="display:flex;gap:6px;flex:none">
+        <button class="btn sm primary efEditBtn" data-cli="${esc(f.cliente)}">✎ Cargar ficha</button>
+       </div>
+      </div>
+      <p class="tinfo" style="margin:4px 0 0">Este cliente todavía no tiene ficha técnica cargada.</p>
+     </div>`:`
+     <div class="execFichaCard">
+      <div class="efHead">
+       <div class="efTitle">
+        <span class="cdot" style="width:9px;height:9px;border-radius:50%;background:${clientColor(f.cliente)};display:inline-block"></span>
+        <b>${esc(f.cliente)}</b>
+        <span class="tag ${f.datos.estado==='Demo'?'demo':'fijo'}">${esc(f.datos.estado||'—')}</span>
+        ${esJira(f.cliente)?'<span class="tag" style="background:var(--accdim);color:var(--accent2)">Jira</span>':''}
+        ${f.datos.ref_comercial?`<span class="tinfo">Ejecutivo: ${esc(f.datos.ref_comercial)}</span>`:''}
+       </div>
+       <div style="display:flex;gap:6px;flex:none">
+        <button class="btn sm efViewBtn" data-cli="${esc(f.cliente)}" title="Ver ficha completa sin salir de esta pantalla">&#128065; Ver ficha</button>
+        <button class="btn sm efEditBtn" data-cli="${esc(f.cliente)}">✎ Editar</button>
+       </div>
+      </div>
+      ${fichaStaticHtml(f)}
+     </div>`).join(''):`<div class="empty"><div class="big">&#9733;</div>${carteraPais||carteraLogistica||carteraEjecutivo||carteraRefTele?'No hay clientes para este filtro.':'Configurá al menos un cliente en la pestaña Clientes.'}</div>`}
+  </div>`;
+
+ document.getElementById('carteraFiltroPais').onchange=e=>{ carteraPais=e.target.value; renderCartera(); };
+ document.getElementById('carteraFiltroLogistica').onchange=e=>{ carteraLogistica=e.target.value; renderCartera(); };
+ document.getElementById('carteraFiltroEjecutivo').onchange=e=>{ carteraEjecutivo=e.target.value; renderCartera(); };
+ document.getElementById('carteraFiltroRefTele').onchange=e=>{ carteraRefTele=e.target.value; renderCartera(); };
+ box.querySelectorAll('.efViewBtn').forEach(btn=>btn.onclick=()=>{ openFichaModal(FICHAS[btn.dataset.cli]||emptyFicha(btn.dataset.cli)); });
+ box.querySelectorAll('.efEditBtn').forEach(btn=>btn.onclick=()=>{ ejecCliente=btn.dataset.cli; setEjecView('fichas'); });
+ const btnSug=document.getElementById('btnAplicarSugerencia');
+ if(btnSug) btnSug.onclick=()=>applyCarteraSuggestion(carteraPais,carteraLogistica);
+}
+
+/* clientes — configuración (prefijo/palabras clave) unificada con su estado de cuenta Jira (ficha del ejecutivo) */
+function renderClientes(){
+ const cc=clientCounts(); const box=document.getElementById('clientes');
+ box.innerHTML=CLIENTS.map((c,idx)=>{
+  const f=FICHAS[c.name]; const estado=f?f.datos.estado:'';
+  return `<div class="cliGroup">
+   <div class="clirow">
+    <input type="color" class="clidot" value="${c.color}" onchange="CLIENTS[${idx}].color=this.value">
+    <div><input type="text" value="${esc(c.name)}" oninput="CLIENTS[${idx}].name=this.value" placeholder="Nombre del cliente">
+     <input type="text" value="${esc(c.prefix||'')}" oninput="CLIENTS[${idx}].prefix=this.value.trim().toUpperCase().replace(/-$/,'')" placeholder="Prefijo (ej: SG)" style="margin-top:5px;font-family:var(--mono)">
+     <div class="cnt-pill">${cc[c.name]||0} tickets</div></div>
+    <div><div class="lab" style="margin:0 0 3px">Palabras clave (respaldo, opcional)</div><textarea oninput="CLIENTS[${idx}].keywords=this.value.split(/[\\n,]+/).map(s=>s.trim()).filter(Boolean)">${esc((c.keywords||[]).join(', '))}</textarea></div>
+    <button class="btn sm" onclick="delCli(${idx})">Quitar</button>
+   </div>
+   <div class="cliJiraLine">
+    <div class="seg"><button class="${c.origen!=='telematica'?'on':''}" data-origen-btn="jira" data-idx="${idx}">Jira</button><button class="${c.origen==='telematica'?'on':''}" data-origen-btn="telematica" data-idx="${idx}">Referente Telemática</button></div>
+    ${estado?`<span class="tag ${estado==='Demo'?'demo':'fijo'}">${esc(estado)}</span>`:'<span class="tinfo">Sin ficha técnica todavía</span>'}
+    ${f&&f.datos.ref_comercial?`<span class="tinfo">Ejecutivo: ${esc(f.datos.ref_comercial)}</span>`:''}
+    <button class="btn sm" data-open-ficha="${esc(c.name)}">Abrir ficha técnica</button>
+    <button class="btn sm" data-view-tickets="${esc(c.name)}">Ver tickets</button>
+   </div>
+  </div>`;
+ }).join('')+`<div class="clirow" style="border:none"><div></div><div class="cnt-pill">${cc[UNASSIGNED]||0} sin asignar</div><div class="tinfo">Los tickets sin coincidencia quedan en “${UNASSIGNED}”. Agregá palabras clave para clasificarlos.</div><div></div></div>`;
+ box.querySelectorAll('[data-origen-btn]').forEach(b=>b.onclick=()=>{
+  CLIENTS[+b.dataset.idx].origen=b.dataset.origenBtn; persistCli(); renderClientes(); renderTelematica(); refresh();
+ });
+ box.querySelectorAll('[data-open-ficha]').forEach(b=>b.onclick=()=>{
+  const cli=b.dataset.openFicha;
+  ejecCliente=cli;
+  navTo('ejecutivos'); setEjecView('cartera');
+  openFichaModal(FICHAS[cli]||emptyFicha(cli));
+ });
+ box.querySelectorAll('[data-view-tickets]').forEach(b=>b.onclick=()=>{ scopeCli=b.dataset.viewTickets; clearFilters(); shown=PAGE; rebuildAll(); navTo('tickets'); });
+ renderClientesKpis(cc);
+}
+function renderClientesKpis(cc){
+ const box=document.getElementById('kpisClientes'); if(!box)return;
+ cc=cc||clientCounts();
+ const totalDemo=CLIENTS.filter(c=>FICHAS[c.name]&&FICHAS[c.name].datos.estado==='Demo').length;
+ const totalFijo=CLIENTS.filter(c=>FICHAS[c.name]&&FICHAS[c.name].datos.estado==='Cliente fijo').length;
+ const totalTickets=CLIENTS.reduce((s,c)=>s+(cc[c.name]||0),0);
+ const kpis=[['Clientes',CLIENTS.length],['Demo',totalDemo],['Cliente fijo',totalFijo],['Tickets totales',totalTickets]];
+ box.innerHTML=kpis.map(k=>`<div class="kpi"><div class="n">${k[1]}</div><div class="l">${esc(k[0])}</div></div>`).join('');
+}
+
+/* Referente Telemática — módulo de carga manual para clientes fuera de Jira */
+function renderTeleForm(){
+ const sel=document.getElementById('teleCliente'); if(!sel)return;
+ const teleClients=CLIENTS.filter(c=>c.origen==='telematica');
+ const prev=sel.value;
+ sel.innerHTML=teleClients.length?teleClients.map(c=>`<option ${c.name===prev?'selected':''}>${esc(c.name)}</option>`).join(''):'<option value="">— marcá clientes como "Referente Telemática" en Clientes —</option>';
+ sel.disabled=!teleClients.length;
+ const btn=document.getElementById('btnTeleGuardar'); if(btn) btn.disabled=!teleClients.length;
+ const dl=document.getElementById('dlUsuariosTele'); if(dl) dl.innerHTML=[...TEAM].sort().map(x=>`<option value="${esc(x)}">`).join('');
+ const tipoSel=document.getElementById('teleTipo'); if(tipoSel) tipoSel.innerHTML=teleTipoOptionsHtml(tipoSel.value);
+}
+function teleStats(){
+ const withTime=TELE.map(t=>({...t,_d:teleEstimadoMs(t)})).filter(t=>t._d!=null);
+ const avgEstMs=withTime.length?withTime.reduce((s,t)=>s+t._d,0)/withTime.length:null;
+ const byTipo={}; withTime.forEach(t=>{(byTipo[t.tipo]=byTipo[t.tipo]||[]).push(t._d);});
+ const rowsTipo=Object.entries(byTipo).map(([k,a])=>[k,a.reduce((s,x)=>s+x,0)/a.length]).sort((a,b)=>b[1]-a[1]);
+ const byCli={}; withTime.forEach(t=>{(byCli[t.cliente]=byCli[t.cliente]||[]).push(t._d);});
+ const rowsCli=Object.entries(byCli).map(([k,a])=>[k,a.reduce((s,x)=>s+x,0)/a.length]).sort((a,b)=>b[1]-a[1]);
+ const jornadaCounts={laboral:0,excedido:0,sabado:0,domingo:0};
+ TELE.forEach(t=>{ const j=jornadaClass(t.fecha_resolucion,t.hora_resolucion); if(j) jornadaCounts[j]++; });
+ const nResueltos=TELE.filter(t=>t.estado==='Resuelto').length;
+ // tiempo asignado real (hora a hora) — solo tickets con inicio y fin completos
+ const asignados=TELE.map(t=>({...t,_a:tiempoAsignadoMs(t)})).filter(t=>t._a!=null);
+ const avgAsignadoMs=asignados.length?asignados.reduce((s,t)=>s+t._a,0)/asignados.length:null;
+ const byTipoA={}; asignados.forEach(t=>{(byTipoA[t.tipo]=byTipoA[t.tipo]||[]).push(t._a);});
+ const rowsTipoA=Object.entries(byTipoA).map(([k,a])=>[k,a.reduce((s,x)=>s+x,0)/a.length]).sort((a,b)=>b[1]-a[1]);
+ const byCliA={}; asignados.forEach(t=>{(byCliA[t.cliente]=byCliA[t.cliente]||[]).push(t._a);});
+ const rowsCliA=Object.entries(byCliA).map(([k,a])=>[k,a.reduce((s,x)=>s+x,0)/a.length]).sort((a,b)=>b[1]-a[1]);
+ return {avgEstMs, nConTiempo:withTime.length, nResueltos, rowsTipo, rowsCli, jornadaCounts,
+  avgAsignadoMs, nAsignado:asignados.length, rowsTipoA, rowsCliA};
+}
+function renderTelematica(){
+ const box=document.getElementById('teleList'); if(!box)return;
+ renderTeleForm();
+ document.getElementById('c-telematica').textContent=TELE.length;
+ const st=teleStats();
+ const pend=TELE.filter(t=>t.estado!=='Resuelto').length;
+ const kpis=[['Tickets cargados',TELE.length],['Resueltos',st.nResueltos],['Pendientes / en curso',pend],['Tiempo estimado prom.',st.avgEstMs==null?'—':fmtDur(st.avgEstMs)],['Tiempo asignado prom.',st.avgAsignadoMs==null?'—':fmtDur(st.avgAsignadoMs)]];
+ document.getElementById('kpisTele').innerHTML=kpis.map(k=>`<div class="kpi"><div class="n">${k[1]}</div><div class="l">${esc(k[0])}</div></div>`).join('');
+ const mx1=Math.max(...st.rowsTipo.map(x=>x[1]),1), mx2=Math.max(...st.rowsCli.map(x=>x[1]),1);
+ const mx1a=Math.max(...st.rowsTipoA.map(x=>x[1]),1), mx2a=Math.max(...st.rowsCliA.map(x=>x[1]),1);
+ const jc=st.jornadaCounts, jTotal=jc.laboral+jc.excedido+jc.sabado+jc.domingo;
+ document.getElementById('analisisTele').innerHTML=`
+  <div class="grid2">
+   <div class="card"><div class="lab" style="margin-top:0">Tiempo estimado por tipo de solicitud <span class="tinfo" style="text-transform:none;font-weight:400">(hábil, lun-vie 8-17h)</span></div>${st.rowsTipo.length?st.rowsTipo.map(r=>{const w=Math.max(3,Math.round(r[1]/mx1*100));return `<div class="bar"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span></div>`;}).join(''):'<p class="tinfo">Todavía no hay tickets con fechas para calcular esto.</p>'}</div>
+   <div class="card"><div class="lab" style="margin-top:0">Tiempo estimado por cliente <span class="tinfo" style="text-transform:none;font-weight:400">(hábil, lun-vie 8-17h)</span></div>${st.rowsCli.length?st.rowsCli.map(r=>{const w=Math.max(3,Math.round(r[1]/mx2*100));return `<div class="bar"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span></div>`;}).join(''):'<p class="tinfo">Todavía no hay tickets con fechas para calcular esto.</p>'}</div>
+  </div>
+  <div class="grid2">
+   <div class="card"><div class="lab" style="margin-top:0">Tiempo asignado por tipo de solicitud <span class="tinfo" style="text-transform:none;font-weight:400">(real, hora a hora)</span></div>${st.rowsTipoA.length?st.rowsTipoA.map(r=>{const w=Math.max(3,Math.round(r[1]/mx1a*100));return `<div class="bar"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span></div>`;}).join(''):'<p class="tinfo">Todavía no hay tickets con hora de inicio y fin cargadas.</p>'}</div>
+   <div class="card"><div class="lab" style="margin-top:0">Tiempo asignado por cliente <span class="tinfo" style="text-transform:none;font-weight:400">(real, hora a hora)</span></div>${st.rowsCliA.length?st.rowsCliA.map(r=>{const w=Math.max(3,Math.round(r[1]/mx2a*100));return `<div class="bar"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span></div>`;}).join(''):'<p class="tinfo">Todavía no hay tickets con hora de inicio y fin cargadas.</p>'}</div>
+  </div>
+  <div class="card"><div class="lab" style="margin-top:0">Resoluciones por franja horaria <span class="tinfo" style="text-transform:none;font-weight:400">(según la hora de resolución cargada — horario laboral: lunes a viernes de 8 a 17 hs)</span></div>
+   ${jTotal?`<div class="tkpi">
+    <div class="box int"><div class="n">${jc.laboral}</div><div class="l">Horario laboral</div></div>
+    <div class="box cli"><div class="n">${jc.excedido}</div><div class="l">Excedido de jornada (entre semana)</div></div>
+    <div class="box tot"><div class="n">${jc.sabado}</div><div class="l">Sábado <span class="tinfo">(posible hora extra)</span></div></div>
+    <div class="box tot"><div class="n">${jc.domingo}</div><div class="l">Domingo <span class="tinfo">(posible hora extra)</span></div></div>
+   </div>`:'<p class="tinfo">Todavía no hay tickets con hora de resolución cargada para calcular esto.</p>'}
+  </div>`;
+ const sorted=TELE.slice().sort((a,b)=>(b.fecha_solicitud||'').localeCompare(a.fecha_solicitud||''));
+ box.innerHTML=sorted.length?sorted.map(t=>{
+  const estMs=teleEstimadoMs(t);
+  const asignadoMs=tiempoAsignadoMs(t);
+  const cls=t.estado==='Resuelto'?'fijo':t.estado==='En curso'?'st':'';
+  const j=jornadaClass(t.fecha_resolucion,t.hora_resolucion);
+  return `<div class="tk">
+   <div class="hd"><div><span class="kk">${esc(t.cliente)}</span><div class="tt">${esc(t.tipo)}</div></div><span class="tag ${cls}">${esc(t.estado)}</span></div>
+   <div class="tinfo"><b>Inicio:</b> ${esc(t.fecha_solicitud||'—')}${t.hora_inicio?` ${esc(t.hora_inicio)} hs`:''} &nbsp;·&nbsp; <b>Fin:</b> ${esc(t.fecha_resolucion||'—')}${t.hora_resolucion?` ${esc(t.hora_resolucion)} hs`:''}${asignadoMs!=null?` &nbsp;·&nbsp; <b>Tiempo asignado:</b> ${fmtDur(asignadoMs)}`:''}${estMs!=null?` &nbsp;·&nbsp; <b>Tiempo estimado:</b> ${fmtDur(estMs)}`:''} &nbsp;·&nbsp; <b>Responsable:</b> ${esc(t.responsable||'—')}</div>
+   ${j?`<div class="tmeta" style="margin-top:4px"><span class="tag ${JORNADA_TAGCLS[j]}">${JORNADA_LABEL[j]}</span></div>`:''}
+   ${t.detalle?`<div class="desc">${esc(t.detalle)}</div>`:''}
+   <div class="tools" style="margin-top:8px">
+    <button class="btn sm" data-tele-view="${t.id}">&#128065; Ver / Editar</button>
+    ${t.estado!=='Resuelto'?`<button class="btn sm" data-tele-resolve="${t.id}">✓ Marcar resuelto hoy</button>`:''}
+    <button class="btn sm" data-tele-del="${t.id}">Eliminar</button>
+   </div>
+  </div>`;
+ }).join(''):'<div class="empty"><div class="big">&#9742;</div>Todavía no hay tickets de Referente Telemática cargados.</div>';
+ box.querySelectorAll('[data-tele-view]').forEach(b=>b.onclick=()=>openTeleModal(b.dataset.teleView));
+ box.querySelectorAll('[data-tele-resolve]').forEach(b=>b.onclick=()=>{
+  const t=TELE.find(x=>x.id===b.dataset.teleResolve); if(!t)return;
+  t.estado='Resuelto'; t.fecha_resolucion=t.fecha_resolucion||todayStr(); t.hora_resolucion=t.hora_resolucion||nowHHMM();
+  saveTele(); pushState(); renderTelematica(); refresh();
+ });
+ box.querySelectorAll('[data-tele-del]').forEach(b=>b.onclick=()=>{
+  if(!confirm('¿Eliminar este ticket de Referente Telemática?'))return;
+  TELE=TELE.filter(x=>x.id!==b.dataset.teleDel); saveTele(); pushState(); renderTelematica(); refresh();
+ });
+}
+document.getElementById('btnTeleGuardar').onclick=()=>{
+ const cliente=document.getElementById('teleCliente').value;
+ const tipo=document.getElementById('teleTipo').value;
+ const fecha_solicitud=document.getElementById('teleFechaSol').value;
+ const hora_inicio=document.getElementById('teleHoraIni').value;
+ const fecha_resolucion=document.getElementById('teleFechaRes').value;
+ const hora_resolucion=document.getElementById('teleHoraRes').value;
+ const estado=document.getElementById('teleEstado').value;
+ const responsable=(document.getElementById('teleResp').value||'').trim();
+ const detalle=(document.getElementById('teleDetalle').value||'').trim();
+ if(!cliente||!fecha_solicitud){ alert('Completá al menos Cliente y Fecha de inicio.'); return; }
+ TELE.push({id:'t'+Date.now().toString(36)+Math.random().toString(36).slice(2,7), cliente, tipo, fecha_solicitud, hora_inicio, fecha_resolucion, hora_resolucion, estado, responsable, detalle, creado:new Date().toISOString(),
+  historial:[{fecha:new Date().toLocaleString('es-AR'),usuario:responsable||'Sin identificar',resumen:'Ticket creado'}]});
+ saveTele(); pushState();
+ document.getElementById('teleFechaSol').value=''; document.getElementById('teleHoraIni').value=''; document.getElementById('teleFechaRes').value=''; document.getElementById('teleHoraRes').value=''; document.getElementById('teleDetalle').value=''; document.getElementById('teleResp').value=''; document.getElementById('teleEstado').value='Pendiente';
+ renderTelematica(); refresh();
+};
+/* modal de ticket de Telemática: ver/editar con historial de cambios (mismo patrón que el modal de ficha) */
+let teleModalId=null, teleModalBefore=null;
+function diffTele(before,after){
+ const changes=[];
+ const FIELDS=[['cliente','Cliente'],['tipo','Tipo de solicitud'],['fecha_solicitud','Fecha de inicio'],['hora_inicio','Hora de inicio'],['fecha_resolucion','Fecha de fin'],['hora_resolucion','Hora de fin'],['estado','Estado'],['responsable','Responsable'],['detalle','Detalle']];
+ FIELDS.forEach(([k,l])=>{ if((before[k]||'')!==(after[k]||'')) changes.push(`${l}: "${before[k]||'—'}" → "${after[k]||'—'}"`); });
+ return changes;
+}
+function openTeleModal(id){
+ const t=TELE.find(x=>x.id===id); if(!t)return;
+ teleModalId=id; teleModalBefore=JSON.parse(JSON.stringify(t));
+ t.historial=t.historial||[];
+ const hist=t.historial.slice().reverse();
+ const teleClients=CLIENTS.filter(c=>c.origen==='telematica');
+ document.getElementById('teleModalBody').innerHTML=`
+  <h1 style="font-size:20px;margin:0 0 2px">Ticket de Referente Telemática</h1>
+  <p class="tinfo" style="margin:0 0 16px">Creado: ${esc(t.creado?new Date(t.creado).toLocaleString('es-AR'):'—')}</p>
+  <div class="grid2">
+   <div class="fRow"><div class="lab" style="margin-top:0">Cliente</div>
+    <select class="finput" id="tmCliente">${teleClients.map(c=>`<option ${c.name===t.cliente?'selected':''}>${esc(c.name)}</option>`).join('')}</select>
+   </div>
+   <div class="fRow"><div class="lab" style="margin-top:0">Tipo de solicitud</div>
+    <select class="finput" id="tmTipo">${teleTipoOptionsHtml(t.tipo)}</select>
+   </div>
+   <div class="fRow"><div class="lab" style="margin-top:0">Fecha y hora de inicio</div>
+    <div style="display:flex;gap:8px"><input type="date" class="finput" id="tmFechaSol" value="${esc(t.fecha_solicitud||'')}"><input type="time" class="finput" id="tmHoraIni" style="max-width:120px" value="${esc(t.hora_inicio||'')}"></div>
+   </div>
+   <div class="fRow"><div class="lab" style="margin-top:0">Fecha y hora de fin</div>
+    <div style="display:flex;gap:8px"><input type="date" class="finput" id="tmFechaRes" value="${esc(t.fecha_resolucion||'')}"><input type="time" class="finput" id="tmHoraRes" style="max-width:120px" value="${esc(t.hora_resolucion||'')}"></div>
+   </div>
+   <div class="fRow"><div class="lab" style="margin-top:0">Estado</div>
+    <select class="finput" id="tmEstado">${['Pendiente','En curso','Resuelto'].map(o=>`<option ${o===t.estado?'selected':''}>${o}</option>`).join('')}</select>
+   </div>
+   <div class="fRow"><div class="lab" style="margin-top:0">Responsable</div><input class="finput" id="tmResp" value="${esc(t.responsable||'')}" list="dlUsuariosTele"></div>
+  </div>
+  <div class="fRow"><div class="lab" style="margin-top:0">Detalle</div><textarea class="ftextarea" id="tmDetalle">${esc(t.detalle||'')}</textarea></div>
+  <div class="fRow" style="max-width:280px"><div class="lab" style="margin-top:0">Guardado por</div><input class="finput" id="tmUsuario" value="${esc(getLastUser())}" list="dlUsuariosTele"></div>
+  <div class="lab" style="margin-top:18px">Historial de cambios</div>
+  ${hist.length?`<ul class="histList">${hist.map(h=>`<li><span class="hd">${esc(h.fecha||'')}</span> <b>${esc(h.usuario||'Sin identificar')}</b> — ${esc(h.resumen||'Ticket actualizado')}</li>`).join('')}</ul>`:'<p class="tinfo">Sin cambios registrados todavía.</p>'}
+ `;
+ document.getElementById('tmCliente').onchange=e=>t.cliente=e.target.value;
+ document.getElementById('tmTipo').onchange=e=>t.tipo=e.target.value;
+ document.getElementById('tmFechaSol').oninput=e=>t.fecha_solicitud=e.target.value;
+ document.getElementById('tmHoraIni').oninput=e=>t.hora_inicio=e.target.value;
+ document.getElementById('tmFechaRes').oninput=e=>t.fecha_resolucion=e.target.value;
+ document.getElementById('tmHoraRes').oninput=e=>t.hora_resolucion=e.target.value;
+ document.getElementById('tmEstado').onchange=e=>t.estado=e.target.value;
+ document.getElementById('tmResp').oninput=e=>t.responsable=e.target.value;
+ document.getElementById('tmDetalle').oninput=e=>t.detalle=e.target.value;
+ document.getElementById('teleModal').classList.add('on');
+}
+function closeTeleModal(){ document.getElementById('teleModal').classList.remove('on'); teleModalId=null; teleModalBefore=null; }
+document.getElementById('teleModalSave').onclick=()=>{
+ const t=TELE.find(x=>x.id===teleModalId); if(!t)return;
+ const usuario=(document.getElementById('tmUsuario').value||'').trim();
+ setLastUser(usuario);
+ const changes=diffTele(teleModalBefore,t);
+ t.historial=t.historial||[];
+ if(changes.length) t.historial.push({fecha:new Date().toLocaleString('es-AR'),usuario:usuario||'Sin identificar',resumen:changes.join(' · ')});
+ saveTele(); pushState();
+ closeTeleModal();
+ renderTelematica(); refresh();
+};
+document.getElementById('teleModalClose').onclick=closeTeleModal;
+document.getElementById('teleModal').addEventListener('click',e=>{ if(e.target.id==='teleModal') closeTeleModal(); });
+window.delCli=(idx)=>{ if(confirm('¿Quitar este cliente? Sus tickets quedarán sin asignar (salvo reasignación manual).')){ CLIENTS.splice(idx,1); renderClientes(); } };
+document.getElementById('btnAddCli').onclick=()=>{ CLIENTS.push({name:'Nuevo cliente',color:PALETTE[CLIENTS.length%PALETTE.length],prefix:'',keywords:[],origen:'jira'}); renderClientes(); };
+document.getElementById('btnSaveCli').onclick=()=>{ CLIENTS=CLIENTS.filter(c=>c.name.trim()); persistCli(); retag(); rebuildAll(); pushState(); log('✔ Clientes guardados y re-etiquetados (sincronizado con el servidor).'); };
+
+/* upload */
+const logEl=document.getElementById('log'); let logbuf=[];
+function log(msg,cls){ logbuf.push(cls?`<span class="${cls}">${msg}</span>`:msg); if(logbuf.length>200)logbuf=logbuf.slice(-200); logEl.innerHTML=logbuf.join('\n'); logEl.scrollTop=logEl.scrollHeight; }
+function handleFiles(files){
+ [...files].forEach(f=>{ const r=new FileReader();
+  r.onload=()=>{ try{
+   let inc;
+   if(/\.json$/i.test(f.name)){ const j=JSON.parse(r.result); inc=Array.isArray(j)?j:(j.seed||j.data||[]); log(`↳ ${f.name}: respaldo JSON con ${inc.length} tickets`,'d'); }
+   else { inc=parseJiraHTML(r.result); log(`↳ ${f.name}: ${inc.length} tickets detectados`,'d'); }
+   inc.forEach(x=>{x.comments=x.comments||[]; ['title','creada','actualizada','tipo','estado','prioridad','informador','asignado','descripcion'].forEach(k=>x[k]=x[k]||'');});
+   const res=mergeIn(inc); clearFilters(); refresh();
+   const cc=clientCounts(); const brk=CLIENTS.map(c=>c.name+':'+(cc[c.name]||0)).concat(UNASSIGNED+':'+(cc[UNASSIGNED]||0)).join('  ');
+   log(`✔ ${f.name}: ${res.added} nuevos, ${res.updated} actualizados. Base: ${DATA.length}.`);
+   log(`   por cliente → ${brk}`,'d');
+   animate(document.querySelector('#kpis .n'));
+  }catch(e){ log(`✖ Error leyendo ${f.name}: ${e.message}`,'e'); } };
+  r.onerror=()=>log(`✖ No se pudo leer ${f.name}`,'e'); r.readAsText(f,'UTF-8'); });
+}
+/* API en vivo */
+const APISTORE='kb_cmq_api_v1';
+function loadApiCfg(){ try{return JSON.parse(localStorage.getItem(APISTORE))||{};}catch(e){return {};} }
+function saveApiCfg(c){ try{localStorage.setItem(APISTORE,JSON.stringify(c));}catch(e){} }
+/* Guardado/lectura de estado (clientes, reasignaciones, fichas, tickets de Telemática) —
+   va a Firebase (Firestore), no a localhost:8787. El proxy de Jira (apiUrl, más abajo en
+   fetchApi) queda totalmente separado y sigue local, con el token. */
+function fbWait(){ return window.__fb?Promise.resolve():new Promise(res=>window.addEventListener('fb-ready',res,{once:true})); }
+async function pushState(){
+ try{
+  await fbWait();
+  const {db,doc,setDoc}=window.__fb;
+  await setDoc(doc(db,'kb_state','main'),{overrides:OVERRIDES,clients:CLIENTS,fichas:FICHAS,tele:TELE,actualizado:new Date().toISOString()});
+ }catch(e){ console.error('Firebase (guardar):',e); }
+}
+async function pullState(){
+ try{
+  await fbWait();
+  const {db,doc,getDoc}=window.__fb;
+  const snap=await getDoc(doc(db,'kb_state','main'));
+  if(!snap.exists())return;
+  const j=snap.data();
+  let ch=false;
+  if(j&&Array.isArray(j.clients)&&j.clients.length){CLIENTS=j.clients;CLIENTS.forEach(c=>{if(!c.origen)c.origen='jira';});ch=true;}
+  if(j&&j.overrides&&typeof j.overrides==='object'){OVERRIDES=j.overrides;ch=true;}
+  if(j&&j.fichas&&typeof j.fichas==='object'){FICHAS={};Object.keys(j.fichas).forEach(k=>{FICHAS[k]=migrateFicha(j.fichas[k],k);});saveFichas();renderEjecutivos();}
+  if(j&&Array.isArray(j.tele)){TELE=j.tele;saveTele();renderTelematica();}
+  if(ch){ persistCli(); retag(); rebuildAll(); log('↧ Datos cargados desde Firebase (clientes, reasignaciones y fichas de ejecutivos).','d'); }
+ }catch(e){ console.error('Firebase (leer):',e); }
+}
+function apiTicket(r){
+ const created=r.fecha_creacion||r.created||r.fechaCreacion||r.fecha||'';
+ const resolved=r.fecha_resolucion||r.resolutiondate||r.fechaResolucion||'';
+ const updated=r.fecha_actualizacion||r.updated||r.fechaActualizacion||'';
+ const cts=tsOf(created), rts=tsOf(resolved), uts=tsOf(updated);
+ const coms=(r.comentarios||r.comments||[]).map(c=>{const ct=tsOf(c.fecha||c.date||c.created||'');return {author:c.autor||c.author||c.nombre||c.usuario||'',date:ct?fmtDisp(ct):(c.fecha||c.date||''),text:c.texto||c.text||c.body||c.cuerpo||'',_ts:ct||0};});
+ // Request Type (tipo de desagío) — priorizar sobre el tipo de incidencia genérico "[System] Service request"
+ const asName=x=>(x&&typeof x==='object')?(x.name||(x.requestType&&x.requestType.name)||x.value||''):(x||'');
+ let tipo=asName(r.request_type||r.requestType||r['Request Type']||r.tipo_solicitud||r.tipo_de_solicitud||r.customer_request_type||r.customerRequestType||r.tipo_de_pedido||'');
+ if(!tipo){ const it=asName(r.tipo||r.issuetype||r.tipo_incidencia||r.tipo_de_incidencia||''); if(it&&!/^\s*\[system\]/i.test(it)) tipo=it; }
+ return { key:r.key||r.clave||r.id||'', title:r.resumen||r.summary||r.titulo||r.title||'',
+  creada:cts?fmtDisp(cts):(created||''), actualizada:uts?fmtDisp(uts):(rts?fmtDisp(rts):''),
+  tipo:tipo, estado:asName(r.estado||r.status||''),
+  prioridad:r.prioridad||r.priority||'', informador:r.informador||r.reporter||r.solicitante||r.reportado_por||'',
+  asignado:r.asignado_a||r.asignado||r.assignee||r.agente||'Sin asignar', descripcion:r.descripcion||r.description||r.resumen||'',
+  comments:coms, _createdTs:cts, _resolvedTs:rts, sla:(r.sla&&typeof r.sla==='object')?r.sla:null };
+}
+async function fetchApi(){
+ const url=document.getElementById('apiUrl').value.trim(), q=document.getElementById('apiQuery').value, proj=document.getElementById('apiProj').value;
+ if(!url){ log('✖ Ingresá la URL de la función desplegada.','e'); return; }
+ saveApiCfg({url,q,proj});
+ const full=url+(url.includes('?')?'&':'?')+'query='+encodeURIComponent(q)+(proj?'&proyecto='+encodeURIComponent(proj):'');
+ log('⟳ Consultando '+full+' …','d');
+ try{
+  const res=await fetch(full,{headers:{'Accept':'application/json'}});
+  if(!res.ok){
+   let detail='';
+   try{ const ej=await res.json(); detail=ej.detail||ej.error||''; }catch(e){ try{ detail=(await res.text()).slice(0,300); }catch(e2){} }
+   log('✖ HTTP '+res.status+' '+res.statusText+(detail?' — '+detail:'')+' (¿el servidor local sigue corriendo? revisá la terminal de run_local.py)','e');
+   return;
+  }
+  const j=await res.json();
+  const recs=j.registros||j.records||j.issues||j.data||[];
+  if(!recs.length){ log('⚠ La respuesta no trae "registros". Claves recibidas: '+Object.keys(j).join(', '),'w'); return; }
+  log('   muestra cruda: '+JSON.stringify(recs[0]).slice(0,320),'d');
+  const inc=recs.map(apiTicket).filter(t=>t.key);
+  DATA=inc; DATA.forEach(prep); persist(); clearFilters(); rebuildAll();
+  const cc=clientCounts();
+  log('✔ API "'+q+'"'+(proj?(' ['+proj+']'):'')+': '+inc.length+' tickets. Base reemplazada para coincidir con Jira.');
+  log('   por cliente → '+CLIENTS.map(c=>c.name+':'+(cc[c.name]||0)).concat(UNASSIGNED+':'+(cc[UNASSIGNED]||0)).join('  '),'d');
+  const miss=inc.filter(t=>!t.tipo).length, nocom=inc.filter(t=>!t.comments.length).length;
+  if(miss)log('   ⓘ '+miss+' sin tipo de solicitud (revisar campo del conector).','w');
+ }catch(e){ log('✖ Error de red/CORS: '+e.message,'e'); log('   Si es CORS, la función debe devolver el header Access-Control-Allow-Origin. Probá también la URL en el navegador.','w'); }
+}
+const drop=document.getElementById('drop'),file=document.getElementById('file');
+drop.onclick=()=>file.click(); file.onchange=()=>{handleFiles(file.files);file.value='';};
+document.getElementById('btnApi').onclick=fetchApi;
+(function(){const c=loadApiCfg(); if(c.url)document.getElementById('apiUrl').value=c.url; if(c.q)document.getElementById('apiQuery').value=c.q; if(c.proj)document.getElementById('apiProj').value=c.proj;})();
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('hot');}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('hot');}));
+drop.addEventListener('drop',e=>handleFiles(e.dataTransfer.files));
+document.getElementById('btnJson').onclick=()=>{ const clean=DATA.map(({_blob,_cblob,_n,_d,_cli,...r})=>r); dl('base_conocimiento_cmq.json',JSON.stringify({seed:clean,clients:CLIENTS,overrides:OVERRIDES},null,1),'application/json'); };
+document.getElementById('btnCsv').onclick=()=>{ const h=['key','cliente','tipo','estado','prioridad','informador','asignado','creada','actualizada','respuestas','titulo']; const rows=[h.join(',')];
+ DATA.forEach(i=>rows.push([i.key,i._cli,i.tipo,i.estado,i.prioridad,i.informador,i.asignado,i.creada,i.actualizada,i._n,i.title].map(v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`).join(',')));
+ dl('tickets_cmq.csv','﻿'+rows.join('\n'),'text/csv'); };
+function dl(name,content,type){ const b=new Blob([content],{type}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u;a.download=name;a.click(); setTimeout(()=>URL.revokeObjectURL(u),1000); }
+
+function _navToImpl(v){ document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v)); document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v)); const cb=document.getElementById('clientbar'); if(cb)cb.style.display=(v==='panel'||v==='tickets')?'':'none'; const m=document.querySelector('.main'); if(m&&m.scrollTo)m.scrollTo({top:0,behavior:'smooth'}); }
+function navTo(v){ if(document.startViewTransition){ document.startViewTransition(()=>_navToImpl(v)); } else { _navToImpl(v); } }
+document.getElementById('nav').addEventListener('click',e=>{const a=e.target.closest('a');if(a)navTo(a.dataset.v);});
+let deb; document.getElementById('q').addEventListener('input',()=>{ clearTimeout(deb); deb=setTimeout(()=>{ const cur=document.querySelector('.nav a.on').dataset.v; shown=PAGE; refresh(); if(cur!=='tickets'&&cur!=='matriz'&&qv())navTo('tickets'); },170); });
+document.getElementById('fSort').addEventListener('change',()=>{shown=PAGE;applyTickets();});
+document.getElementById('btnClearFilters').onclick=()=>{ clearFilters(); shown=PAGE; refresh(); };
+document.getElementById('btnClearData').onclick=()=>{ if(confirm('¿Vaciar toda la base? Vas a empezar de cero (después traé datos de la API o subí un archivo).')){ DATA=[]; persist(); clearFilters(); scopeCli=''; rebuildAll(); log('Base vaciada.','w'); } };
+document.addEventListener('keydown',e=>{ if(e.key==='/'&&document.activeElement.tagName!=='INPUT'&&document.activeElement.tagName!=='SELECT'&&document.activeElement.tagName!=='TEXTAREA'){e.preventDefault();document.getElementById('q').focus();} });
+document.getElementById('btnReset').onclick=()=>{ if(confirm('¿Restablecer a la base original? Se pierden las cargas y reasignaciones de este navegador (los clientes configurados se mantienen).')){ localStorage.removeItem(STORE); OVERRIDES={}; persistCli(); DATA=APP.seed.slice(); DATA.forEach(prep); persist(); scopeCli=''; rebuildAll(); log('↺ Base restablecida.','w'); } };
+
+load(); DATA.forEach(prep); rebuildAll(); pullState();
+</script>
+</body></html>
