@@ -14,3 +14,18 @@ tablero/*
 tablero/token_local.json
 tablero/kb_state.json
 tablero/__pycache__/
+
+# Cloudflare Worker (proxy de Jira en la nube) — el código sí se sube,
+# el token vive como secreto en Cloudflare (wrangler secret put), nunca acá.
+!worker/
+worker/*
+!worker/src/
+worker/src/*
+!worker/src/index.js
+!worker/wrangler.toml
+!worker/package.json
+!worker/package-lock.json
+# node_modules (se reinstala con "npm install") y .wrangler (cache local,
+# puede contener tokens de sesión de "wrangler login") nunca se suben.
+worker/node_modules/
+worker/.wrangler/

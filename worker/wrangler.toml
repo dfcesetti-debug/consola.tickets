@@ -1,0 +1,10 @@
+name = "consola-cmq-jira-proxy"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+# El token de Jira NO va acá — se carga como secreto con:
+#   npx wrangler secret put JIRA_API_TOKEN
+# (queda cifrado en Cloudflare, nunca en este archivo ni en git).
+[vars]
+JIRA_BASE_URL = "https://geotab-cesetti.atlassian.net"
+JIRA_USER_EMAIL = "df@cesetti.com.ar"
