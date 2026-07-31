@@ -226,12 +226,15 @@ details.cm[open] summary::before{content:'▾ '}
 .cnt-pill{font-family:var(--mono);font-size:12px;color:var(--accent2);background:var(--accdim);border-radius:8px;padding:4px 9px;white-space:nowrap;margin-top:4px}
 
 .bar{display:grid;grid-template-columns:210px 1fr 100px;align-items:center;gap:10px;margin:6px 0}
-.bar.pct{grid-template-columns:210px 1fr 62px 54px}
+.bar.pct{grid-template-columns:210px 1fr 62px 54px 68px}
 .bar .bn{font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar .track{background:var(--edge2);border-radius:6px;height:20px;overflow:hidden}
 .bar .fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent),#22d3ee)}
 .bar .bv{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent2);text-align:right;white-space:nowrap}
 .bar .bpct{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--accent2);background:var(--accdim);padding:2px 7px;border-radius:20px;text-align:center;justify-self:end}
+.bar .bkpi{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:3px 8px;border-radius:20px;text-align:center;justify-self:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;border:1px solid transparent}
+.bar .bkpi.tipo{color:var(--cli);background:color-mix(in srgb, var(--cli) 16%, transparent);border-color:color-mix(in srgb, var(--cli) 35%, transparent)}
+.bar .bkpi.cliente{color:var(--sig);background:color-mix(in srgb, var(--sig) 16%, transparent);border-color:color-mix(in srgb, var(--sig) 35%, transparent)}
 .bar.cli .fill{background:linear-gradient(90deg,var(--cli),#e8a54e)}
 .bar.int .fill{background:linear-gradient(90deg,var(--sig),#4ade80)}
 .legend{display:flex;gap:16px;font-size:12px;color:var(--mut);margin:6px 0 2px}
@@ -322,7 +325,7 @@ details.cm[open] summary::before{content:'▾ '}
 @media(max-width:720px){
  .rail{position:fixed;bottom:0;top:auto;left:0;right:0;width:100%;height:auto;flex-direction:row;padding:6px;z-index:50;overflow-x:auto}
  .brand,.railfoot{display:none}.nav{flex-direction:row;gap:2px}.nav a{flex-direction:column;gap:2px;padding:7px 10px;font-size:10.5px}.nav a .cnt{display:none}
- .main{padding-bottom:66px}.bar{grid-template-columns:130px 1fr 84px}.bar.pct{grid-template-columns:130px 1fr 56px 46px}
+ .main{padding-bottom:66px}.bar{grid-template-columns:130px 1fr 84px}.bar.pct{grid-template-columns:130px 1fr 56px 46px 52px}.bar .bkpi{font-size:8px;padding:2px 5px}
  .clirow{grid-template-columns:20px 1fr;gap:8px}
 }
 </style>
@@ -1889,8 +1892,13 @@ window.setTeleMetric=m=>{ teleMetric=m; renderTelematica(); };
 // Se calcula y se muestra como un dato aparte de la duración (columna propia, no texto pegado)
 // para que quede listo como métrica independiente de cara al futuro módulo de Métricas.
 function withPct(rows){ const tot=rows.reduce((s,r)=>s+r[1],0)||1; return rows.map(r=>[r[0],r[1],r[1]/tot*100]); }
-function teleBarsHtml(rows,mx){
- return rows.map(r=>{const w=Math.max(3,Math.round(r[1]/mx*100));return `<div class="bar pct"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span><span class="bpct" title="% sobre el total de este grupo">${r[2].toFixed(0)}%</span></div>`;}).join('');
+// cada % lleva además su propia etiqueta de KPI (data-kpi/data-metric + tag visible) para que,
+// cuando el futuro módulo de Métricas combine Telemática + Tickets, cada valor se pueda identificar
+// y medir por separado según a qué KPI corresponde (tipo de solicitud vs. cliente).
+const KPI_TAGS={tipo:{label:'Tipo de solicitud',short:'Tipo'},cliente:{label:'Cliente',short:'Cliente'}};
+function teleBarsHtml(rows,mx,kpiKey){
+ const kt=KPI_TAGS[kpiKey]||{label:kpiKey,short:kpiKey};
+ return rows.map(r=>{const w=Math.max(3,Math.round(r[1]/mx*100));return `<div class="bar pct" data-kpi="${kpiKey}" data-metric="${teleMetric}"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span><span class="bpct" title="% sobre el total de ${esc(kt.label)}">${r[2].toFixed(0)}%</span><span class="bkpi ${kpiKey}" title="KPI: ${esc(kt.label)} — etiqueta para el módulo de Métricas">${esc(kt.short)}</span></div>`;}).join('');
 }
 function renderTelematica(){
  const box=document.getElementById('teleList'); if(!box)return;
@@ -1909,8 +1917,8 @@ function renderTelematica(){
    ${Object.entries(TELE_METRICS).map(([k,m])=>`<button class="${teleMetric===k?'on':''}" onclick="setTeleMetric('${k}')">${esc(m.label)}</button>`).join('')}
   </div>
   <div class="grid2">
-   <div class="card"><div class="lab" style="margin-top:0">Por tipo de solicitud <span class="tinfo" style="text-transform:none;font-weight:400">${mc.sub}</span></div>${tipoRows.length?teleBarsHtml(tipoRows,mxT):'<p class="tinfo">Todavía no hay tickets cargados con los datos necesarios para este cálculo.</p>'}</div>
-   <div class="card"><div class="lab" style="margin-top:0">Por cliente <span class="tinfo" style="text-transform:none;font-weight:400">${mc.sub}</span></div>${cliRows.length?teleBarsHtml(cliRows,mxC):'<p class="tinfo">Todavía no hay tickets cargados con los datos necesarios para este cálculo.</p>'}</div>
+   <div class="card"><div class="lab" style="margin-top:0">Por tipo de solicitud <span class="tinfo" style="text-transform:none;font-weight:400">${mc.sub}</span></div>${tipoRows.length?teleBarsHtml(tipoRows,mxT,'tipo'):'<p class="tinfo">Todavía no hay tickets cargados con los datos necesarios para este cálculo.</p>'}</div>
+   <div class="card"><div class="lab" style="margin-top:0">Por cliente <span class="tinfo" style="text-transform:none;font-weight:400">${mc.sub}</span></div>${cliRows.length?teleBarsHtml(cliRows,mxC,'cliente'):'<p class="tinfo">Todavía no hay tickets cargados con los datos necesarios para este cálculo.</p>'}</div>
   </div>
   <div class="card"><div class="lab" style="margin-top:0">Tareas por día de semana <span class="tinfo" style="text-transform:none;font-weight:400">(según la fecha cargada)</span></div>
    ${jTotal?`<div class="tkpi">
