@@ -1038,12 +1038,6 @@ let FICHAS={};
 const MEDIOS_OPCIONES=['WhatsApp','Teams','Correo','Jira','Llamada','Otro'];
 const LOGISTICA_SUGERENCIAS=['Distribución','Última milla','Larga distancia','Interno','Reparto urbano'];
 const PAIS_SUGERENCIAS=['Argentina','Paraguay','Uruguay','Brasil','Chile','Bolivia'];
-const CAMARA_MODELOS=['IA12','Go Focus Plus','Otro'];
-const CAMARA_BD_DEFAULTS={
- 'IA12':'Base de datos IA12 — detección estándar (vehículos, peatones, ciclistas).',
- 'Go Focus Plus':'Base de datos Go Focus Plus — detección avanzada (fatiga, distracción, uso de celular).',
- 'Otro':''
-};
 const GO_TIPOS_VEHICULO=['Livianos','Pesados','Personal','Otro'];
 const CONFIG_SECTIONS=[
  {key:'dispositivos_go',label:'Dispositivos GO',fields:[
@@ -1054,7 +1048,7 @@ const CONFIG_SECTIONS=[
   {k:'inicia_pitido_kmh',l:'Inicia pitido (km/h)',type:'number'},
   {k:'detiene_pitido_kmh',l:'Detiene pitido (km/h)',type:'number'}
  ]},
- {key:'camaras',label:'Cámaras',fields:[{k:'unidad',l:'Unidad'},{k:'modelo',l:'Modelo',type:'select',options:CAMARA_MODELOS},{k:'cantidad',l:'Cantidad'},{k:'tipo',l:'Tipo'},{k:'instalado',l:'Instalado'},{k:'config_bd',l:'Config. base de datos'}]},
+ {key:'aux_m',label:'Auxiliar M (AUX-M)',fields:[{k:'puerto',l:'Puerto AUX-M'},{k:'uso',l:'Para qué se utiliza'}]},
  {key:'reportes',label:'Reportes',fields:[{k:'nombre',l:'Nombre'},{k:'frecuencia',l:'Frecuencia'},{k:'destinatarios',l:'Destinatarios'},{k:'medio_envio',l:'Medio de envío'}]},
  {key:'reuniones',label:'Reuniones recurrentes',fields:[
   {k:'tema',l:'Tema / motivo'},
@@ -1162,8 +1156,8 @@ const GO_FOCUS_PLUS_FIELDS=[
  {k:'doble_linea_voz',l:'Infracción por doble línea continua — Alerta de voz',type:'toggle'}
 ];
 const DEVICE_SPECS=[
- {key:'surfsight_ai12',label:'Surfsight AI-12',fields:SURFSIGHT_AI12_FIELDS},
- {key:'go_focus_plus',label:'GO Focus Plus',fields:GO_FOCUS_PLUS_FIELDS}
+ {key:'go_focus_plus',label:'GO Focus Plus',fields:GO_FOCUS_PLUS_FIELDS},
+ {key:'surfsight_ai12',label:'Surfsight AI-12',fields:SURFSIGHT_AI12_FIELDS}
 ];
 const REF_SECTIONS=[
  {key:'referentes_cliente',label:'Referente(s) del cliente',fields:[{k:'nombre',l:'Nombre'},{k:'cargo',l:'Cargo'},{k:'telefono',l:'Teléfono'},{k:'email',l:'Email'}]},
@@ -1178,7 +1172,7 @@ function emptyFicha(name){
    ref_comercial:'',medios:[],notas:''},
   configuracion:{
    dispositivos_go:GO_TIPOS_VEHICULO.slice(0,3).map(tv=>({tipo_vehiculo:tv,avisos_audio:'',recordatorio_id_conductor:'',exceso_velocidad:'',inicia_pitido_kmh:'',detiene_pitido_kmh:''})),
-   camaras:[],reportes:[],reuniones:[],grupos:[],autorizaciones:[],reglas:[],zonas:[],tipos_zona:[],
+   aux_m:[],reportes:[],reuniones:[],grupos:[],autorizaciones:[],reglas:[],zonas:[],tipos_zona:[],
    surfsight_ai12:{activo:false},go_focus_plus:{activo:false}
   },
   historial:[]
@@ -1420,14 +1414,6 @@ function renderFichas(){
   inp.oninput=e=>{
    const t=e.target, sec=t.dataset.sec, ri=+t.dataset.ri, k=t.dataset.k;
    cfg[sec][ri][k]=t.value;
-   if(sec==='camaras'&&k==='modelo'){
-    const row=cfg[sec][ri];
-    if(!row.config_bd){
-     row.config_bd=CAMARA_BD_DEFAULTS[t.value]||'';
-     const bdInput=box.querySelector(`.cfgInput[data-sec="camaras"][data-ri="${ri}"][data-k="config_bd"]`);
-     if(bdInput)bdInput.value=row.config_bd;
-    }
-   }
   };
  });
  box.querySelectorAll('.cfgToggle button').forEach(btn=>{
@@ -1507,12 +1493,10 @@ function downloadFichaJson(f){
 function fichaBodyHtml(f){
  const d=f.datos;
  const rowsTable=(rows,fields)=>rows.length?`<table class="pfTable"><thead><tr>${fields.map(x=>`<th>${esc(x.l)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${fields.map(x=>`<td>${esc(r[x.k]||'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'<p class="pfEmpty">Sin registros.</p>';
- const devHtml=DEVICE_SPECS.map(spec=>{
-  const obj=f.configuracion[spec.key]||{};
-  if(!obj.activo) return `<h3>${esc(spec.label)}</h3><p class="pfEmpty">Desactivado / no instalado.</p>`;
-  const rows=spec.fields.map(x=>`<tr><td>${esc(x.l)}</td><td>${esc(obj[x.k]||x.def||(x.type==='toggle'?'Desactivado':'—'))}</td></tr>`).join('');
-  return `<h3>${esc(spec.label)} — Activado</h3><table class="pfTable"><tbody>${rows}</tbody></table>`;
- }).join('');
+ const activeDevices=DEVICE_SPECS.filter(spec=>(f.configuracion[spec.key]||{}).activo);
+ const devHtml=`<h3>Tipo de cámara</h3>${activeDevices.length
+  ?`<p style="font-size:13px;font-weight:700;margin:0 0 2px">${activeDevices.map(s=>esc(s.label)).join(' + ')}</p><p class="pfEmpty">Para el detalle de la configuración de alertas, ver la configuración en la web del dispositivo.</p>`
+  :'<p class="pfEmpty">Sin cámara configurada.</p>'}`;
  const cfgHtml=devHtml+CONFIG_SECTIONS.map(s=>`<h3>${esc(s.label)}</h3>${rowsTable(f.configuracion[s.key]||[],s.fields)}`).join('');
  const hist=(f.historial||[]).slice().reverse();
  const histHtml=hist.length?hist.map(h=>`<li>${esc(h.fecha||'')} — <b>${esc(h.usuario||'Sin identificar')}</b> — ${esc(h.resumen||'')}</li>`).join(''):'<li>Sin historial.</li>';
@@ -1594,7 +1578,7 @@ function fichaStaticHtml(f){
 }
 
 let carteraPais='', carteraLogistica='', carteraEjecutivo='', carteraRefTele='';
-const SUGGEST_KEYS=['reglas','reportes','zonas','tipos_zona','dispositivos_go','camaras'];
+const SUGGEST_KEYS=['reglas','reportes','zonas','tipos_zona','dispositivos_go','aux_m'];
 // junta, para clientes que compartan país y/o tipo de logística, las filas de configuración ya cargadas (sin duplicar) como punto de partida para un cliente nuevo
 function suggestConfigFor(pais,logistica){
  const matches=Object.values(FICHAS).filter(f=>{
@@ -1680,7 +1664,7 @@ function renderCartera(){
   const label=[carteraPais,carteraLogistica].filter(Boolean).join(' · ');
   sugHtml=`<div class="card" style="border-left:3px solid var(--accent)">
    <div class="mtop"><div class="mtitle">&#128161; Sugerencia para clientes nuevos · ${esc(label)}</div><span class="pill">${matches.length} cliente${matches.length===1?'':'s'} de referencia</span></div>
-   <p class="tinfo" style="margin:4px 0 8px">Reglas, reportes, zonas, tipos de zona, alertas de velocidad del GO y alertas de cámaras que ya usan los clientes con este país y/o tipo de logística — se pueden aplicar como punto de partida a un cliente nuevo.</p>
+   <p class="tinfo" style="margin:4px 0 8px">Reglas, reportes, zonas, tipos de zona, alertas de velocidad del GO y conexiones de auxiliares (AUX-M) que ya usan los clientes con este país y/o tipo de logística — se pueden aplicar como punto de partida a un cliente nuevo.</p>
    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${sugCounts||'<span class="tinfo">Sin datos todavía para esta combinación.</span>'}</div>
    <button class="btn sm primary" id="btnAplicarSugerencia">+ Aplicar a un cliente nuevo</button>
   </div>`;
