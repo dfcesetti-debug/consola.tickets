@@ -503,9 +503,12 @@ function persistCli(){ try{localStorage.setItem(CSTORE,JSON.stringify(CLIENTS));
 const TELESTORE='kb_cmq_tele_v1';
 let TELE=[];
 const TELE_TIPO_GROUPS=[
- ['Operación',['Carga de usuarios','Revisión de activo','Revisión de mediciones','Solicitud de video','Asignación de grupos a vehículos','Asignación de grupos a usuarios','Creación de reglas']],
- ['Capacitaciones',['Capacitación por área','Capacitación general','Capacitación de reportes','Capacitación de sala logística']],
- ['Reportes',['Reportes N°1','Reportes N°2','Reportes N°3']]
+ ['Soporte reemplaza operaciones',['Carga de usuarios','Revisión de activo','Revisión de mediciones','Solicitud de video','Asignación de grupos a vehículos','Asignación de grupos a usuarios','Creación de reglas']],
+ ['Capacitaciones',['Capacitación por área','Capacitación general','Capacitación de reportes','Capacitación de sala logística','Capacitación interna']],
+ ['Reportes',['Reportes N°1','Reportes N°2','Reportes N°3']],
+ ['Desarrollo',['Desarrollo']],
+ ['Coordinación',['Coordinación']],
+ ['Laboratorio',['Laboratorio']]
 ];
 const TELE_REPORT_TITLES={
  'Reportes N°1':'Se elaboran exclusivamente con los datos ya disponibles en una tabla dinámica.',
