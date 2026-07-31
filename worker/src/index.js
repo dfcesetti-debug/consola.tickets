@@ -298,6 +298,34 @@ async function build(env, query, projName, debug, maxResults) {
   };
 }
 
+/* Modo paginado: trae UNA sola página (hasta 100 tickets) por llamada, en vez
+   de las ~35-40 llamadas seguidas a Jira que hace build(). Cada consulta HTTP
+   individual del navegador queda corta (1-3s), así ninguna corre riesgo de
+   superar el límite de ~100s que corta las conexiones inactivas en el borde
+   de Cloudflare — con "todos" (miles de tickets) desde una PC con más
+   latencia, la llamada única se podía cortar a mitad de camino y el navegador
+   lo veía como "Failed to fetch". Con paginación, es el cliente (el HTML) el
+   que arma el total pidiendo página por página. */
+async function buildPage(env, query, projName, pageToken) {
+  const base = (env.JIRA_BASE_URL || "").replace(/\/$/, "");
+  const email = env.JIRA_USER_EMAIL || "";
+  const token = env.JIRA_API_TOKEN || "";
+  if (!base || !email || !token) return { error: "Faltan variables JIRA_BASE_URL / JIRA_USER_EMAIL / JIRA_API_TOKEN" };
+  const auth = authHeader(email, token);
+  const F = await detectFields(base, auth);
+  const pn = String(projName || "").toLowerCase();
+  const pk = ["", "ambos", "todos"].includes(pn) ? "" : PROJECTS[String(projName).toUpperCase()] || String(projName).toUpperCase();
+  const fields = ["summary", "status", "priority", "assignee", "reporter", "created", "resolutiondate", "updated", "issuetype", "description", "comment"];
+  if (F.reqtype) fields.push(F.reqtype);
+  fields.push(...Object.keys(F.slas || {}));
+  const jql = jqlFor(query, pk);
+  const body = { jql, fields, maxResults: 100, expand: "changelog" };
+  if (pageToken) body.nextPageToken = pageToken;
+  const data = await jpost(base, auth, "/rest/api/3/search/jql", body);
+  const regs = (data.issues || []).map((i) => toRegistro(i, F));
+  return { jql, registros: regs, nextPageToken: data.nextPageToken || null, isLast: !!(data.isLast || !data.nextPageToken) };
+}
+
 function corsHeaders() {
   return {
     "Access-Control-Allow-Origin": "*",
@@ -314,8 +342,10 @@ export default {
     const proyecto = url.searchParams.get("proyecto") || "";
     const debug = url.searchParams.get("debug") || "";
     const maxResults = parseInt(url.searchParams.get("max_results") || "0", 10) || 0;
+    const paged = url.searchParams.get("paged") === "1";
+    const pageToken = url.searchParams.get("page_token") || null;
     try {
-      const payload = await build(env, query, proyecto, debug, maxResults);
+      const payload = paged ? await buildPage(env, query, proyecto, pageToken) : await build(env, query, proyecto, debug, maxResults);
       return new Response(JSON.stringify(payload), {
         status: 200,
         headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders() },

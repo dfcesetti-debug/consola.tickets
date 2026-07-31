@@ -1869,6 +1869,27 @@ document.getElementById('mselTiposBtn').onclick=(e)=>{ e.stopPropagation(); msel
 document.getElementById('mselClientesBtn').onclick=(e)=>{ e.stopPropagation(); renderMselClientes(); mselToggle('mselClientesPanel','mselTiposPanel'); };
 document.addEventListener('click',(e)=>{ if(!e.target.closest('.msel')){ document.getElementById('mselTiposPanel').classList.remove('on'); document.getElementById('mselClientesPanel').classList.remove('on'); } });
 
+async function fetchComboPaged(url,q,proj){
+ const out=[]; let token=null, isLast=false, pages=0;
+ while(!isLast){
+  const full=url+(url.includes('?')?'&':'?')+'paged=1&query='+encodeURIComponent(q)+(proj?'&proyecto='+encodeURIComponent(proj):'')+(token?'&page_token='+encodeURIComponent(token):'');
+  const res=await fetch(full,{headers:{'Accept':'application/json'}});
+  if(!res.ok){
+   let detail='';
+   try{ const ej=await res.json(); detail=ej.detail||ej.error||''; }catch(e){ try{ detail=(await res.text()).slice(0,300); }catch(e2){} }
+   throw new Error('HTTP '+res.status+' '+res.statusText+(detail?' — '+detail:''));
+  }
+  const j=await res.json();
+  if(j.error) throw new Error(j.error);
+  const recs=j.registros||[];
+  out.push(...recs);
+  pages++;
+  token=j.nextPageToken||null;
+  isLast=!!j.isLast||!token;
+  if(pages%5===0) log('   … '+q+(proj?(' ['+proj+']'):'')+': '+out.length+' tickets traídos hasta ahora ('+pages+' páginas)…','d');
+ }
+ return out;
+}
 async function fetchApi(){
  const url=document.getElementById('apiUrl').value.trim();
  if(!url){ log('✖ Falta la URL de conexión (ver "Configuración avanzada" abajo).','e'); return; }
@@ -1879,24 +1900,15 @@ async function fetchApi(){
  const combos=[]; tipos.forEach(q=>clientesSel.forEach(proj=>combos.push({q,proj})));
  const tiposLbl=selApiTipos.size?tipos.join(', '):'todos';
  const cliLbl=selApiClientes.size?[...selApiClientes].map(p=>{const c=jiraClients().find(x=>x.prefix===p); return c?c.name:p;}).join(', '):'ambos';
- log('⟳ Consultando '+combos.length+' combinación'+(combos.length>1?'es':'')+' ('+tiposLbl+' × '+cliLbl+') …','d');
+ log('⟳ Consultando '+combos.length+' combinación'+(combos.length>1?'es':'')+' ('+tiposLbl+' × '+cliLbl+'), de a páginas cortas para que ande en cualquier conexión …','d');
  const byKey={}; let firstSample=null; let anyOk=false;
  for(const {q,proj} of combos){
-  const full=url+(url.includes('?')?'&':'?')+'query='+encodeURIComponent(q)+(proj?'&proyecto='+encodeURIComponent(proj):'');
   try{
-   const res=await fetch(full,{headers:{'Accept':'application/json'}});
-   if(!res.ok){
-    let detail='';
-    try{ const ej=await res.json(); detail=ej.detail||ej.error||''; }catch(e){ try{ detail=(await res.text()).slice(0,300); }catch(e2){} }
-    log('✖ '+q+(proj?(' ['+proj+']'):'')+': HTTP '+res.status+' '+res.statusText+(detail?' — '+detail:''),'e');
-    continue;
-   }
-   const j=await res.json();
-   const recs=j.registros||j.records||j.issues||j.data||[];
+   const recs=await fetchComboPaged(url,q,proj);
    if(recs.length&&!firstSample) firstSample=recs[0];
    recs.map(apiTicket).filter(t=>t.key).forEach(t=>byKey[t.key]=t);
    anyOk=true;
-  }catch(e){ log('✖ '+q+(proj?(' ['+proj+']'):'')+': Error de red/CORS: '+e.message,'e'); }
+  }catch(e){ log('✖ '+q+(proj?(' ['+proj+']'):'')+': '+e.message,'e'); }
  }
  if(!anyOk){ log('✖ Ninguna consulta pudo completarse. Revisá la URL en "Configuración avanzada".','e'); return; }
  const inc=Object.values(byKey);
