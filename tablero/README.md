@@ -472,3 +472,11 @@ Se probó primero un rediseño visual completo estilo Apple (colores, glassmorph
 - Estas dos secciones nuevas quedan guardadas en Firebase junto con el resto de la ficha (sin cambios adicionales de código — ya viaja todo junto), y también aparecen en la ficha impresa/PDF y quedan reflejadas en el historial de cambios ("Surfsight AI-12: activado", etc.).
 - Probado en navegador real con Playwright, sin errores de consola: se activó Surfsight AI-12 (35 filas de configuración visibles) y GO Focus Plus (50 filas), se tildaron algunos puntos puntuales, se guardó la ficha, y en una **sesión de navegador completamente nueva** ambos dispositivos aparecieron correctamente como "Activado" — confirmando que quedó guardado en Firebase, no solo en el navegador donde se cargó.
 
+### v39 (2026-07-31) — Telemática: ahora se puede cargar tiempo de Quilmes y Cervepar (coordinaciones), y nuevas sub-opciones en "Coordinación"
+
+- **Motivo**: el módulo Telemática nació para clientes sin Jira, así que el selector de cliente excluía a Quilmes y Cervepar (origen Jira). Pero hay trabajo real con esos dos clientes que tampoco pasa por Jira — las coordinaciones — y no había forma de medir cuánto tiempo llevan.
+- **Se sacó la restricción**: el selector de cliente del módulo Telemática (tanto al cargar un ticket nuevo como al editar uno existente) ahora lista **todos los clientes configurados**, sin importar si son de Jira o de Referente Telemática. Quilmes y Cervepar ya aparecen ahí.
+- **"Coordinación" pasó de ser una única opción a tener 4 sub-opciones concretas**: Facturación proveedor, Auditoría de stock técnicos externos, Auditorías internas, Recoordinación de servicio.
+- Se actualizó el texto de la tabla "Tiempos por cliente · vía Referente Telemática" del Panel, que antes decía "(clientes sin Jira...)" — ahora aclara que incluye también clientes con Jira cuando se usa para coordinaciones u otro trabajo que no pasa por Jira, para no confundir a quien lo lea.
+- Probado en navegador real con Playwright, sin errores de consola: Quilmes y Cervepar aparecen en el selector de Telemática junto a los clientes de siempre; se cargó y guardó un ticket de "Facturación proveedor" para Quilmes (09:00 a 10:30), y se verificó que apareció correctamente en la tabla del Panel con 1 ticket y 1h 30m de tiempo, tanto estimado como asignado.
+

@@ -512,7 +512,7 @@ const TELE_TIPO_GROUPS=[
  ['Capacitaciones',['Capacitación por área','Capacitación general','Capacitación de reportes','Capacitación de sala logística','Capacitación interna']],
  ['Reportes',['Reportes N°1','Reportes N°2','Reportes N°3']],
  ['Desarrollo',['Desarrollo']],
- ['Coordinación',['Coordinación']],
+ ['Coordinación',['Facturación proveedor','Auditoría de stock técnicos externos','Auditorías internas','Recoordinación de servicio']],
  ['Laboratorio',['Laboratorio']]
 ];
 const TELE_REPORT_TITLES={
@@ -960,7 +960,7 @@ function renderAnalisis(){
     ${cts.length?cts.map(r=>`<div class="cmpRow"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cli)};margin-right:6px"></span>${esc(r.cli)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${fmtDur(r.aInt*864e5)} <span class="tinfo">(${r.nInt})</span></span><span class="cmpn">${fmtDur(r.aCli*864e5)} <span class="tinfo">(${r.nCli})</span></span><span class="cmpn">${fmtDur(r.aTot*864e5)}</span></div>`).join(''):'<p class="tinfo">Sin datos.</p>'}
    </div>
   </div>
-  <div class="card"><div class="lab">Tiempos por cliente · vía Referente Telemática <span class="tinfo" style="text-transform:none;font-weight:400">(clientes sin Jira, cargados manualmente en el módulo Telemática)</span></div>
+  <div class="card"><div class="lab">Tiempos por cliente · vía Referente Telemática <span class="tinfo" style="text-transform:none;font-weight:400">(tickets cargados manualmente en el módulo Telemática — incluye clientes con Jira si se usa para coordinaciones u otras tareas que no pasan por Jira)</span></div>
    <div class="cmpTable">
     <div class="cmpRow cmpHead"><span>Cliente</span><span>Tickets</span><span>Resueltos</span><span>Tiempo estimado (hábil)</span><span>Tiempo asignado (real)</span></div>
     ${teleCli.length?teleCli.map(r=>`<div class="cmpRow"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cliente)};margin-right:6px"></span>${esc(r.cliente)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${r.nResueltos}</span><span class="cmpn">${r.avgEstMs==null?'—':fmtDur(r.avgEstMs)+' ('+r.nEst+')'}</span><span class="cmpn">${r.avgAsignadoMs==null?'—':fmtDur(r.avgAsignadoMs)+' ('+r.nAsignado+')'}</span></div>`).join(''):'<p class="tinfo">Todavía no hay clientes marcados como "Referente Telemática" con tickets cargados. Se configura en Clientes, y se cargan tickets en el módulo Telemática.</p>'}
@@ -1754,9 +1754,9 @@ function renderClientesKpis(cc){
 /* Referente Telemática — módulo de carga manual para clientes fuera de Jira */
 function renderTeleForm(){
  const sel=document.getElementById('teleCliente'); if(!sel)return;
- const teleClients=CLIENTS.filter(c=>c.origen==='telematica');
+ const teleClients=CLIENTS; // cualquier cliente puede tener tickets de Telemática (ej. Quilmes/Cervepar para contabilizar tiempo de coordinaciones que no pasan por Jira)
  const prev=sel.value;
- sel.innerHTML=teleClients.length?teleClients.map(c=>`<option ${c.name===prev?'selected':''}>${esc(c.name)}</option>`).join(''):'<option value="">— marcá clientes como "Referente Telemática" en Clientes —</option>';
+ sel.innerHTML=teleClients.length?teleClients.map(c=>`<option ${c.name===prev?'selected':''}>${esc(c.name)}</option>`).join(''):'<option value="">— configurá al menos un cliente en Clientes —</option>';
  sel.disabled=!teleClients.length;
  const btn=document.getElementById('btnTeleGuardar'); if(btn) btn.disabled=!teleClients.length;
  const dl=document.getElementById('dlUsuariosTele'); if(dl) dl.innerHTML=[...TEAM].sort().map(x=>`<option value="${esc(x)}">`).join('');
@@ -1869,7 +1869,7 @@ function openTeleModal(id){
  teleModalId=id; teleModalBefore=JSON.parse(JSON.stringify(t));
  t.historial=t.historial||[];
  const hist=t.historial.slice().reverse();
- const teleClients=CLIENTS.filter(c=>c.origen==='telematica');
+ const teleClients=CLIENTS;
  document.getElementById('teleModalBody').innerHTML=`
   <h1 style="font-size:20px;margin:0 0 2px">Ticket de Referente Telemática</h1>
   <p class="tinfo" style="margin:0 0 16px">Creado: ${esc(t.creado?new Date(t.creado).toLocaleString('es-AR'):'—')}</p>
