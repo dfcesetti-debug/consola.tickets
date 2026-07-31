@@ -102,6 +102,17 @@ ol.steps{margin:5px 0;padding-left:20px}ol.steps li{margin:5px 0;line-height:1.4
 .chip.chipChk{padding-right:12px}
 .chip .chkmark{display:inline-block;min-width:13px;margin-left:6px;font-weight:800;color:#7be3c8}
 .sel{padding:8px 11px;border:1px solid var(--edge);border-radius:10px;background:#fff;font-size:12.5px;font-weight:600;color:var(--ink)}
+.msel{position:relative;display:inline-block}
+.mselBtn{padding:8px 11px;border:1px solid var(--edge);border-radius:10px;background:#fff;font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.mselBtn:hover{border-color:var(--accent)}
+.mselBtn .arrow{font-size:9px;opacity:.6}
+.mselPanel{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;min-width:220px;max-height:260px;overflow:auto;background:#fff;border:1px solid var(--edge);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.12);padding:6px}
+.mselPanel.on{display:block}
+.mselItem{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:12.5px;color:var(--ink);white-space:nowrap}
+.mselItem:hover{background:var(--bg2, #f4f5f7)}
+.mselItem .chk{min-width:14px;font-weight:800;color:#16b364;opacity:0}
+.mselItem.on .chk{opacity:1}
+.mselItem.allOpt{border-bottom:1px solid var(--edge);margin-bottom:4px;padding-bottom:10px;font-weight:700}
 .count{color:var(--mut);font-size:12.5px;font-family:var(--mono)}
 .filtrow{display:flex;align-items:flex-start;gap:10px;margin:6px 0}
 .flab{font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.05em;min-width:82px;padding-top:7px;flex:none}
@@ -317,23 +328,28 @@ details.cm[open] summary::before{content:'▾ '}
 
    <details class="cfgSec" id="dataConnSec" open>
     <summary>Conexión con Jira / Cargar datos</summary>
-    <p class="tinfo" style="margin:6px 0 10px">Conectá la función desplegada para traer los datos reales de Jira, o subí un export/respaldo. Todo se combina sin duplicar, se etiqueta por cliente (CERVEPAR→Cervepar, SG→Quilmes) y recalcula tiempos con las fechas reales.</p>
+    <p class="tinfo" style="margin:6px 0 10px">Traé los tickets reales de Jira, o subí un export/respaldo. Todo se combina sin duplicar, se etiqueta por cliente (CERVEPAR→Cervepar, SG→Quilmes) y recalcula tiempos con las fechas reales.</p>
     <div class="card" style="margin-top:0">
-     <div class="lab" style="margin-top:0">Conexión por API (en vivo)</div>
-     <p class="tinfo" style="margin:0 0 10px">Pegá la URL pública de tu cloud function. Una consulta trae ambos proyectos y se separan por el prefijo del ticket.</p>
+     <div class="lab" style="margin-top:0">Traer tickets de Jira</div>
+     <p class="tinfo" style="margin:0 0 10px">Elegí qué tickets traer. Podés combinar varios tipos y varios clientes a la vez (dejar sin marcar = todos).</p>
      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-      <input id="apiUrl" type="text" placeholder="https://tu-cloud-function-url" style="flex:1;min-width:240px;padding:10px 12px;border:1px solid var(--edge);border-radius:10px;font-family:var(--mono);font-size:12.5px">
-      <select class="sel" id="apiQuery">
-       <option value="todos">todos</option><option value="abiertos">abiertos</option><option value="en_progreso">en_progreso</option>
-       <option value="resueltos_semana">resueltos_semana</option><option value="resueltos_mes">resueltos_mes</option>
-       <option value="creados_semana">creados_semana</option><option value="sin_asignar">sin_asignar</option>
-       <option value="alta_prioridad">alta_prioridad</option><option value="vencidos_sla">vencidos_sla</option><option value="comparativa">comparativa</option>
-      </select>
-      <select class="sel" id="apiProj"><option value="">Ambos proyectos</option><option value="CMQ">CMQ (SG)</option><option value="CERVEPAR">CERVEPAR</option></select>
+      <div class="msel" id="mselTipos">
+       <button type="button" class="mselBtn" id="mselTiposBtn">Tipo de ticket: Todos <span class="arrow">▾</span></button>
+       <div class="mselPanel" id="mselTiposPanel"></div>
+      </div>
+      <div class="msel" id="mselClientes">
+       <button type="button" class="mselBtn" id="mselClientesBtn">Cliente: Todos <span class="arrow">▾</span></button>
+       <div class="mselPanel" id="mselClientesPanel"></div>
+      </div>
       <button class="btn primary" id="btnApi">Traer datos</button>
       <button class="btn" id="btnClearData" title="Empezar de cero">Vaciar base</button>
      </div>
      <p class="tinfo" style="margin:8px 0 0">Cada consulta <b>reemplaza</b> la base para que coincida exacto con Jira.</p>
+     <details id="apiAdvSec" style="margin-top:10px">
+      <summary style="font-size:12px;color:var(--mut);cursor:pointer">Configuración avanzada (URL de conexión)</summary>
+      <p class="tinfo" style="margin:6px 0 8px">La URL de conexión ya queda guardada automáticamente para todos. Solo tocá esto si necesitás apuntar a otra función/servidor.</p>
+      <input id="apiUrl" type="text" placeholder="https://tu-cloud-function-url" style="width:100%;max-width:480px;padding:10px 12px;border:1px solid var(--edge);border-radius:10px;font-family:var(--mono);font-size:12.5px">
+     </details>
     </div>
     <div class="lab">O subí un archivo</div>
     <div class="drop" id="drop">
@@ -1782,10 +1798,13 @@ async function pullState(){
   if(j&&j.overrides&&typeof j.overrides==='object'){OVERRIDES=j.overrides;ch=true;}
   if(j&&j.fichas&&typeof j.fichas==='object'){FICHAS={};Object.keys(j.fichas).forEach(k=>{FICHAS[k]=migrateFicha(j.fichas[k],k);});saveFichas();renderEjecutivos();}
   if(j&&Array.isArray(j.tele)){TELE=j.tele;saveTele();renderTelematica();}
-  if(j&&j.apiCfg&&typeof j.apiCfg==='object'&&j.apiCfg.url&&!loadApiCfg().url){
+  if(j&&j.apiCfg&&typeof j.apiCfg==='object'&&j.apiCfg.url&&!loadApiCfg().url&&!apiCfgTouched){
    saveApiCfg(j.apiCfg);
-   const eu=document.getElementById('apiUrl'),eq=document.getElementById('apiQuery'),ep=document.getElementById('apiProj');
-   if(eu&&!eu.value)eu.value=j.apiCfg.url; if(eq&&j.apiCfg.q)eq.value=j.apiCfg.q; if(ep&&j.apiCfg.proj)ep.value=j.apiCfg.proj;
+   const eu=document.getElementById('apiUrl');
+   if(eu&&!eu.value)eu.value=j.apiCfg.url;
+   if(Array.isArray(j.apiCfg.tipos))selApiTipos=new Set(j.apiCfg.tipos);
+   if(Array.isArray(j.apiCfg.clientes))selApiClientes=new Set(j.apiCfg.clientes);
+   renderMselTipos(); renderMselClientes(); updateMselLabels();
   }
   if(ch){ persistCli(); retag(); rebuildAll(); log('↧ Datos cargados desde Firebase (clientes, reasignaciones y fichas de ejecutivos).','d'); }
  }catch(e){ console.error('Firebase (leer):',e); }
@@ -1807,38 +1826,98 @@ function apiTicket(r){
   asignado:r.asignado_a||r.asignado||r.assignee||r.agente||'Sin asignar', descripcion:r.descripcion||r.description||r.resumen||'',
   comments:coms, _createdTs:cts, _resolvedTs:rts, sla:(r.sla&&typeof r.sla==='object')?r.sla:null };
 }
+const API_TIPOS=[
+ {v:'abiertos',l:'Abiertos'},{v:'en_progreso',l:'En progreso'},
+ {v:'resueltos_semana',l:'Resueltos esta semana'},{v:'resueltos_mes',l:'Resueltos este mes'},
+ {v:'creados_semana',l:'Creados esta semana'},{v:'sin_asignar',l:'Sin asignar'},
+ {v:'alta_prioridad',l:'Alta prioridad'},
+];
+let selApiTipos=new Set(), selApiClientes=new Set(), apiCfgTouched=false;
+function jiraClients(){ return CLIENTS.filter(c=>c.origen!=='telematica' && c.prefix); }
+function mselToggle(panelId, otherPanelId){
+ document.getElementById(panelId).classList.toggle('on');
+ document.getElementById(otherPanelId).classList.remove('on');
+}
+function renderMselTipos(){
+ const box=document.getElementById('mselTiposPanel'); if(!box)return;
+ box.innerHTML=`<div class="mselItem allOpt${selApiTipos.size===0?' on':''}" data-v="">Todos<span class="chk">✓</span></div>`+
+  API_TIPOS.map(o=>`<div class="mselItem${selApiTipos.has(o.v)?' on':''}" data-v="${esc(o.v)}">${esc(o.l)}<span class="chk">✓</span></div>`).join('');
+ box.querySelectorAll('.mselItem').forEach(it=>it.onclick=(e)=>{ e.stopPropagation(); apiCfgTouched=true;
+  const v=it.dataset.v;
+  if(v==='')selApiTipos.clear(); else selApiTipos.has(v)?selApiTipos.delete(v):selApiTipos.add(v);
+  renderMselTipos(); updateMselLabels();
+ });
+}
+function renderMselClientes(){
+ const box=document.getElementById('mselClientesPanel'); if(!box)return;
+ const jc=jiraClients();
+ box.innerHTML=`<div class="mselItem allOpt${selApiClientes.size===0?' on':''}" data-v="">Todos<span class="chk">✓</span></div>`+
+  jc.map(c=>`<div class="mselItem${selApiClientes.has(c.prefix)?' on':''}" data-v="${esc(c.prefix)}">${esc(c.name)}<span class="chk">✓</span></div>`).join('');
+ box.querySelectorAll('.mselItem').forEach(it=>it.onclick=(e)=>{ e.stopPropagation(); apiCfgTouched=true;
+  const v=it.dataset.v;
+  if(v==='')selApiClientes.clear(); else selApiClientes.has(v)?selApiClientes.delete(v):selApiClientes.add(v);
+  renderMselClientes(); updateMselLabels();
+ });
+}
+function updateMselLabels(){
+ const bt=document.getElementById('mselTiposBtn');
+ if(bt) bt.innerHTML=(selApiTipos.size?('Tipo de ticket: '+[...selApiTipos].map(v=>(API_TIPOS.find(o=>o.v===v)||{}).l||v).join(', ')):'Tipo de ticket: Todos')+' <span class="arrow">▾</span>';
+ const bc=document.getElementById('mselClientesBtn');
+ if(bc) bc.innerHTML=(selApiClientes.size?('Cliente: '+[...selApiClientes].map(p=>{const c=jiraClients().find(x=>x.prefix===p); return c?c.name:p;}).join(', ')):'Cliente: Todos')+' <span class="arrow">▾</span>';
+}
+document.getElementById('mselTiposBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('mselTiposPanel','mselClientesPanel'); };
+document.getElementById('mselClientesBtn').onclick=(e)=>{ e.stopPropagation(); renderMselClientes(); mselToggle('mselClientesPanel','mselTiposPanel'); };
+document.addEventListener('click',(e)=>{ if(!e.target.closest('.msel')){ document.getElementById('mselTiposPanel').classList.remove('on'); document.getElementById('mselClientesPanel').classList.remove('on'); } });
+
 async function fetchApi(){
- const url=document.getElementById('apiUrl').value.trim(), q=document.getElementById('apiQuery').value, proj=document.getElementById('apiProj').value;
- if(!url){ log('✖ Ingresá la URL de la función desplegada.','e'); return; }
- saveApiCfg({url,q,proj});
+ const url=document.getElementById('apiUrl').value.trim();
+ if(!url){ log('✖ Falta la URL de conexión (ver "Configuración avanzada" abajo).','e'); return; }
+ saveApiCfg({url,tipos:[...selApiTipos],clientes:[...selApiClientes]});
  pushState();
- const full=url+(url.includes('?')?'&':'?')+'query='+encodeURIComponent(q)+(proj?'&proyecto='+encodeURIComponent(proj):'');
- log('⟳ Consultando '+full+' …','d');
- try{
-  const res=await fetch(full,{headers:{'Accept':'application/json'}});
-  if(!res.ok){
-   let detail='';
-   try{ const ej=await res.json(); detail=ej.detail||ej.error||''; }catch(e){ try{ detail=(await res.text()).slice(0,300); }catch(e2){} }
-   log('✖ HTTP '+res.status+' '+res.statusText+(detail?' — '+detail:'')+' (¿el servidor local sigue corriendo? revisá la terminal de run_local.py)','e');
-   return;
-  }
-  const j=await res.json();
-  const recs=j.registros||j.records||j.issues||j.data||[];
-  if(!recs.length){ log('⚠ La respuesta no trae "registros". Claves recibidas: '+Object.keys(j).join(', '),'w'); return; }
-  log('   muestra cruda: '+JSON.stringify(recs[0]).slice(0,320),'d');
-  const inc=recs.map(apiTicket).filter(t=>t.key);
-  DATA=inc; DATA.forEach(prep); persist(); clearFilters(); rebuildAll();
-  const cc=clientCounts();
-  log('✔ API "'+q+'"'+(proj?(' ['+proj+']'):'')+': '+inc.length+' tickets. Base reemplazada para coincidir con Jira.');
-  log('   por cliente → '+CLIENTS.map(c=>c.name+':'+(cc[c.name]||0)).concat(UNASSIGNED+':'+(cc[UNASSIGNED]||0)).join('  '),'d');
-  const miss=inc.filter(t=>!t.tipo).length, nocom=inc.filter(t=>!t.comments.length).length;
-  if(miss)log('   ⓘ '+miss+' sin tipo de solicitud (revisar campo del conector).','w');
- }catch(e){ log('✖ Error de red/CORS: '+e.message,'e'); log('   Si es CORS, la función debe devolver el header Access-Control-Allow-Origin. Probá también la URL en el navegador.','w'); }
+ const tipos=selApiTipos.size?[...selApiTipos]:['todos'];
+ const clientesSel=selApiClientes.size?[...selApiClientes]:[''];
+ const combos=[]; tipos.forEach(q=>clientesSel.forEach(proj=>combos.push({q,proj})));
+ const tiposLbl=selApiTipos.size?tipos.join(', '):'todos';
+ const cliLbl=selApiClientes.size?[...selApiClientes].map(p=>{const c=jiraClients().find(x=>x.prefix===p); return c?c.name:p;}).join(', '):'ambos';
+ log('⟳ Consultando '+combos.length+' combinación'+(combos.length>1?'es':'')+' ('+tiposLbl+' × '+cliLbl+') …','d');
+ const byKey={}; let firstSample=null; let anyOk=false;
+ for(const {q,proj} of combos){
+  const full=url+(url.includes('?')?'&':'?')+'query='+encodeURIComponent(q)+(proj?'&proyecto='+encodeURIComponent(proj):'');
+  try{
+   const res=await fetch(full,{headers:{'Accept':'application/json'}});
+   if(!res.ok){
+    let detail='';
+    try{ const ej=await res.json(); detail=ej.detail||ej.error||''; }catch(e){ try{ detail=(await res.text()).slice(0,300); }catch(e2){} }
+    log('✖ '+q+(proj?(' ['+proj+']'):'')+': HTTP '+res.status+' '+res.statusText+(detail?' — '+detail:''),'e');
+    continue;
+   }
+   const j=await res.json();
+   const recs=j.registros||j.records||j.issues||j.data||[];
+   if(recs.length&&!firstSample) firstSample=recs[0];
+   recs.map(apiTicket).filter(t=>t.key).forEach(t=>byKey[t.key]=t);
+   anyOk=true;
+  }catch(e){ log('✖ '+q+(proj?(' ['+proj+']'):'')+': Error de red/CORS: '+e.message,'e'); }
+ }
+ if(!anyOk){ log('✖ Ninguna consulta pudo completarse. Revisá la URL en "Configuración avanzada".','e'); return; }
+ const inc=Object.values(byKey);
+ if(!inc.length){ log('⚠ No se obtuvieron tickets con esos filtros.','w'); return; }
+ if(firstSample) log('   muestra cruda: '+JSON.stringify(firstSample).slice(0,320),'d');
+ DATA=inc; DATA.forEach(prep); persist(); clearFilters(); rebuildAll();
+ const cc=clientCounts();
+ log('✔ '+tiposLbl+' ['+cliLbl+']: '+inc.length+' tickets (sin duplicados). Base reemplazada para coincidir con Jira.');
+ log('   por cliente → '+CLIENTS.map(c=>c.name+':'+(cc[c.name]||0)).concat(UNASSIGNED+':'+(cc[UNASSIGNED]||0)).join('  '),'d');
+ const miss=inc.filter(t=>!t.tipo).length;
+ if(miss)log('   ⓘ '+miss+' sin tipo de solicitud (revisar campo del conector).','w');
 }
 const drop=document.getElementById('drop'),file=document.getElementById('file');
 drop.onclick=()=>file.click(); file.onchange=()=>{handleFiles(file.files);file.value='';};
 document.getElementById('btnApi').onclick=fetchApi;
-(function(){const c=loadApiCfg(); if(c.url)document.getElementById('apiUrl').value=c.url; if(c.q)document.getElementById('apiQuery').value=c.q; if(c.proj)document.getElementById('apiProj').value=c.proj;})();
+document.getElementById('apiUrl').oninput=()=>{ apiCfgTouched=true; };
+renderMselTipos(); renderMselClientes(); updateMselLabels();
+(function(){const c=loadApiCfg(); if(c.url)document.getElementById('apiUrl').value=c.url;
+ if(Array.isArray(c.tipos)){selApiTipos=new Set(c.tipos);} if(Array.isArray(c.clientes)){selApiClientes=new Set(c.clientes);}
+ renderMselTipos(); renderMselClientes(); updateMselLabels();
+})();
 ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('hot');}));
 ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('hot');}));
 drop.addEventListener('drop',e=>handleFiles(e.dataTransfer.files));
