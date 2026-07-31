@@ -417,40 +417,42 @@ details.cm[open] summary::before{content:'▾ '}
    <p class="sub">Carga manual de solicitudes atendidas para clientes que <b>no</b> pasan por Jira (marcados como "Referente Telemática" en la pestaña Clientes), para empezar a medir tiempos reales de atención.</p>
    <div class="kpis" id="kpisTele"></div>
    <div class="card">
-    <div class="lab" style="margin-top:0">Cargar ticket</div>
-    <div class="grid2">
-     <div class="fRow"><div class="lab" style="margin-top:0">Cliente</div><select class="finput" id="teleCliente"></select></div>
-     <div class="fRow"><div class="lab" style="margin-top:0">Tipo de solicitud</div>
-      <input class="finput" id="teleTipo" list="dlTeleTipo" placeholder="Escribí para buscar (ej: Soporte, Reportes, Coordinación...)" autocomplete="off">
-      <datalist id="dlTeleTipo"></datalist>
-     </div>
-     <div class="fRow"><div class="lab" style="margin-top:0">Fecha y hora de inicio</div>
-      <div style="display:flex;gap:8px">
-       <input type="date" class="finput" id="teleFechaSol">
-       <input type="time" class="finput" id="teleHoraIni" style="max-width:120px" title="Hora en que se empezó a atender la solicitud — junto con la hora de fin permite medir el tiempo asignado real">
+    <details class="cfgSec" id="teleFormSec">
+     <summary>+ Cargar ticket</summary>
+     <div class="grid2">
+      <div class="fRow"><div class="lab" style="margin-top:0">Cliente</div><select class="finput" id="teleCliente"></select></div>
+      <div class="fRow"><div class="lab" style="margin-top:0">Tipo de solicitud</div>
+       <input class="finput" id="teleTipo" list="dlTeleTipo" placeholder="Escribí para buscar (ej: Soporte, Reportes, Coordinación...)" autocomplete="off">
+       <datalist id="dlTeleTipo"></datalist>
       </div>
-     </div>
-     <div class="fRow"><div class="lab" style="margin-top:0">Fecha y hora de fin (opcional)</div>
-      <div style="display:flex;gap:8px">
-       <input type="date" class="finput" id="teleFechaRes">
-       <input type="time" class="finput" id="teleHoraRes" style="max-width:120px" title="Hora de fin — se usa para medir el tiempo asignado real y para saber si cayó en horario laboral (8 a 17 hs, lunes a viernes) o excedido de jornada">
+      <div class="fRow"><div class="lab" style="margin-top:0">Fecha y hora de inicio</div>
+       <div style="display:flex;gap:8px">
+        <input type="date" class="finput" id="teleFechaSol">
+        <input type="time" class="finput" id="teleHoraIni" style="max-width:120px" title="Hora en que se empezó a atender la solicitud — junto con la hora de fin permite medir el tiempo asignado real">
+       </div>
       </div>
+      <div class="fRow"><div class="lab" style="margin-top:0">Fecha y hora de fin (opcional)</div>
+       <div style="display:flex;gap:8px">
+        <input type="date" class="finput" id="teleFechaRes">
+        <input type="time" class="finput" id="teleHoraRes" style="max-width:120px" title="Hora de fin — se usa para medir el tiempo asignado real y para saber si cayó en horario laboral (8 a 17 hs, lunes a viernes) o excedido de jornada">
+       </div>
+      </div>
+      <div class="fRow"><div class="lab" style="margin-top:0">Estado</div>
+       <select class="finput" id="teleEstado"><option>Pendiente</option><option>En curso</option><option>Resuelto</option></select>
+      </div>
+      <div class="fRow"><div class="lab" style="margin-top:0">Responsable</div><input class="finput" id="teleResp" list="dlUsuariosTele" placeholder="Quién lo atendió"><datalist id="dlUsuariosTele"></datalist></div>
      </div>
-     <div class="fRow"><div class="lab" style="margin-top:0">Estado</div>
-      <select class="finput" id="teleEstado"><option>Pendiente</option><option>En curso</option><option>Resuelto</option></select>
-     </div>
-     <div class="fRow"><div class="lab" style="margin-top:0">Responsable</div><input class="finput" id="teleResp" list="dlUsuariosTele" placeholder="Quién lo atendió"><datalist id="dlUsuariosTele"></datalist></div>
-    </div>
-    <div class="fRow"><div class="lab" style="margin-top:0">Detalle</div><textarea class="ftextarea" id="teleDetalle" placeholder="Descripción de la solicitud"></textarea></div>
-    <button class="btn primary" id="btnTeleGuardar">+ Cargar ticket</button>
-    <details class="cfgSec" style="margin-top:14px">
-     <summary>¿Qué diferencia hay entre Reportes N°1, N°2 y N°3?</summary>
-     <ul class="clean" style="padding-bottom:4px">
-      <li><b>N°1:</b> se elaboran exclusivamente con los datos ya disponibles en una tabla dinámica.</li>
-      <li><b>N°2:</b> requieren la aplicación de fórmulas, la combinación de varias tablas dinámicas, segmentaciones de datos, múltiples pruebas de uso, la creación de reglas específicas para medir la información solicitada, tableros de visualización y configuración de envío por correo electrónico.</li>
-      <li><b>N°3:</b> requieren llamados a API, fórmulas con lógica matemática para conciliar la información solicitada según la lógica de negocio correspondiente, y el uso de Power Query.</li>
-     </ul>
-     <p class="tinfo" style="margin:6px 0 8px;font-style:italic">Para el detalle específico de los reportes vigentes de cada cliente, revisar la sección "Reportes" en su ficha técnica (Ejecutivos → Fichas).</p>
+     <div class="fRow"><div class="lab" style="margin-top:0">Detalle</div><textarea class="ftextarea" id="teleDetalle" placeholder="Descripción de la solicitud"></textarea></div>
+     <button class="btn primary" id="btnTeleGuardar">+ Cargar ticket</button>
+     <details class="cfgSec" style="margin-top:14px">
+      <summary>¿Qué diferencia hay entre Reportes N°1, N°2 y N°3?</summary>
+      <ul class="clean" style="padding-bottom:4px">
+       <li><b>N°1:</b> se elaboran exclusivamente con los datos ya disponibles en una tabla dinámica.</li>
+       <li><b>N°2:</b> requieren la aplicación de fórmulas, la combinación de varias tablas dinámicas, segmentaciones de datos, múltiples pruebas de uso, la creación de reglas específicas para medir la información solicitada, tableros de visualización y configuración de envío por correo electrónico.</li>
+       <li><b>N°3:</b> requieren llamados a API, fórmulas con lógica matemática para conciliar la información solicitada según la lógica de negocio correspondiente, y el uso de Power Query.</li>
+      </ul>
+      <p class="tinfo" style="margin:6px 0 8px;font-style:italic">Para el detalle específico de los reportes vigentes de cada cliente, revisar la sección "Reportes" en su ficha técnica (Ejecutivos → Fichas).</p>
+     </details>
     </details>
    </div>
    <div id="analisisTele"></div>

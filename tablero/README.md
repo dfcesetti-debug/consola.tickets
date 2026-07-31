@@ -489,3 +489,9 @@ Se probó primero un rediseño visual completo estilo Apple (colores, glassmorph
 - **Nota**: al dejar de ser un `<select>` con `<optgroup>`, se perdió el texto de ayuda que aparecía al pasar el mouse sobre "Reportes N°1/2/3" con su definición formal — esas definiciones siguen disponibles como referencia debajo del formulario (el desplegable "¿Qué diferencia hay entre Reportes N°1, N°2 y N°3?"), no se perdió la información, solo el tooltip puntual sobre la opción.
 - Probado en navegador real con Playwright, sin errores de consola: el campo ahora es un `<input>` con 25 sugerencias (incluidas las 6 categorías genéricas), se pudo escribir y guardar un ticket usando la sugerencia elegida, y el modal de edición muestra y permite modificar el mismo campo de texto con el valor ya cargado.
 
+### v41 (2026-07-31) — El formulario "Cargar ticket" de Telemática ahora es un desplegable colapsado
+
+- **Motivo**: el formulario completo (cliente, tipo, fechas, estado, responsable, detalle) quedaba siempre abierto ocupando espacio arriba de la lista de tickets, aun para quien solo quería consultar el historial o los tiempos ya cargados.
+- El bloque "Cargar ticket" se convirtió en un desplegable (mismo estilo `▸`/`▾` que se usa en Ejecutivos → Fichas), **colapsado por defecto**. Se abre con un clic en el título y se puede volver a cerrar de la misma forma; no queda "abierto" guardado entre sesiones, cada carga de página empieza colapsado.
+- No cambió ningún campo ni la lógica de guardado — solo el envoltorio visual.
+- Probado en navegador real con Playwright, sin errores de consola: el formulario aparece colapsado al entrar a Telemática, los campos no son interactuables hasta abrirlo, se abrió con un clic, se cargó y guardó un ticket normalmente, y al recargar la página vuelve a aparecer colapsado.
