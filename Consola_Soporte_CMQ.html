@@ -110,6 +110,7 @@ ol.steps{margin:5px 0;padding-left:20px}ol.steps li{margin:5px 0;line-height:1.4
 .mselPanel.on{display:block}
 .mselItem{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:12.5px;color:var(--ink);white-space:nowrap}
 .mselItem:hover{background:var(--bg2, #f4f5f7)}
+.mselItem .c{font-family:var(--mono);opacity:.7;margin-left:8px;font-weight:400}
 .mselItem .chk{min-width:14px;font-weight:800;color:#16b364;opacity:0}
 .mselItem.on .chk{opacity:1}
 .mselItem.allOpt{border-bottom:1px solid var(--edge);margin-bottom:4px;padding-bottom:10px;font-weight:700}
@@ -351,12 +352,14 @@ details.cm[open] summary::before{content:'▾ '}
       <input id="apiUrl" type="text" placeholder="https://tu-cloud-function-url" style="width:100%;max-width:480px;padding:10px 12px;border:1px solid var(--edge);border-radius:10px;font-family:var(--mono);font-size:12.5px">
      </details>
     </div>
-    <div class="lab">O subí un archivo</div>
-    <div class="drop" id="drop">
-     <div class="ic">&#11123;</div><h3>Soltá el archivo acá</h3>
-     <p>o hacé clic para elegirlo · Jira (.doc/.html) o respaldo (.json)</p>
-     <input type="file" id="file" accept=".doc,.html,.htm,.xml,.json" style="display:none" multiple>
-    </div>
+    <details id="uploadSec">
+     <summary style="font-size:12px;color:var(--mut);cursor:pointer">O subí un archivo</summary>
+     <div class="drop" id="drop" style="margin-top:8px">
+      <div class="ic">&#11123;</div><h3>Soltá el archivo acá</h3>
+      <p>o hacé clic para elegirlo · Jira (.doc/.html) o respaldo (.json)</p>
+      <input type="file" id="file" accept=".doc,.html,.htm,.xml,.json" style="display:none" multiple>
+     </div>
+    </details>
     <div class="tools">
      <button class="btn" id="btnJson">&#8675; Descargar respaldo (.json)</button>
      <button class="btn" id="btnCsv">&#8675; Exportar tickets (.csv)</button>
@@ -365,9 +368,11 @@ details.cm[open] summary::before{content:'▾ '}
    </details>
 
    <div id="respBanner"></div>
-   <div class="filtrow"><span class="flab">Tipo</span><div class="chips" id="chipsTipo"></div></div>
-   <div class="filtrow"><span class="flab">Estado</span><div class="chips" id="chipsEstado"></div></div>
-   <div class="filtrow"><span class="flab">Responsable</span><div class="chips" id="chipsAsig"></div></div>
+   <div class="filtrow">
+    <div class="msel" id="mselFTipo"><button type="button" class="mselBtn" id="mselFTipoBtn">Tipo: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsTipo"></div></div>
+    <div class="msel" id="mselFEstado"><button type="button" class="mselBtn" id="mselFEstadoBtn">Estado: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsEstado"></div></div>
+    <div class="msel" id="mselFAsig"><button type="button" class="mselBtn" id="mselFAsigBtn">Responsable: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsAsig"></div></div>
+   </div>
    <div class="filters">
     <select class="sel" id="fSort">
      <option value="ev">Ordenar: más respuestas</option>
@@ -734,14 +739,21 @@ function renderMatrix(q){
 }
 
 let curTypes=new Set(), curEstados=new Set(), curAsig=new Set(), PAGE=40, shown=40, filtered=[], respFilter=null;
-function chipRow(elId,dim,sel,chk){
+function chipRow(elId,btnId,label,dim,sel){
  const counts=facet(dim); const vals=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]); const total=Object.values(counts).reduce((a,b)=>a+b,0);
- const box=document.getElementById(elId); if(!box)return;
- box.innerHTML=`<div class="chip ${sel.size===0?'on':''}" data-v="">Todos <span class="c">${total}</span></div>`+
-  vals.map(v=>`<div class="chip${chk?' chipChk':''} ${sel.has(v)?'on':''}" data-v="${esc(v)}">${esc(v)} <span class="c">${counts[v]}</span>${chk?`<span class="chkmark">${sel.has(v)?'&#10003;':''}</span>`:''}</div>`).join('');
- box.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{ const v=c.dataset.v; if(v===''){sel.clear();} else { sel.has(v)?sel.delete(v):sel.add(v); } shown=PAGE; refresh(); });
+ const box=document.getElementById(elId); const btn=document.getElementById(btnId); if(!box||!btn)return;
+ box.innerHTML=`<div class="mselItem allOpt${sel.size===0?' on':''}" data-v="">Todos <span class="c">${total}</span><span class="chk">✓</span></div>`+
+  vals.map(v=>`<div class="mselItem${sel.has(v)?' on':''}" data-v="${esc(v)}">${esc(v)} <span class="c">${counts[v]}</span><span class="chk">✓</span></div>`).join('');
+ box.querySelectorAll('.mselItem').forEach(it=>it.onclick=(e)=>{ e.stopPropagation();
+  const v=it.dataset.v; if(v===''){sel.clear();} else { sel.has(v)?sel.delete(v):sel.add(v); } shown=PAGE; refresh();
+ });
+ btn.innerHTML=(sel.size?(label+': '+[...sel].slice(0,2).map(esc).join(', ')+(sel.size>2?(' +'+(sel.size-2)):'')):(label+': Todos'))+' <span class="arrow">▾</span>';
 }
-function buildFilters(){ chipRow('chipsTipo','tipo',curTypes); chipRow('chipsEstado','estado',curEstados); chipRow('chipsAsig','asig',curAsig,true); }
+function buildFilters(){
+ chipRow('chipsTipo','mselFTipoBtn','Tipo','tipo',curTypes);
+ chipRow('chipsEstado','mselFEstadoBtn','Estado','estado',curEstados);
+ chipRow('chipsAsig','mselFAsigBtn','Responsable','asig',curAsig);
+}
 function qv(){return document.getElementById('q').value.trim();}
 function passResp(i){ if(!respFilter)return true;
  if(respFilter.mode==='author')return i.comments.some(c=>c.author===respFilter.value);
@@ -1837,9 +1849,10 @@ const API_TIPOS=[
 ];
 let selApiTipos=new Set(), selApiClientes=new Set(), apiCfgTouched=false;
 function jiraClients(){ return CLIENTS.filter(c=>c.origen!=='telematica' && c.prefix); }
-function mselToggle(panelId, otherPanelId){
- document.getElementById(panelId).classList.toggle('on');
- document.getElementById(otherPanelId).classList.remove('on');
+function mselToggle(panelId){
+ const willOpen=!document.getElementById(panelId).classList.contains('on');
+ document.querySelectorAll('.mselPanel').forEach(p=>p.classList.remove('on'));
+ if(willOpen) document.getElementById(panelId).classList.add('on');
 }
 function renderMselTipos(){
  const box=document.getElementById('mselTiposPanel'); if(!box)return;
@@ -1868,9 +1881,12 @@ function updateMselLabels(){
  const bc=document.getElementById('mselClientesBtn');
  if(bc) bc.innerHTML=(selApiClientes.size?('Cliente: '+[...selApiClientes].map(p=>{const c=jiraClients().find(x=>x.prefix===p); return c?c.name:p;}).join(', ')):'Cliente: Todos')+' <span class="arrow">▾</span>';
 }
-document.getElementById('mselTiposBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('mselTiposPanel','mselClientesPanel'); };
-document.getElementById('mselClientesBtn').onclick=(e)=>{ e.stopPropagation(); renderMselClientes(); mselToggle('mselClientesPanel','mselTiposPanel'); };
-document.addEventListener('click',(e)=>{ if(!e.target.closest('.msel')){ document.getElementById('mselTiposPanel').classList.remove('on'); document.getElementById('mselClientesPanel').classList.remove('on'); } });
+document.getElementById('mselTiposBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('mselTiposPanel'); };
+document.getElementById('mselClientesBtn').onclick=(e)=>{ e.stopPropagation(); renderMselClientes(); mselToggle('mselClientesPanel'); };
+document.getElementById('mselFTipoBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsTipo'); };
+document.getElementById('mselFEstadoBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsEstado'); };
+document.getElementById('mselFAsigBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsAsig'); };
+document.addEventListener('click',(e)=>{ if(!e.target.closest('.msel')){ document.querySelectorAll('.mselPanel').forEach(p=>p.classList.remove('on')); } });
 
 async function fetchComboPaged(url,q,proj){
  const out=[]; let token=null, isLast=false, pages=0;
