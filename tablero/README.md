@@ -506,3 +506,9 @@ Se probó primero un rediseño visual completo estilo Apple (colores, glassmorph
   - El KPI superior "Tiempo asignado prom." se reemplazó por **"Tiempo asignado total"** + un nuevo KPI **"Promedio semanal"** (ambos sobre el conjunto completo de tickets cargados).
 - No se tocó el cálculo de "Tiempo estimado" (hábil, lun-vie 8-17h) — ese seguía siendo correcto y no fue parte del reporte.
 - Probado en navegador real con Playwright: se verificó en aislamiento (inyectando datos de prueba directamente, sin ruido de datos compartidos en Firebase) que 2 tickets de 3hs en semanas calendario distintas dan **total = 6hs** y **promedio semanal = 3hs** (6hs ÷ 2 semanas) — exactamente el comportamiento esperado. También se confirmó en la app completa que la suma por tipo/cliente ahora refleja las horas reales acumuladas (ej. "Laboratorio: 21h" con 7 tickets de ~3hs cada uno, en vez de mostrar el promedio de ~3hs), sin errores de consola.
+
+### v43 (2026-07-31) — Nuevas sub-opciones de "Soporte" en Telemática
+
+- Se agregaron 7 sub-opciones nuevas dentro de la categoría **Soporte** del campo "Tipo de solicitud": **Soporte - Instalaciones**, **Soporte - Mantenimiento**, **Soporte - Desinstalación**, **Soporte - Instalación de cámaras**, **Soporte - Desinstalación de cámaras**, **Soporte - Seguimiento semanal**, **Soporte - Reunión**.
+- Al ser un campo de texto con sugerencias (desde v40), estas opciones aparecen directamente en el autocompletar sin necesidad de ningún otro cambio.
+- Probado en navegador real con Playwright, sin errores de consola: las 7 opciones nuevas aparecen en la lista de sugerencias (32 en total), se pudo escribir y guardar un ticket usando "Soporte - Instalación de cámaras".
