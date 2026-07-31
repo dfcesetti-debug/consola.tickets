@@ -220,11 +220,12 @@ details.cm[open] summary::before{content:'▾ '}
 .cnt-pill{font-family:var(--mono);font-size:12px;color:var(--accent2);background:var(--accdim);border-radius:8px;padding:4px 9px;white-space:nowrap;margin-top:4px}
 
 .bar{display:grid;grid-template-columns:210px 1fr 100px;align-items:center;gap:10px;margin:6px 0}
+.bar.pct{grid-template-columns:210px 1fr 62px 54px}
 .bar .bn{font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar .track{background:var(--edge2);border-radius:6px;height:20px;overflow:hidden}
 .bar .fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent),#22d3ee)}
-.bar .bv{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent2);text-align:right;display:flex;align-items:center;justify-content:flex-end;gap:6px;white-space:nowrap}
-.bar .bpct{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--accent2);background:var(--accdim);padding:2px 7px;border-radius:20px;flex:none}
+.bar .bv{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent2);text-align:right;white-space:nowrap}
+.bar .bpct{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--accent2);background:var(--accdim);padding:2px 7px;border-radius:20px;text-align:center;justify-self:end}
 .bar.cli .fill{background:linear-gradient(90deg,var(--cli),#e8a54e)}
 .bar.int .fill{background:linear-gradient(90deg,var(--sig),#4ade80)}
 .legend{display:flex;gap:16px;font-size:12px;color:var(--mut);margin:6px 0 2px}
@@ -315,7 +316,7 @@ details.cm[open] summary::before{content:'▾ '}
 @media(max-width:720px){
  .rail{position:fixed;bottom:0;top:auto;left:0;right:0;width:100%;height:auto;flex-direction:row;padding:6px;z-index:50;overflow-x:auto}
  .brand,.railfoot{display:none}.nav{flex-direction:row;gap:2px}.nav a{flex-direction:column;gap:2px;padding:7px 10px;font-size:10.5px}.nav a .cnt{display:none}
- .main{padding-bottom:66px}.bar{grid-template-columns:130px 1fr 84px}
+ .main{padding-bottom:66px}.bar{grid-template-columns:130px 1fr 84px}.bar.pct{grid-template-columns:130px 1fr 56px 46px}
  .clirow{grid-template-columns:20px 1fr;gap:8px}
 }
 </style>
@@ -487,17 +488,11 @@ details.cm[open] summary::before{content:'▾ '}
        <input class="finput" id="teleTipo" list="dlTeleTipo" placeholder="Escribí para buscar (ej: Soporte, Reportes, Coordinación...)" autocomplete="off">
        <datalist id="dlTeleTipo"></datalist>
       </div>
-      <div class="fRow"><div class="lab" style="margin-top:0">Fecha y hora de inicio</div>
-       <div style="display:flex;gap:8px">
-        <input type="date" class="finput" id="teleFechaSol">
-        <input type="time" class="finput" id="teleHoraIni" style="max-width:120px" title="Hora en que se empezó a atender la solicitud — junto con la hora de fin permite medir el tiempo asignado real">
-       </div>
+      <div class="fRow"><div class="lab" style="margin-top:0">Fecha</div>
+       <input type="date" class="finput" id="teleFecha">
       </div>
-      <div class="fRow"><div class="lab" style="margin-top:0">Fecha y hora de fin (opcional)</div>
-       <div style="display:flex;gap:8px">
-        <input type="date" class="finput" id="teleFechaRes">
-        <input type="time" class="finput" id="teleHoraRes" style="max-width:120px" title="Hora de fin — se usa para medir el tiempo asignado real y para saber si cayó en horario laboral (8 a 17 hs, lunes a viernes) o excedido de jornada">
-       </div>
+      <div class="fRow"><div class="lab" style="margin-top:0">Cantidad de horas</div>
+       <input type="number" class="finput" id="teleHoras" min="0" step="0.25" placeholder="Ej: 3 o 1.5">
       </div>
       <div class="fRow"><div class="lab" style="margin-top:0">Estado</div>
        <select class="finput" id="teleEstado"><option>Pendiente</option><option>En curso</option><option>Resuelto</option></select>
@@ -589,33 +584,44 @@ function teleTipoDatalistHtml(){
  const all=[...new Set(TELE_TIPO_GROUPS.flatMap(([,opts])=>opts))];
  return all.map(o=>`<option value="${esc(o)}">`).join('');
 }
-function loadTele(){ try{TELE=JSON.parse(localStorage.getItem(TELESTORE))||[];}catch(e){TELE=[];} }
+/* convierte tickets viejos (fecha+hora de inicio/fin) al formato actual (una fecha +
+   cantidad de horas cargada directamente) — calcula las horas a partir de la diferencia
+   de reloj que ya tenían, para no perder el tiempo real cargado antes de este cambio. */
+function migrateTeleItem(raw){
+ if(raw.fecha_solicitud===undefined&&raw.fecha_resolucion===undefined)return raw;
+ const fecha=raw.fecha_resolucion||raw.fecha_solicitud||'';
+ let horas=null;
+ if(raw.fecha_solicitud&&raw.hora_inicio&&raw.fecha_resolucion&&raw.hora_resolucion){
+  const ini=new Date(raw.fecha_solicitud+'T'+raw.hora_inicio+':00').getTime();
+  const fin=new Date(raw.fecha_resolucion+'T'+raw.hora_resolucion+':00').getTime();
+  if(!isNaN(ini)&&!isNaN(fin)&&fin>=ini)horas=Math.round((fin-ini)/3600000*100)/100;
+ }
+ const {fecha_solicitud,hora_inicio,fecha_resolucion,hora_resolucion,...rest}=raw;
+ return {...rest, fecha, horas};
+}
+function loadTele(){ try{TELE=(JSON.parse(localStorage.getItem(TELESTORE))||[]).map(migrateTeleItem);}catch(e){TELE=[];} }
 function saveTele(){ try{localStorage.setItem(TELESTORE,JSON.stringify(TELE));}catch(e){} }
 function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function nowHHMM(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
-/* Clasifica la hora de resolución de un ticket de Telemática: horario laboral (L-V 8 a 17hs)
-   vs. excedido de jornada (fuera de ese rango entre semana), y separa sábado/domingo aparte
-   porque ahí puede corresponder contar hora extra. Sin hora cargada no se clasifica (null). */
-function jornadaClass(fecha,hora){
- if(!fecha||!hora)return null;
- const d=new Date(fecha+'T'+hora+':00'); if(isNaN(d.getTime()))return null;
+/* Clasifica la fecha de un ticket de Telemática por día de semana — entre semana, sábado
+   o domingo (posible hora extra). Ya no se distingue horario laboral vs excedido de
+   jornada dentro de la semana porque el módulo dejó de pedir hora, solo fecha + cantidad
+   de horas cargadas. */
+function jornadaClass(fecha){
+ if(!fecha)return null;
+ const d=new Date(fecha+'T00:00:00'); if(isNaN(d.getTime()))return null;
  const dow=d.getDay();
  if(dow===0)return 'domingo';
  if(dow===6)return 'sabado';
- const mins=d.getHours()*60+d.getMinutes();
- return (mins>=8*60&&mins<=17*60)?'laboral':'excedido';
+ return 'semana';
 }
-const JORNADA_LABEL={laboral:'Horario laboral',excedido:'Excedido de jornada',sabado:'Sábado (posible hora extra)',domingo:'Domingo (posible hora extra)'};
-const JORNADA_TAGCLS={laboral:'fijo',excedido:'st',sabado:'demo',domingo:'demo'};
-/* Tiempo real que el recurso quedó asignado a la solicitud: diferencia de reloj entre
-   inicio y fin (no se ajusta a horario hábil como tdays — es la duración real). Requiere
-   las 4 partes (fecha+hora de inicio y de fin); si falta alguna, no se calcula. */
+const JORNADA_LABEL={semana:'Entre semana (lun-vie)',sabado:'Sábado (posible hora extra)',domingo:'Domingo (posible hora extra)'};
+const JORNADA_TAGCLS={semana:'fijo',sabado:'demo',domingo:'demo'};
+/* Tiempo asignado a la tarea: se carga directamente como cantidad de horas (no se calcula
+   a partir de hora de inicio/fin). Sin cantidad cargada, no se computa. */
 function tiempoAsignadoMs(t){
- if(!(t.fecha_solicitud&&t.hora_inicio&&t.fecha_resolucion&&t.hora_resolucion))return null;
- const ini=new Date(t.fecha_solicitud+'T'+t.hora_inicio+':00').getTime();
- const fin=new Date(t.fecha_resolucion+'T'+t.hora_resolucion+':00').getTime();
- if(isNaN(ini)||isNaN(fin)||fin<ini)return null;
- return fin-ini;
+ const h=Number(t.horas);
+ if(t.horas==null||t.horas===''||isNaN(h))return null;
+ return h*3600000;
 }
 /* Semana ISO (lunes a domingo) de una fecha "YYYY-MM-DD", para agrupar el tiempo
    asignado por semana calendario al calcular el promedio semanal. */
@@ -637,32 +643,16 @@ function isoWeekKey(dateStr){
 function weeklyAvgFromItems(items){
  if(!items.length)return null;
  const totalMs=items.reduce((s,t)=>s+t._a,0);
- const semanas=new Set(items.map(t=>isoWeekKey(t.fecha_resolucion||t.fecha_solicitud)).filter(Boolean)).size||1;
+ const semanas=new Set(items.map(t=>isoWeekKey(t.fecha)).filter(Boolean)).size||1;
  return totalMs/semanas;
-}
-/* Tiempo estimado (hábil) de una solicitud de Telemática: igual que el tiempo hábil que ya
-   se usa para los tickets de Jira, pero tomando la fecha+HORA precisa de inicio y de fin
-   cuando están cargadas (antes se comparaban solo las fechas a medianoche, ignorando la
-   hora — por eso dos tickets del mismo día siempre daban 0h, o una diferencia de horas
-   dentro del mismo día daba un número chico sin sentido, tipo "1h" en vez de reflejar
-   las horas reales trabajadas). Sin hora cargada, cae a medianoche de esa fecha (igual
-   que antes) para no romper tickets viejos que solo tienen fecha. */
-function teleEstimadoMs(t){
- if(!t.fecha_solicitud||!t.fecha_resolucion)return null;
- const ini=new Date(t.fecha_solicitud+'T'+(t.hora_inicio||'00:00')+':00').getTime();
- const fin=new Date(t.fecha_resolucion+'T'+(t.hora_resolucion||'00:00')+':00').getTime();
- if(isNaN(ini)||isNaN(fin))return null;
- return businessMsBetween(Math.min(ini,fin),Math.max(ini,fin));
 }
 function teleClientStats(){
  const byCli={};
  TELE.forEach(t=>{ (byCli[t.cliente]=byCli[t.cliente]||[]).push(t); });
  return Object.entries(byCli).map(([cli,items])=>{
   const nResueltos=items.filter(t=>t.estado==='Resuelto').length;
-  const estimados=items.map(teleEstimadoMs).filter(x=>x!=null);
   const asignados=items.map(t=>({...t,_a:tiempoAsignadoMs(t)})).filter(t=>t._a!=null);
   return { cliente:cli, n:items.length, nResueltos,
-   avgEstMs:estimados.length?estimados.reduce((s,x)=>s+x,0)/estimados.length:null, nEst:estimados.length,
    totalAsignadoMs:asignados.length?asignados.reduce((s,t)=>s+t._a,0):null,
    promSemanalMs:weeklyAvgFromItems(asignados), nAsignado:asignados.length };
  }).sort((a,b)=>b.n-a.n);
@@ -1051,9 +1041,9 @@ function renderAnalisis(){
    </div>
   </div>
   <div class="card"><div class="lab">Tiempos por cliente · vía Referente Telemática <span class="tinfo" style="text-transform:none;font-weight:400">(tickets cargados manualmente en el módulo Telemática — incluye clientes con Jira si se usa para coordinaciones u otras tareas que no pasan por Jira)</span></div>
-   <div class="cmpTable" style="--cols:1.3fr .6fr .8fr 1fr 1fr 1fr">
-    <div class="cmpRow cmpHead" style="grid-template-columns:var(--cols)"><span>Cliente</span><span>Tickets</span><span>Resueltos</span><span>Tiempo estimado (hábil)</span><span>Tiempo asignado (real, total)</span><span>Promedio semanal <span class="tinfo" style="text-transform:none;font-weight:400">(8hs/día)</span></span></div>
-    ${teleCli.length?teleCli.map(r=>`<div class="cmpRow" style="grid-template-columns:var(--cols)"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cliente)};margin-right:6px"></span>${esc(r.cliente)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${r.nResueltos}</span><span class="cmpn">${r.avgEstMs==null?'—':fmtDur(r.avgEstMs)+' ('+r.nEst+')'}</span><span class="cmpn">${r.totalAsignadoMs==null?'—':fmtDur(r.totalAsignadoMs)+' ('+r.nAsignado+')'}</span><span class="cmpn">${r.promSemanalMs==null?'—':fmtDur(r.promSemanalMs)}</span></div>`).join(''):'<p class="tinfo">Todavía no hay clientes marcados como "Referente Telemática" con tickets cargados. Se configura en Clientes, y se cargan tickets en el módulo Telemática.</p>'}
+   <div class="cmpTable" style="--cols:1.5fr .7fr .8fr 1.1fr 1fr">
+    <div class="cmpRow cmpHead" style="grid-template-columns:var(--cols)"><span>Cliente</span><span>Tickets</span><span>Resueltos</span><span>Tiempo asignado (real, total)</span><span>Promedio semanal <span class="tinfo" style="text-transform:none;font-weight:400">(8hs/día)</span></span></div>
+    ${teleCli.length?teleCli.map(r=>`<div class="cmpRow" style="grid-template-columns:var(--cols)"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cliente)};margin-right:6px"></span>${esc(r.cliente)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${r.nResueltos}</span><span class="cmpn">${r.totalAsignadoMs==null?'—':fmtDur(r.totalAsignadoMs)+' ('+r.nAsignado+')'}</span><span class="cmpn">${r.promSemanalMs==null?'—':fmtDur(r.promSemanalMs)}</span></div>`).join(''):'<p class="tinfo">Todavía no hay clientes marcados como "Referente Telemática" con tickets cargados. Se configura en Clientes, y se cargan tickets en el módulo Telemática.</p>'}
    </div>
   </div>
   <div class="card"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div class="lab" style="margin:0">Quién respondió los tickets</div>
@@ -1848,16 +1838,10 @@ function renderTeleForm(){
  const dlTipo=document.getElementById('dlTeleTipo'); if(dlTipo) dlTipo.innerHTML=teleTipoDatalistHtml();
 }
 function teleStats(){
- const withTime=TELE.map(t=>({...t,_d:teleEstimadoMs(t)})).filter(t=>t._d!=null);
- const avgEstMs=withTime.length?withTime.reduce((s,t)=>s+t._d,0)/withTime.length:null;
- const byTipo={}; withTime.forEach(t=>{(byTipo[t.tipo]=byTipo[t.tipo]||[]).push(t._d);});
- const rowsTipo=Object.entries(byTipo).map(([k,a])=>[k,a.reduce((s,x)=>s+x,0)/a.length]).sort((a,b)=>b[1]-a[1]);
- const byCli={}; withTime.forEach(t=>{(byCli[t.cliente]=byCli[t.cliente]||[]).push(t._d);});
- const rowsCli=Object.entries(byCli).map(([k,a])=>[k,a.reduce((s,x)=>s+x,0)/a.length]).sort((a,b)=>b[1]-a[1]);
- const jornadaCounts={laboral:0,excedido:0,sabado:0,domingo:0};
- TELE.forEach(t=>{ const j=jornadaClass(t.fecha_resolucion,t.hora_resolucion); if(j) jornadaCounts[j]++; });
+ const jornadaCounts={semana:0,sabado:0,domingo:0};
+ TELE.forEach(t=>{ const j=jornadaClass(t.fecha); if(j) jornadaCounts[j]++; });
  const nResueltos=TELE.filter(t=>t.estado==='Resuelto').length;
- // tiempo asignado real (hora a hora) — solo tickets con inicio y fin completos.
+ // tiempo asignado: se carga directo como cantidad de horas (sin hora de inicio/fin).
  // El total suma TODAS las horas cargadas (no promedia entre tickets del mismo tipo/cliente,
  // porque eso escondía el total real: 2 tickets de 3hs de Laboratorio daban "3hs" en vez de "6hs").
  // El promedio semanal sí promedia, pero por semana calendario (jornada de 8hs diarias, 1h de almuerzo).
@@ -1870,11 +1854,10 @@ function teleStats(){
  const byCliA={}; asignados.forEach(t=>{(byCliA[t.cliente]=byCliA[t.cliente]||[]).push(t);});
  const rowsCliA=Object.entries(byCliA).map(([k,items])=>[k,items.reduce((s,t)=>s+t._a,0)]).sort((a,b)=>b[1]-a[1]);
  const rowsCliASem=Object.entries(byCliA).map(([k,items])=>[k,weeklyAvgFromItems(items)]).sort((a,b)=>b[1]-a[1]);
- return {avgEstMs, nConTiempo:withTime.length, nResueltos, rowsTipo, rowsCli, jornadaCounts,
+ return {nResueltos, jornadaCounts,
   totalAsignadoMs, promSemanalMs, nAsignado:asignados.length, rowsTipoA, rowsCliA, rowsTipoASem, rowsCliASem};
 }
 const TELE_METRICS={
- estimado:{label:'Estimado',tipo:'rowsTipo',cli:'rowsCli',sub:'(hábil, lun-vie 8-17h)'},
  asignado:{label:'Asignado (total)',tipo:'rowsTipoA',cli:'rowsCliA',sub:'(real, total acumulado)'},
  semanal:{label:'Promedio semanal',tipo:'rowsTipoASem',cli:'rowsCliASem',sub:'(sobre una semana laboral de 40hs: 8hs diarias x 5 días, con 1h de almuerzo descontada)'}
 };
@@ -1882,9 +1865,11 @@ let teleMetric='asignado';
 window.setTeleMetric=m=>{ teleMetric=m; renderTelematica(); };
 // agrega el % que representa cada fila sobre el total del propio grupo (por tipo, o por cliente) —
 // así "% por cliente" y "% por tipo de solicitud" siempre sirven para ver reparto relativo, sea cual sea la métrica elegida.
+// Se calcula y se muestra como un dato aparte de la duración (columna propia, no texto pegado)
+// para que quede listo como métrica independiente de cara al futuro módulo de Métricas.
 function withPct(rows){ const tot=rows.reduce((s,r)=>s+r[1],0)||1; return rows.map(r=>[r[0],r[1],r[1]/tot*100]); }
 function teleBarsHtml(rows,mx){
- return rows.map(r=>{const w=Math.max(3,Math.round(r[1]/mx*100));return `<div class="bar"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}<span class="bpct" title="% sobre el total de este grupo">${r[2].toFixed(0)}%</span></span></div>`;}).join('');
+ return rows.map(r=>{const w=Math.max(3,Math.round(r[1]/mx*100));return `<div class="bar pct"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span><span class="bpct" title="% sobre el total de este grupo">${r[2].toFixed(0)}%</span></div>`;}).join('');
 }
 function renderTelematica(){
  const box=document.getElementById('teleList'); if(!box)return;
@@ -1892,12 +1877,12 @@ function renderTelematica(){
  document.getElementById('c-telematica').textContent=TELE.length;
  const st=teleStats();
  const pend=TELE.filter(t=>t.estado!=='Resuelto').length;
- const kpis=[['Tickets cargados',TELE.length],['Resueltos',st.nResueltos],['Pendientes / en curso',pend],['Tiempo estimado prom.',st.avgEstMs==null?'—':fmtDur(st.avgEstMs)],['Tiempo asignado total',st.totalAsignadoMs==null?'—':fmtDur(st.totalAsignadoMs)],['Promedio semanal',st.promSemanalMs==null?'—':fmtDur(st.promSemanalMs)]];
+ const kpis=[['Tickets cargados',TELE.length],['Resueltos',st.nResueltos],['Pendientes / en curso',pend],['Tiempo asignado total',st.totalAsignadoMs==null?'—':fmtDur(st.totalAsignadoMs)],['Promedio semanal',st.promSemanalMs==null?'—':fmtDur(st.promSemanalMs)]];
  document.getElementById('kpisTele').innerHTML=kpis.map(k=>`<div class="kpi"><div class="n">${k[1]}</div><div class="l">${esc(k[0])}</div></div>`).join('');
  const mc=TELE_METRICS[teleMetric]||TELE_METRICS.asignado;
  const tipoRows=withPct(st[mc.tipo]), cliRows=withPct(st[mc.cli]);
  const mxT=Math.max(...tipoRows.map(x=>x[1]),1), mxC=Math.max(...cliRows.map(x=>x[1]),1);
- const jc=st.jornadaCounts, jTotal=jc.laboral+jc.excedido+jc.sabado+jc.domingo;
+ const jc=st.jornadaCounts, jTotal=jc.semana+jc.sabado+jc.domingo;
  document.getElementById('analisisTele').innerHTML=`
   <div class="seg" id="segTeleMetric" style="margin-bottom:14px">
    ${Object.entries(TELE_METRICS).map(([k,m])=>`<button class="${teleMetric===k?'on':''}" onclick="setTeleMetric('${k}')">${esc(m.label)}</button>`).join('')}
@@ -1906,23 +1891,21 @@ function renderTelematica(){
    <div class="card"><div class="lab" style="margin-top:0">Por tipo de solicitud <span class="tinfo" style="text-transform:none;font-weight:400">${mc.sub}</span></div>${tipoRows.length?teleBarsHtml(tipoRows,mxT):'<p class="tinfo">Todavía no hay tickets cargados con los datos necesarios para este cálculo.</p>'}</div>
    <div class="card"><div class="lab" style="margin-top:0">Por cliente <span class="tinfo" style="text-transform:none;font-weight:400">${mc.sub}</span></div>${cliRows.length?teleBarsHtml(cliRows,mxC):'<p class="tinfo">Todavía no hay tickets cargados con los datos necesarios para este cálculo.</p>'}</div>
   </div>
-  <div class="card"><div class="lab" style="margin-top:0">Resoluciones por franja horaria <span class="tinfo" style="text-transform:none;font-weight:400">(según la hora de resolución cargada — horario laboral: lunes a viernes de 8 a 17 hs)</span></div>
+  <div class="card"><div class="lab" style="margin-top:0">Tareas por día de semana <span class="tinfo" style="text-transform:none;font-weight:400">(según la fecha cargada)</span></div>
    ${jTotal?`<div class="tkpi">
-    <div class="box int"><div class="n">${jc.laboral}</div><div class="l">Horario laboral</div></div>
-    <div class="box cli"><div class="n">${jc.excedido}</div><div class="l">Excedido de jornada (entre semana)</div></div>
+    <div class="box int"><div class="n">${jc.semana}</div><div class="l">Entre semana (lun-vie)</div></div>
     <div class="box tot"><div class="n">${jc.sabado}</div><div class="l">Sábado <span class="tinfo">(posible hora extra)</span></div></div>
     <div class="box tot"><div class="n">${jc.domingo}</div><div class="l">Domingo <span class="tinfo">(posible hora extra)</span></div></div>
-   </div>`:'<p class="tinfo">Todavía no hay tickets con hora de resolución cargada para calcular esto.</p>'}
+   </div>`:'<p class="tinfo">Todavía no hay tickets con fecha cargada para calcular esto.</p>'}
   </div>`;
- const sorted=TELE.slice().sort((a,b)=>(b.fecha_solicitud||'').localeCompare(a.fecha_solicitud||''));
+ const sorted=TELE.slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
  box.innerHTML=sorted.length?sorted.map(t=>{
-  const estMs=teleEstimadoMs(t);
   const asignadoMs=tiempoAsignadoMs(t);
   const cls=t.estado==='Resuelto'?'fijo':t.estado==='En curso'?'st':'';
-  const j=jornadaClass(t.fecha_resolucion,t.hora_resolucion);
+  const j=jornadaClass(t.fecha);
   return `<div class="tk">
    <div class="hd"><div><span class="kk">${esc(t.cliente)}</span><div class="tt">${esc(t.tipo)}</div></div><span class="tag ${cls}">${esc(t.estado)}</span></div>
-   <div class="tinfo"><b>Inicio:</b> ${esc(t.fecha_solicitud||'—')}${t.hora_inicio?` ${esc(t.hora_inicio)} hs`:''} &nbsp;·&nbsp; <b>Fin:</b> ${esc(t.fecha_resolucion||'—')}${t.hora_resolucion?` ${esc(t.hora_resolucion)} hs`:''}${asignadoMs!=null?` &nbsp;·&nbsp; <b>Tiempo asignado:</b> ${fmtDur(asignadoMs)}`:''}${estMs!=null?` &nbsp;·&nbsp; <b>Tiempo estimado:</b> ${fmtDur(estMs)}`:''} &nbsp;·&nbsp; <b>Responsable:</b> ${esc(t.responsable||'—')}</div>
+   <div class="tinfo"><b>Fecha:</b> ${esc(t.fecha||'—')}${asignadoMs!=null?` &nbsp;·&nbsp; <b>Cantidad de horas:</b> ${fmtDur(asignadoMs)}`:''} &nbsp;·&nbsp; <b>Responsable:</b> ${esc(t.responsable||'—')}</div>
    ${j?`<div class="tmeta" style="margin-top:4px"><span class="tag ${JORNADA_TAGCLS[j]}">${JORNADA_LABEL[j]}</span></div>`:''}
    ${t.detalle?`<div class="desc">${esc(t.detalle)}</div>`:''}
    <div class="tools" style="margin-top:8px">
@@ -1935,7 +1918,7 @@ function renderTelematica(){
  box.querySelectorAll('[data-tele-view]').forEach(b=>b.onclick=()=>openTeleModal(b.dataset.teleView));
  box.querySelectorAll('[data-tele-resolve]').forEach(b=>b.onclick=()=>{
   const t=TELE.find(x=>x.id===b.dataset.teleResolve); if(!t)return;
-  t.estado='Resuelto'; t.fecha_resolucion=t.fecha_resolucion||todayStr(); t.hora_resolucion=t.hora_resolucion||nowHHMM();
+  t.estado='Resuelto'; t.fecha=t.fecha||todayStr();
   saveTele(); pushState(); renderTelematica(); refresh();
  });
  box.querySelectorAll('[data-tele-del]').forEach(b=>b.onclick=()=>{
@@ -1946,25 +1929,24 @@ function renderTelematica(){
 document.getElementById('btnTeleGuardar').onclick=()=>{
  const cliente=document.getElementById('teleCliente').value;
  const tipo=document.getElementById('teleTipo').value;
- const fecha_solicitud=document.getElementById('teleFechaSol').value;
- const hora_inicio=document.getElementById('teleHoraIni').value;
- const fecha_resolucion=document.getElementById('teleFechaRes').value;
- const hora_resolucion=document.getElementById('teleHoraRes').value;
+ const fecha=document.getElementById('teleFecha').value;
+ const horasStr=document.getElementById('teleHoras').value;
+ const horas=horasStr===''?null:Number(horasStr);
  const estado=document.getElementById('teleEstado').value;
  const responsable=(document.getElementById('teleResp').value||'').trim();
  const detalle=(document.getElementById('teleDetalle').value||'').trim();
- if(!cliente||!fecha_solicitud){ alert('Completá al menos Cliente y Fecha de inicio.'); return; }
- TELE.push({id:'t'+Date.now().toString(36)+Math.random().toString(36).slice(2,7), cliente, tipo, fecha_solicitud, hora_inicio, fecha_resolucion, hora_resolucion, estado, responsable, detalle, creado:new Date().toISOString(),
+ if(!cliente||!fecha){ alert('Completá al menos Cliente y Fecha.'); return; }
+ TELE.push({id:'t'+Date.now().toString(36)+Math.random().toString(36).slice(2,7), cliente, tipo, fecha, horas, estado, responsable, detalle, creado:new Date().toISOString(),
   historial:[{fecha:new Date().toLocaleString('es-AR'),usuario:responsable||'Sin identificar',resumen:'Ticket creado'}]});
  saveTele(); pushState();
- document.getElementById('teleFechaSol').value=''; document.getElementById('teleHoraIni').value=''; document.getElementById('teleFechaRes').value=''; document.getElementById('teleHoraRes').value=''; document.getElementById('teleDetalle').value=''; document.getElementById('teleResp').value=''; document.getElementById('teleEstado').value='Pendiente';
+ document.getElementById('teleFecha').value=''; document.getElementById('teleHoras').value=''; document.getElementById('teleDetalle').value=''; document.getElementById('teleResp').value=''; document.getElementById('teleEstado').value='Pendiente';
  renderTelematica(); refresh();
 };
 /* modal de ticket de Telemática: ver/editar con historial de cambios (mismo patrón que el modal de ficha) */
 let teleModalId=null, teleModalBefore=null;
 function diffTele(before,after){
  const changes=[];
- const FIELDS=[['cliente','Cliente'],['tipo','Tipo de solicitud'],['fecha_solicitud','Fecha de inicio'],['hora_inicio','Hora de inicio'],['fecha_resolucion','Fecha de fin'],['hora_resolucion','Hora de fin'],['estado','Estado'],['responsable','Responsable'],['detalle','Detalle']];
+ const FIELDS=[['cliente','Cliente'],['tipo','Tipo de solicitud'],['fecha','Fecha'],['horas','Cantidad de horas'],['estado','Estado'],['responsable','Responsable'],['detalle','Detalle']];
  FIELDS.forEach(([k,l])=>{ if((before[k]||'')!==(after[k]||'')) changes.push(`${l}: "${before[k]||'—'}" → "${after[k]||'—'}"`); });
  return changes;
 }
@@ -1984,11 +1966,11 @@ function openTeleModal(id){
    <div class="fRow"><div class="lab" style="margin-top:0">Tipo de solicitud</div>
     <input class="finput" id="tmTipo" list="dlTeleTipo" value="${esc(t.tipo||'')}" autocomplete="off">
    </div>
-   <div class="fRow"><div class="lab" style="margin-top:0">Fecha y hora de inicio</div>
-    <div style="display:flex;gap:8px"><input type="date" class="finput" id="tmFechaSol" value="${esc(t.fecha_solicitud||'')}"><input type="time" class="finput" id="tmHoraIni" style="max-width:120px" value="${esc(t.hora_inicio||'')}"></div>
+   <div class="fRow"><div class="lab" style="margin-top:0">Fecha</div>
+    <input type="date" class="finput" id="tmFecha" value="${esc(t.fecha||'')}">
    </div>
-   <div class="fRow"><div class="lab" style="margin-top:0">Fecha y hora de fin</div>
-    <div style="display:flex;gap:8px"><input type="date" class="finput" id="tmFechaRes" value="${esc(t.fecha_resolucion||'')}"><input type="time" class="finput" id="tmHoraRes" style="max-width:120px" value="${esc(t.hora_resolucion||'')}"></div>
+   <div class="fRow"><div class="lab" style="margin-top:0">Cantidad de horas</div>
+    <input type="number" class="finput" id="tmHoras" min="0" step="0.25" value="${t.horas!=null?esc(t.horas):''}">
    </div>
    <div class="fRow"><div class="lab" style="margin-top:0">Estado</div>
     <select class="finput" id="tmEstado">${['Pendiente','En curso','Resuelto'].map(o=>`<option ${o===t.estado?'selected':''}>${o}</option>`).join('')}</select>
@@ -2002,10 +1984,8 @@ function openTeleModal(id){
  `;
  document.getElementById('tmCliente').onchange=e=>t.cliente=e.target.value;
  document.getElementById('tmTipo').oninput=e=>t.tipo=e.target.value;
- document.getElementById('tmFechaSol').oninput=e=>t.fecha_solicitud=e.target.value;
- document.getElementById('tmHoraIni').oninput=e=>t.hora_inicio=e.target.value;
- document.getElementById('tmFechaRes').oninput=e=>t.fecha_resolucion=e.target.value;
- document.getElementById('tmHoraRes').oninput=e=>t.hora_resolucion=e.target.value;
+ document.getElementById('tmFecha').oninput=e=>t.fecha=e.target.value;
+ document.getElementById('tmHoras').oninput=e=>t.horas=e.target.value===''?null:Number(e.target.value);
  document.getElementById('tmEstado').onchange=e=>t.estado=e.target.value;
  document.getElementById('tmResp').oninput=e=>t.responsable=e.target.value;
  document.getElementById('tmDetalle').oninput=e=>t.detalle=e.target.value;
@@ -2073,7 +2053,7 @@ async function pullState(){
   if(j&&Array.isArray(j.clients)&&j.clients.length){CLIENTS=j.clients;CLIENTS.forEach(c=>{if(!c.origen)c.origen='jira';});ch=true;}
   if(j&&j.overrides&&typeof j.overrides==='object'){OVERRIDES=j.overrides;ch=true;}
   if(j&&j.fichas&&typeof j.fichas==='object'){FICHAS={};Object.keys(j.fichas).forEach(k=>{FICHAS[k]=migrateFicha(j.fichas[k],k);});saveFichas();renderEjecutivos();}
-  if(j&&Array.isArray(j.tele)){TELE=j.tele;saveTele();renderTelematica();}
+  if(j&&Array.isArray(j.tele)){TELE=j.tele.map(migrateTeleItem);saveTele();renderTelematica();}
   if(j&&j.apiCfg&&typeof j.apiCfg==='object'&&j.apiCfg.url&&!loadApiCfg().url&&!apiCfgTouched){
    saveApiCfg(j.apiCfg);
    const eu=document.getElementById('apiUrl');
