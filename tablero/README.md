@@ -583,3 +583,10 @@ A partir de una auditoría de interfaz (con capturas reales y mockups mostrados 
 - Cada celda queda marcada con `data-kpi="cliente_tipo"`, `data-cliente` y `data-tipo`, para que el futuro módulo de Métricas pueda leer e identificar cada porcentaje sin ambigüedad.
 - La tabla tiene scroll horizontal propio (mismo mecanismo ya usado en las tablas de configuración de fichas) para cuando hay muchos tipos de solicitud distintos cargados — la página en sí nunca scrollea de costado, ni en desktop ni en mobile.
 - Probado en navegador real con Playwright, sin errores de consola: se confirmó que cada fila de la matriz suma 100% (ej. con los datos reales cargados: TSBSA → Laboratorio 100%/Soporte 0%, Cervepar → Laboratorio 0%/Soporte 100%), se revisó visualmente en modo claro, oscuro y mobile, y se corrió la batería de regresión completa sin errores.
+
+### v53 (2026-07-31) — La tarjeta "% por cliente" ahora también muestra el tiempo, no solo el %
+
+- **Motivo**: la matriz de v52 solo mostraba el %, sin la cantidad de tiempo detrás de ese porcentaje — igual que en las barras de arriba, donde el tiempo y el % conviven, en esta tarjeta también hacía falta ver ambos datos juntos.
+- **Cada celda de la matriz "% por cliente" ahora muestra dos datos apilados**: arriba la cantidad de tiempo real (ej. "4h 0m"), abajo el % que representa dentro del total de ese cliente (ej. "100%") — ambos conservan sus propias etiquetas, nada se reemplazó.
+- Se ajustó el ancho mínimo de las columnas de la tabla para que el tiempo y el % entren cómodos sin amontonarse.
+- Probado en navegador real con Playwright, sin errores de consola: se confirmó que cada celda expone tanto el tiempo (ej. TSBSA-Laboratorio = "4h 0m") como el % (100%) correctamente, se revisó visualmente en modo claro, oscuro y mobile, y se corrió la batería de regresión completa sin errores.

@@ -244,7 +244,9 @@ details.cm[open] summary::before{content:'▾ '}
 .cmpRow{display:grid;grid-template-columns:1.4fr .7fr 1fr 1fr 1fr;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--edge2);font-size:12.5px}
 .cmpRow.cmpHead{font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--edge)}
 .cmpRow .cmpn{font-family:var(--mono);font-weight:700;color:var(--ink)}
-.cmpRow .mpct{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--accent2);background:var(--accdim);padding:4px 10px;border-radius:20px;text-align:center;justify-self:center}
+.cmpRow .mcell{display:flex;flex-direction:column;align-items:center;gap:3px;justify-self:center}
+.cmpRow .mcell .mv{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--ink);white-space:nowrap}
+.cmpRow .mcell .mpct{font-family:var(--mono);font-size:10.5px;font-weight:700;font-style:normal;color:var(--accent2);background:var(--accdim);padding:2px 9px;border-radius:20px;text-align:center;white-space:nowrap}
 @media(max-width:640px){.cmpRow{grid-template-columns:1.1fr .6fr 1fr 1fr 1fr;font-size:11.5px;gap:6px}}
 
 .finput{width:100%;padding:8px 10px;border:1px solid var(--edge);border-radius:9px;font-size:13px;font-family:var(--sans);background:var(--panel);color:var(--ink);transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
@@ -1915,12 +1917,12 @@ function teleBarsHtml(rows,mx,kpiKey){
 // específicamente para medir la relación cliente↔tipo de cara al futuro módulo de Métricas.
 function matrizCliTipoHtml(matriz,tiposOrder){
  if(!matriz.length||!tiposOrder.length) return '<p class="tinfo">Todavía no hay tickets cargados con los datos necesarios para este cálculo.</p>';
- const cols=`160px repeat(${tiposOrder.length},minmax(90px,1fr))`;
- const minW=160+tiposOrder.length*90;
+ const cols=`160px repeat(${tiposOrder.length},minmax(110px,1fr))`;
+ const minW=160+tiposOrder.length*110;
  const head=`<div class="cmpRow cmpHead" style="grid-template-columns:${cols}"><span>Cliente</span>${tiposOrder.map(t=>`<span title="${esc(t)}">${esc(t)}</span>`).join('')}</div>`;
  const rows=matriz.map(m=>{
   const byTipo=Object.fromEntries(m.celdas.map(c=>[c.tipo,c]));
-  return `<div class="cmpRow" style="grid-template-columns:${cols}"><span class="cmpn">${esc(m.cliente)}</span>${tiposOrder.map(t=>{const c=byTipo[t];return `<span class="mpct" data-kpi="cliente_tipo" data-cliente="${esc(m.cliente)}" data-tipo="${esc(t)}" title="% del tiempo de ${esc(m.cliente)} que es ${esc(t)}">${c?c.pct.toFixed(0):'0'}%</span>`;}).join('')}</div>`;
+  return `<div class="cmpRow" style="grid-template-columns:${cols}"><span class="cmpn">${esc(m.cliente)}</span>${tiposOrder.map(t=>{const c=byTipo[t]; const ms=c?c.ms:0; const pct=c?c.pct:0; return `<span class="mcell" data-kpi="cliente_tipo" data-cliente="${esc(m.cliente)}" data-tipo="${esc(t)}" title="${esc(m.cliente)} · ${esc(t)}"><b class="mv">${fmtDur(ms)}</b><i class="mpct">${pct.toFixed(0)}%</i></span>`;}).join('')}</div>`;
  }).join('');
  return `<div class="cfgTableWrap"><div class="cmpTable" style="min-width:${minW}px">${head}${rows}</div></div>`;
 }
