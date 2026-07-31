@@ -1378,8 +1378,9 @@ function renderFichas(){
   <div class="card">
    <div class="lab" style="margin-top:0">Configuración técnica</div>
    <p class="tinfo" style="margin:0 0 6px">Toda la configuración realizada para este cliente. Agregá o quitá filas por sección.</p>
+   ${cfgSectionHtml(CONFIG_SECTIONS.find(s=>s.key==='dispositivos_go'),cfg.dispositivos_go)}
    ${DEVICE_SPECS.map(spec=>deviceSpecHtml(spec,cfg[spec.key])).join('')}
-   ${CONFIG_SECTIONS.map(sec=>cfgSectionHtml(sec,cfg[sec.key])).join('')}
+   ${CONFIG_SECTIONS.filter(s=>s.key!=='dispositivos_go').map(sec=>cfgSectionHtml(sec,cfg[sec.key])).join('')}
   </div>
 
   <div class="card">
@@ -1493,11 +1494,15 @@ function downloadFichaJson(f){
 function fichaBodyHtml(f){
  const d=f.datos;
  const rowsTable=(rows,fields)=>rows.length?`<table class="pfTable"><thead><tr>${fields.map(x=>`<th>${esc(x.l)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${fields.map(x=>`<td>${esc(r[x.k]||'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'<p class="pfEmpty">Sin registros.</p>';
+ const dgoRows=f.configuracion.dispositivos_go||[];
+ const dgoHtml=`<h3>Dispositivos GO</h3>${dgoRows.length
+  ?`<p style="font-size:13px;font-weight:700;margin:0 0 2px">${dgoRows.map(r=>esc(r.tipo_vehiculo||'—')).join(', ')}</p><p class="pfEmpty">Para el detalle de avisos y velocidades, ver la configuración en la web del dispositivo.</p>`
+  :'<p class="pfEmpty">Sin dispositivos GO configurados.</p>'}`;
  const activeDevices=DEVICE_SPECS.filter(spec=>(f.configuracion[spec.key]||{}).activo);
  const devHtml=`<h3>Tipo de cámara</h3>${activeDevices.length
   ?`<p style="font-size:13px;font-weight:700;margin:0 0 2px">${activeDevices.map(s=>esc(s.label)).join(' + ')}</p><p class="pfEmpty">Para el detalle de la configuración de alertas, ver la configuración en la web del dispositivo.</p>`
   :'<p class="pfEmpty">Sin cámara configurada.</p>'}`;
- const cfgHtml=devHtml+CONFIG_SECTIONS.map(s=>`<h3>${esc(s.label)}</h3>${rowsTable(f.configuracion[s.key]||[],s.fields)}`).join('');
+ const cfgHtml=dgoHtml+devHtml+CONFIG_SECTIONS.filter(s=>s.key!=='dispositivos_go').map(s=>`<h3>${esc(s.label)}</h3>${rowsTable(f.configuracion[s.key]||[],s.fields)}`).join('');
  const hist=(f.historial||[]).slice().reverse();
  const histHtml=hist.length?hist.map(h=>`<li>${esc(h.fecha||'')} — <b>${esc(h.usuario||'Sin identificar')}</b> — ${esc(h.resumen||'')}</li>`).join(''):'<li>Sin historial.</li>';
  return `
