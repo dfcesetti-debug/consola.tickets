@@ -56,7 +56,7 @@ Para registrar manualmente el trabajo hecho con clientes que **no** tienen Jira 
 
 | Categoría | Sub-tipos |
 |---|---|
-| Soporte reemplaza operaciones | Carga de usuarios, Revisión de activo, Revisión de mediciones, Solicitud de video, Asignación de grupos a vehículos, Asignación de grupos a usuarios, Creación de reglas |
+| Soporte | Carga de usuarios, Revisión de activo, Revisión de mediciones, Solicitud de video, Asignación de grupos a vehículos, Asignación de grupos a usuarios, Creación de reglas |
 | Capacitaciones | Capacitación por área, Capacitación general, Capacitación de reportes, Capacitación de sala logística, Capacitación interna |
 | Reportes | Reportes N°1, Reportes N°2, Reportes N°3 (ver definiciones formales en la ficha del cliente) |
 | Desarrollo | Desarrollo |
