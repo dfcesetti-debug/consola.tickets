@@ -590,3 +590,10 @@ A partir de una auditoría de interfaz (con capturas reales y mockups mostrados 
 - **Cada celda de la matriz "% por cliente" ahora muestra dos datos apilados**: arriba la cantidad de tiempo real (ej. "4h 0m"), abajo el % que representa dentro del total de ese cliente (ej. "100%") — ambos conservan sus propias etiquetas, nada se reemplazó.
 - Se ajustó el ancho mínimo de las columnas de la tabla para que el tiempo y el % entren cómodos sin amontonarse.
 - Probado en navegador real con Playwright, sin errores de consola: se confirmó que cada celda expone tanto el tiempo (ej. TSBSA-Laboratorio = "4h 0m") como el % (100%) correctamente, se revisó visualmente en modo claro, oscuro y mobile, y se corrió la batería de regresión completa sin errores.
+
+### v54 (2026-07-31) — La tarjeta "% por cliente" ahora es un desplegable (mismo formato que "Carga de tarea")
+
+- **Motivo**: la tabla de v52/v53 quedaba siempre abierta, ocupando espacio de entrada aunque no se estuviera consultando — se pidió el mismo formato desplegable que ya usa el resto de la consola (ej. "+ Carga de tarea").
+- **La tarjeta "% por cliente" ahora es un `<details>` colapsable, cerrado por defecto**, con el mismo estilo y comportamiento (flecha ▸/▾, clic para abrir/cerrar) que "+ Carga de tarea" y las secciones de Configuración técnica en Fichas.
+- **Se conserva el estado abierto/cerrado entre actualizaciones**: si lo dejás abierto y cambiás de métrica (Asignado/Semanal) o cargás un ticket nuevo, la tarjeta no se vuelve a cerrar sola (mismo mecanismo que ya se usa para los tickets desplegables y las secciones de Fichas).
+- Probado en navegador real con Playwright, sin errores de consola: se confirmó que aparece colapsada al entrar a la pestaña, que se abre y cierra con un clic, y que queda abierta después de cambiar de métrica (re-render); se revisó visualmente en modo claro y oscuro, y se corrió la batería de regresión completa sin errores.
