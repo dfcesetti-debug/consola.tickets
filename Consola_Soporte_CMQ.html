@@ -421,7 +421,8 @@ details.cm[open] summary::before{content:'▾ '}
     <div class="grid2">
      <div class="fRow"><div class="lab" style="margin-top:0">Cliente</div><select class="finput" id="teleCliente"></select></div>
      <div class="fRow"><div class="lab" style="margin-top:0">Tipo de solicitud</div>
-      <select class="finput" id="teleTipo"></select>
+      <input class="finput" id="teleTipo" list="dlTeleTipo" placeholder="Escribí para buscar (ej: Soporte, Reportes, Coordinación...)" autocomplete="off">
+      <datalist id="dlTeleTipo"></datalist>
      </div>
      <div class="fRow"><div class="lab" style="margin-top:0">Fecha y hora de inicio</div>
       <div style="display:flex;gap:8px">
@@ -508,11 +509,11 @@ function persistCli(){ try{localStorage.setItem(CSTORE,JSON.stringify(CLIENTS));
 const TELESTORE='kb_cmq_tele_v1';
 let TELE=[];
 const TELE_TIPO_GROUPS=[
- ['Soporte',['Carga de usuarios','Revisión de activo','Revisión de mediciones','Solicitud de video','Asignación de grupos a vehículos','Asignación de grupos a usuarios','Creación de reglas']],
- ['Capacitaciones',['Capacitación por área','Capacitación general','Capacitación de reportes','Capacitación de sala logística','Capacitación interna']],
- ['Reportes',['Reportes N°1','Reportes N°2','Reportes N°3']],
+ ['Soporte',['Soporte','Carga de usuarios','Revisión de activo','Revisión de mediciones','Solicitud de video','Asignación de grupos a vehículos','Asignación de grupos a usuarios','Creación de reglas']],
+ ['Capacitaciones',['Capacitaciones','Capacitación por área','Capacitación general','Capacitación de reportes','Capacitación de sala logística','Capacitación interna']],
+ ['Reportes',['Reportes','Reportes N°1','Reportes N°2','Reportes N°3']],
  ['Desarrollo',['Desarrollo']],
- ['Coordinación',['Facturación proveedor','Auditoría de stock técnicos externos','Auditorías internas','Recoordinación de servicio']],
+ ['Coordinación',['Coordinación','Facturación proveedor','Auditoría de stock técnicos externos','Auditorías internas','Recoordinación de servicio']],
  ['Laboratorio',['Laboratorio']]
 ];
 const TELE_REPORT_TITLES={
@@ -520,8 +521,9 @@ const TELE_REPORT_TITLES={
  'Reportes N°2':'Requieren la aplicación de fórmulas, la combinación de varias tablas dinámicas, segmentaciones de datos, múltiples pruebas de uso, la creación de reglas específicas para medir la información solicitada, tableros de visualización y configuración de envío por correo electrónico.',
  'Reportes N°3':'Requieren llamados a API, fórmulas con lógica matemática para conciliar la información solicitada según la lógica de negocio correspondiente, y el uso de Power Query.'
 };
-function teleTipoOptionsHtml(selected){
- return TELE_TIPO_GROUPS.map(([label,opts])=>`<optgroup label="${esc(label)}">${opts.map(o=>`<option ${TELE_REPORT_TITLES[o]?`title="${esc(TELE_REPORT_TITLES[o])}"`:''} ${o===selected?'selected':''}>${esc(o)}</option>`).join('')}</optgroup>`).join('');
+function teleTipoDatalistHtml(){
+ const all=[...new Set(TELE_TIPO_GROUPS.flatMap(([,opts])=>opts))];
+ return all.map(o=>`<option value="${esc(o)}">`).join('');
 }
 function loadTele(){ try{TELE=JSON.parse(localStorage.getItem(TELESTORE))||[];}catch(e){TELE=[];} }
 function saveTele(){ try{localStorage.setItem(TELESTORE,JSON.stringify(TELE));}catch(e){} }
@@ -1760,7 +1762,7 @@ function renderTeleForm(){
  sel.disabled=!teleClients.length;
  const btn=document.getElementById('btnTeleGuardar'); if(btn) btn.disabled=!teleClients.length;
  const dl=document.getElementById('dlUsuariosTele'); if(dl) dl.innerHTML=[...TEAM].sort().map(x=>`<option value="${esc(x)}">`).join('');
- const tipoSel=document.getElementById('teleTipo'); if(tipoSel) tipoSel.innerHTML=teleTipoOptionsHtml(tipoSel.value);
+ const dlTipo=document.getElementById('dlTeleTipo'); if(dlTipo) dlTipo.innerHTML=teleTipoDatalistHtml();
 }
 function teleStats(){
  const withTime=TELE.map(t=>({...t,_d:teleEstimadoMs(t)})).filter(t=>t._d!=null);
@@ -1878,7 +1880,7 @@ function openTeleModal(id){
     <select class="finput" id="tmCliente">${teleClients.map(c=>`<option ${c.name===t.cliente?'selected':''}>${esc(c.name)}</option>`).join('')}</select>
    </div>
    <div class="fRow"><div class="lab" style="margin-top:0">Tipo de solicitud</div>
-    <select class="finput" id="tmTipo">${teleTipoOptionsHtml(t.tipo)}</select>
+    <input class="finput" id="tmTipo" list="dlTeleTipo" value="${esc(t.tipo||'')}" autocomplete="off">
    </div>
    <div class="fRow"><div class="lab" style="margin-top:0">Fecha y hora de inicio</div>
     <div style="display:flex;gap:8px"><input type="date" class="finput" id="tmFechaSol" value="${esc(t.fecha_solicitud||'')}"><input type="time" class="finput" id="tmHoraIni" style="max-width:120px" value="${esc(t.hora_inicio||'')}"></div>
@@ -1897,7 +1899,7 @@ function openTeleModal(id){
   ${hist.length?`<ul class="histList">${hist.map(h=>`<li><span class="hd">${esc(h.fecha||'')}</span> <b>${esc(h.usuario||'Sin identificar')}</b> — ${esc(h.resumen||'Ticket actualizado')}</li>`).join('')}</ul>`:'<p class="tinfo">Sin cambios registrados todavía.</p>'}
  `;
  document.getElementById('tmCliente').onchange=e=>t.cliente=e.target.value;
- document.getElementById('tmTipo').onchange=e=>t.tipo=e.target.value;
+ document.getElementById('tmTipo').oninput=e=>t.tipo=e.target.value;
  document.getElementById('tmFechaSol').oninput=e=>t.fecha_solicitud=e.target.value;
  document.getElementById('tmHoraIni').oninput=e=>t.hora_inicio=e.target.value;
  document.getElementById('tmFechaRes').oninput=e=>t.fecha_resolucion=e.target.value;
