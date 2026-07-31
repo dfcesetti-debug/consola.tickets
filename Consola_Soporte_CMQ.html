@@ -160,6 +160,12 @@ ol.steps{margin:5px 0;padding-left:20px}ol.steps li{margin:5px 0;line-height:1.4
 .tk .hd{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
 .tk .kk{font-family:var(--mono);font-weight:700;color:var(--accent2);font-size:13px}
 .tk .tt{font-weight:650;margin:2px 0}
+.tkCard>summary{cursor:pointer;list-style:none}
+.tkCard>summary::-webkit-details-marker{display:none}
+.tkCard>summary::marker{content:''}
+.tkArrow{display:inline-block;color:var(--mut2);font-size:10px;margin-right:6px;transition:transform .2s var(--ease)}
+.tkCard[open] .tkArrow{transform:rotate(90deg)}
+.tkBody{margin-top:8px;padding-top:2px}
 .ev{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--onsolid);background:var(--solid);border-radius:20px;padding:3px 10px;white-space:nowrap}
 .ev.zero{background:var(--zerobg);color:var(--zeroink)}
 .tmeta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:7px 0}
@@ -819,6 +825,9 @@ function renderMatrix(q){
 }
 
 let curTypes=new Set(), curEstados=new Set(), curAsig=new Set(), PAGE=40, shown=40, filtered=[], respFilter=null;
+// tickets que el usuario dejó desplegados — se vuelve a aplicar tras cada render para que
+// reasignar un cliente (u otro cambio que reconstruye la lista) no cierre lo que ya abrió.
+let expandedTickets=new Set();
 function chipRow(elId,btnId,label,dim,sel){
  const counts=facet(dim); const vals=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]); const total=Object.values(counts).reduce((a,b)=>a+b,0);
  const box=document.getElementById(elId); const btn=document.getElementById(btnId); if(!box||!btn)return;
@@ -862,17 +871,29 @@ function renderTickets(){
   const resp=[...new Set(i.comments.map(c=>c.author).filter(a=>TEAM.has(a)))];
   const delay=Math.min(idx,18)*28;
   return `<div class="tk" id="tk-${i.key}" style="animation-delay:${delay}ms">
-   <div class="hd"><div><span class="kk">${i.key}</span><div class="tt">${hl(i.title,q)}</div></div><span class="ev ${i._n?'':'zero'}">${i._n} ${i._n===1?'respuesta':'respuestas'}</span></div>
-   <div class="tmeta"><span class="tag cl"><span class="cdot" style="background:${clientColor(i._cli)}"></span>${esc(i._cli)}</span><span class="tag">${esc(i.tipo||'—')}</span>${i.estado?`<span class="tag st">${esc(i.estado)}</span>`:''}${i.prioridad?`<span class="tag pr">${esc(i.prioridad)}</span>`:''}
-    <select class="reassign" onchange="setClient('${i.key}',this.value)" title="Reasignar cliente">${cliOptions(i._cli)}</select></div>
-   ${slaLine(i.sla)}
-   <div class="tinfo"><b>Cargó:</b> ${hl(i.informador,q)} &nbsp;·&nbsp; <b>Asignado:</b> ${esc(i.asignado||'—')} &nbsp;·&nbsp; <b>Creada:</b> ${esc(i.creada||'—')}${resp.length?` &nbsp;·&nbsp; <b>Respondió:</b> ${resp.map(esc).join(', ')}`:''}</div>
-   ${i.descripcion?`<div class="desc">${hl(i.descripcion.slice(0,280),q)}${i.descripcion.length>280?'…':''}</div>`:''}
-   ${i.comments.length?`<details class="cm" ${openAll?'open':''}><summary>Ver ${i.comments.length} respuesta(s)</summary>${i.comments.map(c=>{const int=TEAM.has(c.author);return `<div class="cmt${mineOf(c)?' mine':''}"><span class="who ${int?'int':'cli'}">${esc(c.author||'—')}</span>${int?'<span class="badge-int">interno</span>':''} <span class="date">${esc(c.date)}</span><br>${hl(c.text,q)||'<span class="tinfo">(sin texto)</span>'}</div>`;}).join('')}</details>`:'<div class="tinfo" style="color:#a9b4c6;margin-top:4px">Sin respuestas registradas</div>'}
+   <details class="tkCard"${(openAll||expandedTickets.has(i.key))?' open':''}>
+    <summary>
+     <div class="hd"><div><span class="tkArrow">▸</span><span class="kk">${i.key}</span><div class="tt">${hl(i.title,q)}</div></div><span class="ev ${i._n?'':'zero'}">${i._n} ${i._n===1?'respuesta':'respuestas'}</span></div>
+     <div class="tmeta"><span class="tag cl"><span class="cdot" style="background:${clientColor(i._cli)}"></span>${esc(i._cli)}</span><span class="tag">${esc(i.tipo||'—')}</span>${i.estado?`<span class="tag st">${esc(i.estado)}</span>`:''}${i.prioridad?`<span class="tag pr">${esc(i.prioridad)}</span>`:''}
+      <select class="reassign" onclick="event.stopPropagation()" onchange="setClient('${i.key}',this.value)" title="Reasignar cliente">${cliOptions(i._cli)}</select></div>
+    </summary>
+    <div class="tkBody">
+     ${slaLine(i.sla)}
+     <div class="tinfo"><b>Cargó:</b> ${hl(i.informador,q)} &nbsp;·&nbsp; <b>Asignado:</b> ${esc(i.asignado||'—')} &nbsp;·&nbsp; <b>Creada:</b> ${esc(i.creada||'—')}${resp.length?` &nbsp;·&nbsp; <b>Respondió:</b> ${resp.map(esc).join(', ')}`:''}</div>
+     ${i.descripcion?`<div class="desc">${hl(i.descripcion.slice(0,280),q)}${i.descripcion.length>280?'…':''}</div>`:''}
+     ${i.comments.length?`<details class="cm" ${openAll?'open':''}><summary>Ver ${i.comments.length} respuesta(s)</summary>${i.comments.map(c=>{const int=TEAM.has(c.author);return `<div class="cmt${mineOf(c)?' mine':''}"><span class="who ${int?'int':'cli'}">${esc(c.author||'—')}</span>${int?'<span class="badge-int">interno</span>':''} <span class="date">${esc(c.date)}</span><br>${hl(c.text,q)||'<span class="tinfo">(sin texto)</span>'}</div>`;}).join('')}</details>`:'<div class="tinfo" style="color:#a9b4c6;margin-top:4px">Sin respuestas registradas</div>'}
+    </div>
+   </details>
   </div>`;
  }).join('');
  const lm=document.getElementById('loadmore'); lm.style.display=filtered.length>shown?'block':'none';
  lm.textContent=`Cargar más (${filtered.length-shown} restantes)`;
+ box.querySelectorAll('.tkCard').forEach(d=>{
+  d.addEventListener('toggle',()=>{
+   const key=d.closest('.tk').id.replace('tk-','');
+   if(d.open)expandedTickets.add(key); else expandedTickets.delete(key);
+  });
+ });
 }
 document.getElementById('loadmore').onclick=()=>{shown+=PAGE;renderTickets();};
 window.setClient=(key,name)=>{ OVERRIDES[key]=name; persistCli(); const it=DATA.find(x=>x.key===key); if(it)it._cli=name; rebuildAll(); pushState(); };
