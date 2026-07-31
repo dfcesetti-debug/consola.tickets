@@ -418,7 +418,7 @@ details.cm[open] summary::before{content:'▾ '}
    <div class="kpis" id="kpisTele"></div>
    <div class="card">
     <details class="cfgSec" id="teleFormSec">
-     <summary>+ Cargar ticket</summary>
+     <summary>+ Carga de tarea</summary>
      <div class="grid2">
       <div class="fRow"><div class="lab" style="margin-top:0">Cliente</div><select class="finput" id="teleCliente"></select></div>
       <div class="fRow"><div class="lab" style="margin-top:0">Tipo de solicitud</div>
@@ -443,7 +443,7 @@ details.cm[open] summary::before{content:'▾ '}
       <div class="fRow"><div class="lab" style="margin-top:0">Responsable</div><input class="finput" id="teleResp" list="dlUsuariosTele" placeholder="Quién lo atendió"><datalist id="dlUsuariosTele"></datalist></div>
      </div>
      <div class="fRow"><div class="lab" style="margin-top:0">Detalle</div><textarea class="ftextarea" id="teleDetalle" placeholder="Descripción de la solicitud"></textarea></div>
-     <button class="btn primary" id="btnTeleGuardar">+ Cargar ticket</button>
+     <button class="btn primary" id="btnTeleGuardar">+ Cargar tarea</button>
      <details class="cfgSec" style="margin-top:14px">
       <summary>¿Qué diferencia hay entre Reportes N°1, N°2 y N°3?</summary>
       <ul class="clean" style="padding-bottom:4px">
@@ -555,6 +555,29 @@ function tiempoAsignadoMs(t){
  if(isNaN(ini)||isNaN(fin)||fin<ini)return null;
  return fin-ini;
 }
+/* Semana ISO (lunes a domingo) de una fecha "YYYY-MM-DD", para agrupar el tiempo
+   asignado por semana calendario al calcular el promedio semanal. */
+function isoWeekKey(dateStr){
+ if(!dateStr)return null;
+ const d=new Date(dateStr+'T00:00:00'); if(isNaN(d.getTime()))return null;
+ const t=new Date(d.valueOf());
+ const dayNr=(d.getDay()+6)%7;
+ t.setDate(t.getDate()-dayNr+3);
+ const firstThursday=new Date(t.getFullYear(),0,4);
+ const diff=(t-firstThursday)/86400000;
+ const week=1+Math.round(diff/7);
+ return t.getFullYear()+'-W'+String(week).padStart(2,'0');
+}
+/* Promedio semanal de tiempo asignado: suma total de horas reales de un grupo (tipo o
+   cliente) dividido por la cantidad de semanas calendario distintas en las que hubo
+   trabajo — no es un promedio por ticket, es "cuánto se dedica por semana en promedio",
+   pensado contra una semana laboral de 8hs diarias (9 a 18hs con 1h de almuerzo = 8hs). */
+function weeklyAvgFromItems(items){
+ if(!items.length)return null;
+ const totalMs=items.reduce((s,t)=>s+t._a,0);
+ const semanas=new Set(items.map(t=>isoWeekKey(t.fecha_resolucion||t.fecha_solicitud)).filter(Boolean)).size||1;
+ return totalMs/semanas;
+}
 /* Tiempo estimado (hábil) de una solicitud de Telemática: igual que el tiempo hábil que ya
    se usa para los tickets de Jira, pero tomando la fecha+HORA precisa de inicio y de fin
    cuando están cargadas (antes se comparaban solo las fechas a medianoche, ignorando la
@@ -575,10 +598,11 @@ function teleClientStats(){
  return Object.entries(byCli).map(([cli,items])=>{
   const nResueltos=items.filter(t=>t.estado==='Resuelto').length;
   const estimados=items.map(teleEstimadoMs).filter(x=>x!=null);
-  const asignados=items.map(tiempoAsignadoMs).filter(x=>x!=null);
+  const asignados=items.map(t=>({...t,_a:tiempoAsignadoMs(t)})).filter(t=>t._a!=null);
   return { cliente:cli, n:items.length, nResueltos,
    avgEstMs:estimados.length?estimados.reduce((s,x)=>s+x,0)/estimados.length:null, nEst:estimados.length,
-   avgAsignadoMs:asignados.length?asignados.reduce((s,x)=>s+x,0)/asignados.length:null, nAsignado:asignados.length };
+   totalAsignadoMs:asignados.length?asignados.reduce((s,t)=>s+t._a,0):null,
+   promSemanalMs:weeklyAvgFromItems(asignados), nAsignado:asignados.length };
  }).sort((a,b)=>b.n-a.n);
 }
 
@@ -965,9 +989,9 @@ function renderAnalisis(){
    </div>
   </div>
   <div class="card"><div class="lab">Tiempos por cliente · vía Referente Telemática <span class="tinfo" style="text-transform:none;font-weight:400">(tickets cargados manualmente en el módulo Telemática — incluye clientes con Jira si se usa para coordinaciones u otras tareas que no pasan por Jira)</span></div>
-   <div class="cmpTable">
-    <div class="cmpRow cmpHead"><span>Cliente</span><span>Tickets</span><span>Resueltos</span><span>Tiempo estimado (hábil)</span><span>Tiempo asignado (real)</span></div>
-    ${teleCli.length?teleCli.map(r=>`<div class="cmpRow"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cliente)};margin-right:6px"></span>${esc(r.cliente)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${r.nResueltos}</span><span class="cmpn">${r.avgEstMs==null?'—':fmtDur(r.avgEstMs)+' ('+r.nEst+')'}</span><span class="cmpn">${r.avgAsignadoMs==null?'—':fmtDur(r.avgAsignadoMs)+' ('+r.nAsignado+')'}</span></div>`).join(''):'<p class="tinfo">Todavía no hay clientes marcados como "Referente Telemática" con tickets cargados. Se configura en Clientes, y se cargan tickets en el módulo Telemática.</p>'}
+   <div class="cmpTable" style="--cols:1.3fr .6fr .8fr 1fr 1fr 1fr">
+    <div class="cmpRow cmpHead" style="grid-template-columns:var(--cols)"><span>Cliente</span><span>Tickets</span><span>Resueltos</span><span>Tiempo estimado (hábil)</span><span>Tiempo asignado (real, total)</span><span>Promedio semanal <span class="tinfo" style="text-transform:none;font-weight:400">(8hs/día)</span></span></div>
+    ${teleCli.length?teleCli.map(r=>`<div class="cmpRow" style="grid-template-columns:var(--cols)"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cliente)};margin-right:6px"></span>${esc(r.cliente)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${r.nResueltos}</span><span class="cmpn">${r.avgEstMs==null?'—':fmtDur(r.avgEstMs)+' ('+r.nEst+')'}</span><span class="cmpn">${r.totalAsignadoMs==null?'—':fmtDur(r.totalAsignadoMs)+' ('+r.nAsignado+')'}</span><span class="cmpn">${r.promSemanalMs==null?'—':fmtDur(r.promSemanalMs)}</span></div>`).join(''):'<p class="tinfo">Todavía no hay clientes marcados como "Referente Telemática" con tickets cargados. Se configura en Clientes, y se cargan tickets en el módulo Telemática.</p>'}
    </div>
   </div>
   <div class="card"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div class="lab" style="margin:0">Quién respondió los tickets</div>
@@ -1776,15 +1800,21 @@ function teleStats(){
  const jornadaCounts={laboral:0,excedido:0,sabado:0,domingo:0};
  TELE.forEach(t=>{ const j=jornadaClass(t.fecha_resolucion,t.hora_resolucion); if(j) jornadaCounts[j]++; });
  const nResueltos=TELE.filter(t=>t.estado==='Resuelto').length;
- // tiempo asignado real (hora a hora) — solo tickets con inicio y fin completos
+ // tiempo asignado real (hora a hora) — solo tickets con inicio y fin completos.
+ // El total suma TODAS las horas cargadas (no promedia entre tickets del mismo tipo/cliente,
+ // porque eso escondía el total real: 2 tickets de 3hs de Laboratorio daban "3hs" en vez de "6hs").
+ // El promedio semanal sí promedia, pero por semana calendario (jornada de 8hs diarias, 1h de almuerzo).
  const asignados=TELE.map(t=>({...t,_a:tiempoAsignadoMs(t)})).filter(t=>t._a!=null);
- const avgAsignadoMs=asignados.length?asignados.reduce((s,t)=>s+t._a,0)/asignados.length:null;
- const byTipoA={}; asignados.forEach(t=>{(byTipoA[t.tipo]=byTipoA[t.tipo]||[]).push(t._a);});
- const rowsTipoA=Object.entries(byTipoA).map(([k,a])=>[k,a.reduce((s,x)=>s+x,0)/a.length]).sort((a,b)=>b[1]-a[1]);
- const byCliA={}; asignados.forEach(t=>{(byCliA[t.cliente]=byCliA[t.cliente]||[]).push(t._a);});
- const rowsCliA=Object.entries(byCliA).map(([k,a])=>[k,a.reduce((s,x)=>s+x,0)/a.length]).sort((a,b)=>b[1]-a[1]);
+ const totalAsignadoMs=asignados.length?asignados.reduce((s,t)=>s+t._a,0):null;
+ const promSemanalMs=weeklyAvgFromItems(asignados);
+ const byTipoA={}; asignados.forEach(t=>{(byTipoA[t.tipo]=byTipoA[t.tipo]||[]).push(t);});
+ const rowsTipoA=Object.entries(byTipoA).map(([k,items])=>[k,items.reduce((s,t)=>s+t._a,0)]).sort((a,b)=>b[1]-a[1]);
+ const rowsTipoASem=Object.entries(byTipoA).map(([k,items])=>[k,weeklyAvgFromItems(items)]).sort((a,b)=>b[1]-a[1]);
+ const byCliA={}; asignados.forEach(t=>{(byCliA[t.cliente]=byCliA[t.cliente]||[]).push(t);});
+ const rowsCliA=Object.entries(byCliA).map(([k,items])=>[k,items.reduce((s,t)=>s+t._a,0)]).sort((a,b)=>b[1]-a[1]);
+ const rowsCliASem=Object.entries(byCliA).map(([k,items])=>[k,weeklyAvgFromItems(items)]).sort((a,b)=>b[1]-a[1]);
  return {avgEstMs, nConTiempo:withTime.length, nResueltos, rowsTipo, rowsCli, jornadaCounts,
-  avgAsignadoMs, nAsignado:asignados.length, rowsTipoA, rowsCliA};
+  totalAsignadoMs, promSemanalMs, nAsignado:asignados.length, rowsTipoA, rowsCliA, rowsTipoASem, rowsCliASem};
 }
 function renderTelematica(){
  const box=document.getElementById('teleList'); if(!box)return;
@@ -1792,10 +1822,11 @@ function renderTelematica(){
  document.getElementById('c-telematica').textContent=TELE.length;
  const st=teleStats();
  const pend=TELE.filter(t=>t.estado!=='Resuelto').length;
- const kpis=[['Tickets cargados',TELE.length],['Resueltos',st.nResueltos],['Pendientes / en curso',pend],['Tiempo estimado prom.',st.avgEstMs==null?'—':fmtDur(st.avgEstMs)],['Tiempo asignado prom.',st.avgAsignadoMs==null?'—':fmtDur(st.avgAsignadoMs)]];
+ const kpis=[['Tickets cargados',TELE.length],['Resueltos',st.nResueltos],['Pendientes / en curso',pend],['Tiempo estimado prom.',st.avgEstMs==null?'—':fmtDur(st.avgEstMs)],['Tiempo asignado total',st.totalAsignadoMs==null?'—':fmtDur(st.totalAsignadoMs)],['Promedio semanal',st.promSemanalMs==null?'—':fmtDur(st.promSemanalMs)]];
  document.getElementById('kpisTele').innerHTML=kpis.map(k=>`<div class="kpi"><div class="n">${k[1]}</div><div class="l">${esc(k[0])}</div></div>`).join('');
  const mx1=Math.max(...st.rowsTipo.map(x=>x[1]),1), mx2=Math.max(...st.rowsCli.map(x=>x[1]),1);
  const mx1a=Math.max(...st.rowsTipoA.map(x=>x[1]),1), mx2a=Math.max(...st.rowsCliA.map(x=>x[1]),1);
+ const mx1as=Math.max(...st.rowsTipoASem.map(x=>x[1]),1), mx2as=Math.max(...st.rowsCliASem.map(x=>x[1]),1);
  const jc=st.jornadaCounts, jTotal=jc.laboral+jc.excedido+jc.sabado+jc.domingo;
  document.getElementById('analisisTele').innerHTML=`
   <div class="grid2">
@@ -1803,8 +1834,12 @@ function renderTelematica(){
    <div class="card"><div class="lab" style="margin-top:0">Tiempo estimado por cliente <span class="tinfo" style="text-transform:none;font-weight:400">(hábil, lun-vie 8-17h)</span></div>${st.rowsCli.length?st.rowsCli.map(r=>{const w=Math.max(3,Math.round(r[1]/mx2*100));return `<div class="bar"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span></div>`;}).join(''):'<p class="tinfo">Todavía no hay tickets con fechas para calcular esto.</p>'}</div>
   </div>
   <div class="grid2">
-   <div class="card"><div class="lab" style="margin-top:0">Tiempo asignado por tipo de solicitud <span class="tinfo" style="text-transform:none;font-weight:400">(real, hora a hora)</span></div>${st.rowsTipoA.length?st.rowsTipoA.map(r=>{const w=Math.max(3,Math.round(r[1]/mx1a*100));return `<div class="bar"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span></div>`;}).join(''):'<p class="tinfo">Todavía no hay tickets con hora de inicio y fin cargadas.</p>'}</div>
-   <div class="card"><div class="lab" style="margin-top:0">Tiempo asignado por cliente <span class="tinfo" style="text-transform:none;font-weight:400">(real, hora a hora)</span></div>${st.rowsCliA.length?st.rowsCliA.map(r=>{const w=Math.max(3,Math.round(r[1]/mx2a*100));return `<div class="bar"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span></div>`;}).join(''):'<p class="tinfo">Todavía no hay tickets con hora de inicio y fin cargadas.</p>'}</div>
+   <div class="card"><div class="lab" style="margin-top:0">Tiempo asignado por tipo de solicitud <span class="tinfo" style="text-transform:none;font-weight:400">(real, total acumulado)</span></div>${st.rowsTipoA.length?st.rowsTipoA.map(r=>{const w=Math.max(3,Math.round(r[1]/mx1a*100));return `<div class="bar"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span></div>`;}).join(''):'<p class="tinfo">Todavía no hay tickets con hora de inicio y fin cargadas.</p>'}</div>
+   <div class="card"><div class="lab" style="margin-top:0">Tiempo asignado por cliente <span class="tinfo" style="text-transform:none;font-weight:400">(real, total acumulado)</span></div>${st.rowsCliA.length?st.rowsCliA.map(r=>{const w=Math.max(3,Math.round(r[1]/mx2a*100));return `<div class="bar"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span></div>`;}).join(''):'<p class="tinfo">Todavía no hay tickets con hora de inicio y fin cargadas.</p>'}</div>
+  </div>
+  <div class="grid2">
+   <div class="card"><div class="lab" style="margin-top:0">Promedio semanal por tipo de solicitud <span class="tinfo" style="text-transform:none;font-weight:400">(sobre una semana laboral de 40hs: 8hs diarias x 5 días, con 1h de almuerzo descontada)</span></div>${st.rowsTipoASem.length?st.rowsTipoASem.map(r=>{const w=Math.max(3,Math.round(r[1]/mx1as*100));return `<div class="bar"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span></div>`;}).join(''):'<p class="tinfo">Todavía no hay tickets con hora de inicio y fin cargadas.</p>'}</div>
+   <div class="card"><div class="lab" style="margin-top:0">Promedio semanal por cliente <span class="tinfo" style="text-transform:none;font-weight:400">(sobre una semana laboral de 40hs: 8hs diarias x 5 días, con 1h de almuerzo descontada)</span></div>${st.rowsCliASem.length?st.rowsCliASem.map(r=>{const w=Math.max(3,Math.round(r[1]/mx2as*100));return `<div class="bar"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span></div>`;}).join(''):'<p class="tinfo">Todavía no hay tickets con hora de inicio y fin cargadas.</p>'}</div>
   </div>
   <div class="card"><div class="lab" style="margin-top:0">Resoluciones por franja horaria <span class="tinfo" style="text-transform:none;font-weight:400">(según la hora de resolución cargada — horario laboral: lunes a viernes de 8 a 17 hs)</span></div>
    ${jTotal?`<div class="tkpi">
