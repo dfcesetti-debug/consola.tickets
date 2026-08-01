@@ -272,6 +272,14 @@ details.cm[open] summary::before{content:'▾ '}
 .cfgSec summary::before{content:'▸ ';color:var(--mut2)}
 .cfgSec[open] summary::before{content:'▾ '}
 .cfgTableWrap{overflow-x:auto}
+.teleRowsHead,.teleRow{display:grid;grid-template-columns:150px 130px 170px 80px 110px 150px 1fr 30px;gap:8px;align-items:center;min-width:950px}
+.teleRowsHead{font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.04em;padding:0 0 8px;border-bottom:1px solid var(--edge)}
+.teleRow{padding:8px 0;border-bottom:1px solid var(--edge2)}
+.teleRow:last-child{border-bottom:none}
+.teleRow .finput{padding:6px 8px;font-size:12.5px}
+.teleRow .trRemove{background:transparent;border:1px solid var(--edge);border-radius:8px;color:var(--mut2);cursor:pointer;padding:5px 8px;font-size:12px;line-height:1}
+.teleRow .trRemove:hover{color:#c0392b;border-color:#c0392b}
+.teleRow .trRemove:disabled{opacity:.35;cursor:not-allowed}
 .cfgTable{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:2px;min-width:520px}
 .cfgTable th{text-align:left;font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.04em;padding:4px 6px}
 .cfgTable td{padding:3px 6px;vertical-align:middle}
@@ -494,25 +502,22 @@ details.cm[open] summary::before{content:'▾ '}
    <div class="card">
     <details class="cfgSec" id="teleFormSec">
      <summary>+ Carga de tarea</summary>
-     <div class="grid2">
-      <div class="fRow"><div class="lab" style="margin-top:0">Cliente</div><select class="finput" id="teleCliente"></select></div>
-      <div class="fRow"><div class="lab" style="margin-top:0">Tipo de solicitud</div>
-       <input class="finput" id="teleTipo" list="dlTeleTipo" placeholder="Escribí para buscar (ej: Soporte, Reportes, Coordinación...)" autocomplete="off">
-       <datalist id="dlTeleTipo"></datalist>
-      </div>
-      <div class="fRow"><div class="lab" style="margin-top:0">Fecha</div>
-       <input type="date" class="finput" id="teleFecha">
-      </div>
-      <div class="fRow"><div class="lab" style="margin-top:0">Cantidad de horas</div>
-       <input type="number" class="finput" id="teleHoras" min="0" step="0.25" placeholder="Ej: 3 o 1.5">
-      </div>
-      <div class="fRow"><div class="lab" style="margin-top:0">Estado</div>
-       <select class="finput" id="teleEstado"><option>Pendiente</option><option>En curso</option><option>Resuelto</option></select>
-      </div>
-      <div class="fRow"><div class="lab" style="margin-top:0">Responsable</div><input class="finput" id="teleResp" list="dlUsuariosTele" placeholder="Quién lo atendió"><datalist id="dlUsuariosTele"></datalist></div>
+     <p class="tinfo" style="margin:0 0 10px">Podés cargar varias tareas del mismo día: una fila por tarea, cada una con su cliente, tipo y horas.</p>
+     <div class="fRow" style="max-width:220px"><div class="lab" style="margin-top:0">Fecha</div>
+      <input type="date" class="finput" id="teleFecha">
      </div>
-     <div class="fRow"><div class="lab" style="margin-top:0">Detalle</div><textarea class="ftextarea" id="teleDetalle" placeholder="Descripción de la solicitud"></textarea></div>
-     <button class="btn primary" id="btnTeleGuardar">+ Cargar tarea</button>
+     <div class="cfgTableWrap">
+      <div class="teleRowsHead">
+       <span>Cliente</span><span>Categoría</span><span>Sub tipo</span><span>Horas</span><span>Estado</span><span>Responsable</span><span>Detalle</span><span></span>
+      </div>
+      <div id="teleRows"></div>
+     </div>
+     <datalist id="dlUsuariosTele"></datalist>
+     <datalist id="dlTeleTipo"></datalist>
+     <div style="margin-top:10px">
+      <button type="button" class="btn sm" id="btnTeleAddRow">+ Agregar otra tarea</button>
+      <button class="btn primary" id="btnTeleGuardar" style="margin-left:8px">Guardar tarea(s)</button>
+     </div>
      <details class="cfgSec" style="margin-top:14px">
       <summary>¿Qué diferencia hay entre Reportes N°1, N°2 y N°3?</summary>
       <ul class="clean" style="padding-bottom:4px">
@@ -1853,16 +1858,68 @@ function renderClientesKpis(cc){
  box.innerHTML=kpis.map(k=>`<div class="kpi"><div class="n">${k[1]}</div><div class="l">${esc(k[0])}</div></div>`).join('');
 }
 
-/* Referente Telemática — módulo de carga manual para clientes fuera de Jira */
+/* Referente Telemática — módulo de carga manual para clientes fuera de Jira.
+   "Carga de tarea" permite cargar varias tareas del mismo día en filas (una fila = una tarea),
+   cada una con su propio cliente/categoría/sub tipo/horas/estado/responsable/detalle — solo la
+   Fecha es compartida por todas las filas que se guarden juntas. */
+let teleRowSeq=0;
+function teleCatOptionsHtml(){ return TELE_TIPO_GROUPS.map(([g])=>`<option value="${esc(g)}">${esc(g)}</option>`).join(''); }
+function teleSubOptionsHtml(categoria){
+ const group=TELE_TIPO_GROUPS.find(([g])=>g===categoria);
+ const opts=group?group[1]:[categoria];
+ return opts.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('');
+}
+function teleRowHtml(key){
+ const firstCat=TELE_TIPO_GROUPS.length?TELE_TIPO_GROUPS[0][0]:'';
+ return `<div class="teleRow" data-row="${key}">
+  <select class="finput trCliente"></select>
+  <select class="finput trCategoria" onchange="updateTeleSubtipo(this)">${teleCatOptionsHtml()}</select>
+  <select class="finput trSubtipo">${teleSubOptionsHtml(firstCat)}</select>
+  <input type="number" class="finput trHoras" min="0" step="0.25" placeholder="Ej: 1.5">
+  <select class="finput trEstado"><option>Pendiente</option><option>En curso</option><option>Resuelto</option></select>
+  <input class="finput trResp" list="dlUsuariosTele" placeholder="Responsable">
+  <input class="finput trDetalle" placeholder="Detalle (opcional)">
+  <button type="button" class="trRemove" onclick="removeTeleRow(this)" title="Quitar esta tarea">✕</button>
+ </div>`;
+}
+function updateTeleRowRemoveButtons(){
+ const btns=document.querySelectorAll('#teleRows .teleRow .trRemove');
+ btns.forEach(b=>b.disabled=btns.length<=1);
+}
+window.updateTeleSubtipo=function(catSel){
+ catSel.closest('.teleRow').querySelector('.trSubtipo').innerHTML=teleSubOptionsHtml(catSel.value);
+};
+window.removeTeleRow=function(btn){
+ const rows=document.querySelectorAll('#teleRows .teleRow');
+ if(rows.length<=1) return;
+ btn.closest('.teleRow').remove();
+ updateTeleRowRemoveButtons();
+};
+window.addTeleRow=function(){
+ const wrap=document.getElementById('teleRows'); if(!wrap)return;
+ const key='r'+(++teleRowSeq);
+ wrap.insertAdjacentHTML('beforeend',teleRowHtml(key));
+ const row=wrap.querySelector(`[data-row="${key}"]`);
+ const teleClients=CLIENTS;
+ const cliSel=row.querySelector('.trCliente');
+ cliSel.innerHTML=teleClients.length?teleClients.map(c=>`<option>${esc(c.name)}</option>`).join(''):'<option value="">— configurá al menos un cliente en Clientes —</option>';
+ cliSel.disabled=!teleClients.length;
+ updateTeleRowRemoveButtons();
+};
 function renderTeleForm(){
- const sel=document.getElementById('teleCliente'); if(!sel)return;
+ const wrap=document.getElementById('teleRows'); if(!wrap)return;
  const teleClients=CLIENTS; // cualquier cliente puede tener tickets de Telemática (ej. Quilmes/Cervepar para contabilizar tiempo de coordinaciones que no pasan por Jira)
- const prev=sel.value;
- sel.innerHTML=teleClients.length?teleClients.map(c=>`<option ${c.name===prev?'selected':''}>${esc(c.name)}</option>`).join(''):'<option value="">— configurá al menos un cliente en Clientes —</option>';
- sel.disabled=!teleClients.length;
+ const cliOptsHtml=teleClients.length?teleClients.map(c=>`<option>${esc(c.name)}</option>`).join(''):'<option value="">— configurá al menos un cliente en Clientes —</option>';
+ document.querySelectorAll('#teleRows .trCliente').forEach(sel=>{
+  const prev=sel.value; sel.innerHTML=cliOptsHtml; sel.disabled=!teleClients.length;
+  if(teleClients.some(c=>c.name===prev)) sel.value=prev;
+ });
  const btn=document.getElementById('btnTeleGuardar'); if(btn) btn.disabled=!teleClients.length;
+ const addBtn=document.getElementById('btnTeleAddRow'); if(addBtn) addBtn.disabled=!teleClients.length;
  const dl=document.getElementById('dlUsuariosTele'); if(dl) dl.innerHTML=[...TEAM].sort().map(x=>`<option value="${esc(x)}">`).join('');
  const dlTipo=document.getElementById('dlTeleTipo'); if(dlTipo) dlTipo.innerHTML=teleTipoDatalistHtml();
+ const feEl=document.getElementById('teleFecha'); if(feEl && !feEl.value) feEl.value=todayStr();
+ if(!wrap.children.length) addTeleRow();
 }
 function teleStats(){
  const jornadaCounts={semana:0,sabado:0,domingo:0};
@@ -1990,20 +2047,30 @@ function renderTelematica(){
   TELE=TELE.filter(x=>x.id!==b.dataset.teleDel); saveTele(); pushState(); renderTelematica(); refresh();
  });
 }
+document.getElementById('btnTeleAddRow').onclick=()=>addTeleRow();
 document.getElementById('btnTeleGuardar').onclick=()=>{
- const cliente=document.getElementById('teleCliente').value;
- const tipo=document.getElementById('teleTipo').value;
  const fecha=document.getElementById('teleFecha').value;
- const horasStr=document.getElementById('teleHoras').value;
- const horas=horasStr===''?null:Number(horasStr);
- const estado=document.getElementById('teleEstado').value;
- const responsable=(document.getElementById('teleResp').value||'').trim();
- const detalle=(document.getElementById('teleDetalle').value||'').trim();
- if(!cliente||!fecha){ alert('Completá al menos Cliente y Fecha.'); return; }
- TELE.push({id:'t'+Date.now().toString(36)+Math.random().toString(36).slice(2,7), cliente, tipo, fecha, horas, estado, responsable, detalle, creado:new Date().toISOString(),
-  historial:[{fecha:new Date().toLocaleString('es-AR'),usuario:responsable||'Sin identificar',resumen:'Ticket creado'}]});
+ if(!fecha){ alert('Completá la fecha.'); return; }
+ const filas=[...document.querySelectorAll('#teleRows .teleRow')];
+ const nuevos=[];
+ for(const row of filas){
+  const cliente=row.querySelector('.trCliente').value;
+  if(!cliente) continue; // fila vacía (sin cliente elegido): se ignora en vez de bloquear el guardado del resto
+  const tipo=row.querySelector('.trSubtipo').value||row.querySelector('.trCategoria').value;
+  const horasStr=row.querySelector('.trHoras').value;
+  const horas=horasStr===''?null:Number(horasStr);
+  const estado=row.querySelector('.trEstado').value;
+  const responsable=(row.querySelector('.trResp').value||'').trim();
+  const detalle=(row.querySelector('.trDetalle').value||'').trim();
+  nuevos.push({cliente,tipo,horas,estado,responsable,detalle});
+ }
+ if(!nuevos.length){ alert('Completá al menos una tarea con Cliente.'); return; }
+ nuevos.forEach(t=>{
+  TELE.push({id:'t'+Date.now().toString(36)+Math.random().toString(36).slice(2,7), cliente:t.cliente, tipo:t.tipo, fecha, horas:t.horas, estado:t.estado, responsable:t.responsable, detalle:t.detalle, creado:new Date().toISOString(),
+   historial:[{fecha:new Date().toLocaleString('es-AR'),usuario:t.responsable||'Sin identificar',resumen:'Ticket creado'}]});
+ });
  saveTele(); pushState();
- document.getElementById('teleFecha').value=''; document.getElementById('teleHoras').value=''; document.getElementById('teleDetalle').value=''; document.getElementById('teleResp').value=''; document.getElementById('teleEstado').value='Pendiente';
+ document.getElementById('teleRows').innerHTML='';
  renderTelematica(); refresh();
 };
 /* modal de ticket de Telemática: ver/editar con historial de cambios (mismo patrón que el modal de ficha) */
