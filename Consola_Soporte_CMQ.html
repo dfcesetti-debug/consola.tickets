@@ -123,6 +123,11 @@ h2.vt{font-size:20px;margin:2px 0}
 @keyframes pop{0%{transform:scale(.7);color:var(--accent)}100%{transform:none}}
 
 .card{background:var(--panel);border:1px solid var(--edge);border-radius:var(--r);padding:18px 20px;margin:14px 0;box-shadow:0 1px 2px rgba(16,32,60,.04)}
+details.card>summary{cursor:pointer;list-style:none}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary::marker{content:''}
+details.card>summary::before{content:'▸ ';color:var(--mut2);font-size:11px}
+details.card[open]>summary::before{content:'▾ '}
 .lab{font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 5px}
 .eyebrow{font-family:var(--mono);font-size:11px;color:var(--accent2);font-weight:700;letter-spacing:.04em}
 
@@ -1132,6 +1137,10 @@ function clientTimeStats(){
  });
 }
 let respView='all', panelRange='', tkpiOpen=new Set();
+// tarjetas principales del Panel: todas abiertas por defecto (nada cambia a simple vista); acá
+// se recuerda cuáles se cerraron a mano, para no perder ese estado entre re-renders (cada cambio
+// de filtro re-arma este HTML entero).
+let panelCardClosed=new Set();
 // detalle desplegable de cada KPI de "Tiempos de respuesta y resolución": lista de los tickets
 // detrás del promedio (los más lentos primero), cada uno clickeable a goTicket(); "Ver todos en
 // Tickets" abajo reusa el mismo scope (cliente) que ya tiene el Panel, sin el filtro de fecha propio del Panel.
@@ -1199,12 +1208,13 @@ function renderAnalisis(){
  const rf = rv==='int'? A.responders.filter(r=>TEAM.has(r[0])) : rv==='cli'? A.responders.filter(r=>!TEAM.has(r[0])) : A.responders;
  const resp=rf.slice(0,16), mx3=Math.max(...resp.map(x=>x[1]),1);
  const jump = rv==='all'?'' : `<span class="respBanner" style="margin:0 0 0 auto;padding:5px 11px;cursor:pointer" onclick="goRespType('${rv}')">Ver historial de estos tickets →</span>`;
+ const pcOpen=k=>panelCardClosed.has(k)?'':' open';
  box.innerHTML=`
-  <div class="card">
-   <div class="mtop" style="align-items:center;margin-bottom:2px">
+  <details class="card" data-pc="tiempos"${pcOpen('tiempos')}>
+   <summary class="mtop" style="align-items:center;margin-bottom:2px">
     <div class="lab" style="margin:0">Tiempos de respuesta y resolución${scopeCli?' · '+esc(scopeCli):''} <span class="tinfo" style="text-transform:none;font-weight:400">${hasSla?'(SLA de Jira)':'(estimado, horario hábil lun-vie 8-17h)'}</span></div>
-    ${rangeSel}
-   </div>
+    <span onclick="event.stopPropagation()">${rangeSel}</span>
+   </summary>
    <p class="tinfo" style="margin:0 0 10px">${panelRange?RANGE_OPTS.find(r=>r[0]===panelRange)[1]+' · '+TF.length+' ticket'+(TF.length===1?'':'s')+' en este rango':'Sin rango de fechas — se están usando todos los tickets cargados.'}</p>
    <div class="tkpi">
     <details class="box int tkCard"${tkpiOpen.has('int')?' open':''} data-k="int"><summary><div class="n">${hasSla?fmtDur(aInt*864e5):fmtD(aInt)}</div><div class="l">${hasSla?'Tiempo de 1ª respuesta (SLA, prom.)':'1ª respuesta interna (prom.)'} · ${nInt} tickets${nIntBreach?` · <span style="color:var(--cli)">${nIntBreach} incumplidos</span>`:''}</div></summary>${tkpiDetailHtml(TZ,'intResp',hasSla)}</details>
@@ -1218,32 +1228,38 @@ function renderAnalisis(){
     <p class="tinfo" style="margin:4px 0 0">La app todavía no distingue la gravedad de cada ticket (Jira trae casi todo en prioridad "Medium"), así que estos umbrales no se usan para marcar cumple/incumple — quedan acá solo como consulta. Única diferencia entre clientes: la resolución de Crítico (Quilmes 24h, Cervepar 12h).</p>
     ${scopeCli?slaTableHtml(scopeCli):['Quilmes','Cervepar'].map(slaTableHtml).join('')}
    </details>
-  </div>
-  <div class="card"><div class="lab">Tiempos por cliente · vía Jira <span class="tinfo" style="text-transform:none;font-weight:400">(SLA de Jira — no depende del filtro de cliente de arriba, sí respeta el rango de fechas de arriba)</span></div>
+  </details>
+  <details class="card" data-pc="clijira"${pcOpen('clijira')}>
+   <summary class="lab">Tiempos por cliente · vía Jira <span class="tinfo" style="text-transform:none;font-weight:400">(SLA de Jira — no depende del filtro de cliente de arriba, sí respeta el rango de fechas de arriba)</span></summary>
    <div class="cmpTable">
     <div class="cmpRow cmpHead"><span>Cliente</span><span>Tickets</span><span>1ª respuesta</span><span>Espera cliente</span><span>Resolución</span></div>
     ${cts.length?cts.map(r=>`<div class="cmpRow clickRow" data-cli="${esc(r.cli)}" onclick="goCliente(this.dataset.cli)" title="Ver tickets de ${esc(r.cli)}"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cli)};margin-right:6px"></span>${esc(r.cli)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${fmtDur(r.aInt*864e5)} <span class="tinfo">(${r.nInt})</span></span><span class="cmpn">${fmtDur(r.aCli*864e5)} <span class="tinfo">(${r.nCli})</span></span><span class="cmpn">${fmtDur(r.aTot*864e5)}</span></div>`).join(''):'<p class="tinfo">Sin datos.</p>'}
    </div>
-  </div>
-  <div class="card"><div class="lab">Tiempos por cliente · vía Referente Telemática <span class="tinfo" style="text-transform:none;font-weight:400">(tickets cargados manualmente en el módulo Telemática — incluye clientes con Jira si se usa para coordinaciones u otras tareas que no pasan por Jira)</span></div>
+  </details>
+  <details class="card" data-pc="clitele"${pcOpen('clitele')}>
+   <summary class="lab">Tiempos por cliente · vía Referente Telemática <span class="tinfo" style="text-transform:none;font-weight:400">(tickets cargados manualmente en el módulo Telemática — incluye clientes con Jira si se usa para coordinaciones u otras tareas que no pasan por Jira)</span></summary>
    <div class="cmpTable" style="--cols:1.5fr .7fr .8fr 1.1fr 1fr">
     <div class="cmpRow cmpHead" style="grid-template-columns:var(--cols)"><span>Cliente</span><span>Tickets</span><span>Resueltos</span><span>Tiempo asignado (real, total)</span><span>Promedio semanal <span class="tinfo" style="text-transform:none;font-weight:400">(8hs/día)</span></span></div>
     ${teleCli.length?teleCli.map(r=>`<div class="cmpRow clickRow" data-cli="${esc(r.cliente)}" onclick="goTeleCliente(this.dataset.cli)" title="Ver tareas de ${esc(r.cliente)} en Telemática"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cliente)};margin-right:6px"></span>${esc(r.cliente)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${r.nResueltos}</span><span class="cmpn">${r.totalAsignadoMs==null?'—':fmtDur(r.totalAsignadoMs)+' ('+r.nAsignado+')'}</span><span class="cmpn">${r.promSemanalMs==null?'—':fmtDur(r.promSemanalMs)}</span></div>`).join(''):'<p class="tinfo">Todavía no hay clientes marcados como "Referente Telemática" con tickets cargados. Se configura en Clientes, y se cargan tickets en el módulo Telemática.</p>'}
    </div>
-  </div>
-  <div class="card"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div class="lab" style="margin:0">Quién respondió los tickets</div>
-    <div class="seg"><button class="${rv==='all'?'on':''}" onclick="setRespView('all')">Todos</button><button class="${rv==='int'?'on int':''}" onclick="setRespView('int')">Internos</button><button class="${rv==='cli'?'on cli':''}" onclick="setRespView('cli')">Clientes</button></div>${jump}</div>
+  </details>
+  <details class="card" data-pc="quienresp"${pcOpen('quienresp')}>
+   <summary style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div class="lab" style="margin:0">Quién respondió los tickets</div>
+    <span onclick="event.stopPropagation()" class="seg"><button class="${rv==='all'?'on':''}" onclick="setRespView('all')">Todos</button><button class="${rv==='int'?'on int':''}" onclick="setRespView('int')">Internos</button><button class="${rv==='cli'?'on cli':''}" onclick="setRespView('cli')">Clientes</button></span>${jump}</summary>
    <p class="tinfo" style="margin:6px 0 4px">Hacé clic en una persona para ver en el historial los tickets que respondió.</p>
-   ${resp.length?resp.map(r=>{const w=Math.max(3,Math.round(r[1]/mx3*100));const cls=TEAM.has(r[0])?'int':'cli';return `<div class="bar ${cls} rbar" data-n="${esc(r[0])}" onclick="goResponder(this.dataset.n)" title="Ver tickets respondidos por ${esc(r[0])}"><span class="bn">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${r[1]}</span></div>`;}).join(''):'<p class="tinfo">Sin datos.</p>'}</div>
-  <div class="card"><div class="lab">Tickets por cliente (toda la base)</div>${cliBarRows(true)}</div>
-  <div class="card"><div class="lab">Tickets por tipo de desagío${scopeCli?' · '+esc(scopeCli):''}</div>${bt.length?barRows(bt,mx1,'','goTipo',i=>i.tipo):'<p class="tinfo">Sin datos.</p>'}</div>
-  <div class="card"><div class="lab">Clientes que más cargaron tickets</div>${rep.length?barRows(rep,mx2,'','goInformador',i=>i.informador):'<p class="tinfo">Sin datos.</p>'}</div>
-  <div class="card"><div class="lab">Responsables asignados</div>${asg.length?barRows(asg,mx4,'','goAsignado',i=>i.asignado):'<p class="tinfo">Sin datos.</p>'}</div>`;
+   ${resp.length?resp.map(r=>{const w=Math.max(3,Math.round(r[1]/mx3*100));const cls=TEAM.has(r[0])?'int':'cli';return `<div class="bar ${cls} rbar" data-n="${esc(r[0])}" onclick="goResponder(this.dataset.n)" title="Ver tickets respondidos por ${esc(r[0])}"><span class="bn">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${r[1]}</span></div>`;}).join(''):'<p class="tinfo">Sin datos.</p>'}</details>
+  <details class="card" data-pc="clitotal"${pcOpen('clitotal')}><summary class="lab">Tickets por cliente (toda la base)</summary>${cliBarRows(true)}</details>
+  <details class="card" data-pc="tipo"${pcOpen('tipo')}><summary class="lab">Tickets por tipo de desagío${scopeCli?' · '+esc(scopeCli):''}</summary>${bt.length?barRows(bt,mx1,'','goTipo',i=>i.tipo):'<p class="tinfo">Sin datos.</p>'}</details>
+  <details class="card" data-pc="informador"${pcOpen('informador')}><summary class="lab">Clientes que más cargaron tickets</summary>${rep.length?barRows(rep,mx2,'','goInformador',i=>i.informador):'<p class="tinfo">Sin datos.</p>'}</details>
+  <details class="card" data-pc="asignado"${pcOpen('asignado')}><summary class="lab">Responsables asignados</summary>${asg.length?barRows(asg,mx4,'','goAsignado',i=>i.asignado):'<p class="tinfo">Sin datos.</p>'}</details>`;
  box.querySelectorAll('.tkpi .tkCard').forEach(d=>{
   d.addEventListener('toggle',()=>{ const k=d.dataset.k; if(d.open)tkpiOpen.add(k); else tkpiOpen.delete(k); });
  });
  box.querySelectorAll('[data-bk].tkCard').forEach(d=>{
   d.addEventListener('toggle',()=>{ const k=d.dataset.bk; if(d.open)barOpen.add(k); else barOpen.delete(k); });
+ });
+ box.querySelectorAll(':scope > [data-pc]').forEach(d=>{
+  d.addEventListener('toggle',()=>{ const k=d.dataset.pc; if(d.open)panelCardClosed.delete(k); else panelCardClosed.add(k); });
  });
 }
 
