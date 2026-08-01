@@ -256,6 +256,10 @@ details.cm[open] summary::before{content:'▾ '}
 .bar{display:grid;grid-template-columns:210px 1fr 100px;align-items:center;gap:10px;margin:6px 0}
 .bar.pct{grid-template-columns:210px 1fr 62px 54px 68px}
 .bar .bn{font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar.tkCard{display:block;cursor:pointer}
+.bar.tkCard>summary{display:grid;grid-template-columns:210px 1fr 100px;align-items:center;gap:10px;list-style:none;cursor:pointer}
+.bar.tkCard>summary::-webkit-details-marker{display:none}
+.bar.tkCard>summary::marker{content:''}
 .bar .track{background:var(--edge2);border-radius:6px;height:20px;overflow:hidden}
 .bar .fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent),#22d3ee)}
 .bar .bv{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent2);text-align:right;white-space:nowrap}
@@ -372,7 +376,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 @media(max-width:720px){
  .rail{position:fixed;bottom:0;top:auto;left:0;right:0;width:100%;height:auto;flex-direction:row;padding:6px;z-index:50;overflow-x:auto}
  .brand,.railfoot{display:none}.nav{flex-direction:row;gap:2px}.nav a{flex-direction:column;gap:2px;padding:7px 10px;font-size:10.5px}.nav a .cnt{display:none}
- .main{padding-bottom:66px}.bar{grid-template-columns:130px 1fr 84px}.bar.pct{grid-template-columns:130px 1fr 56px 46px 52px}.bar .bkpi{font-size:8px;padding:2px 5px}
+ .main{padding-bottom:66px}.bar{grid-template-columns:130px 1fr 84px}.bar.pct{grid-template-columns:130px 1fr 56px 46px 52px}.bar .bkpi{font-size:8px;padding:2px 5px}.bar.tkCard>summary{grid-template-columns:130px 1fr 84px}
  .clirow{grid-template-columns:20px 1fr;gap:8px}
 }
 </style>
@@ -422,6 +426,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
   <a data-v="tickets"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8Z"></path><line x1="10" y1="7" x2="10" y2="17" stroke-dasharray="2 2"></line></svg></span> Tickets <span class="cnt" id="c-tickets">0</span></a>
   <a data-v="clientes"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"></circle><path d="M3.5 19c.6-3.2 2.9-5 5.5-5s4.9 1.8 5.5 5"></path><circle cx="17" cy="8.5" r="2.4"></circle><path d="M15.2 14.3c2.2.4 3.7 1.9 4.2 4.7"></path></svg></span> Clientes <span class="cnt" id="c-clientes">0</span></a>
   <a data-v="telematica"><span class="ic"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2.2"></rect><line x1="7" y1="17.5" x2="17" y2="17.5"></line></svg></span> Telemática <span class="cnt" id="c-telematica">0</span></a>
+  <a data-v="config"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"></circle><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l1.9-1.5-2-3.4-2.3.9a7.6 7.6 0 0 0-2.6-1.5L14 2.4h-4l-.4 2.6a7.6 7.6 0 0 0-2.6 1.5l-2.3-.9-2 3.4L4.6 10.5a7.6 7.6 0 0 0 0 3L2.7 15l2 3.4 2.3-.9a7.6 7.6 0 0 0 2.6 1.5l.4 2.6h4l.4-2.6a7.6 7.6 0 0 0 2.6-1.5l2.3.9 2-3.4-1.9-1.5Z"></path></svg></span> Configuración</a>
  </nav>
  <div class="railfoot">Información exclusiva de Telemática · Cesetti<br><a id="btnLogout">Cerrar sesión</a></div>
 </aside>
@@ -461,48 +466,11 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
    <h2 class="vt">Tickets anteriores <span class="scopenote" id="scope3"></span></h2>
    <p class="sub">Buscá arriba y filtrá abajo. Podés elegir varios tipos a la vez. Cada ticket muestra su cliente y podés reasignarlo.</p>
 
-   <details class="cfgSec" id="dataConnSec" open>
-    <summary>Conexión con Jira / Cargar datos</summary>
-    <p class="tinfo" style="margin:6px 0 10px">Traé los tickets reales de Jira, o subí un export/respaldo. Todo se combina sin duplicar, se etiqueta por cliente (CERVEPAR→Cervepar, SG→Quilmes) y recalcula tiempos con las fechas reales.</p>
-    <div class="card" style="margin-top:0">
-     <div class="lab" style="margin-top:0">Traer tickets de Jira</div>
-     <p class="tinfo" style="margin:0 0 10px">Elegí qué tickets traer. Podés combinar varios tipos y varios clientes a la vez (dejar sin marcar = todos).</p>
-     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-      <div class="msel" id="mselTipos">
-       <button type="button" class="mselBtn" id="mselTiposBtn">Tipo de ticket: Todos <span class="arrow">▾</span></button>
-       <div class="mselPanel" id="mselTiposPanel"></div>
-      </div>
-      <div class="msel" id="mselClientes">
-       <button type="button" class="mselBtn" id="mselClientesBtn">Cliente: Todos <span class="arrow">▾</span></button>
-       <div class="mselPanel" id="mselClientesPanel"></div>
-      </div>
-      <button class="btn primary" id="btnApi">Traer datos</button>
-      <button class="btn" id="btnClearData" title="Empezar de cero">Vaciar base</button>
-     </div>
-     <p class="tinfo" style="margin:8px 0 0">Cada consulta <b>reemplaza</b> la base para que coincida exacto con Jira.</p>
-     <details id="apiAdvSec" style="margin-top:10px">
-      <summary style="font-size:12px;color:var(--mut);cursor:pointer">Configuración avanzada (URL de conexión)</summary>
-      <p class="tinfo" style="margin:6px 0 8px">La URL de conexión ya queda guardada automáticamente para todos. Solo tocá esto si necesitás apuntar a otra función/servidor.</p>
-      <input id="apiUrl" type="text" placeholder="https://tu-cloud-function-url" style="width:100%;max-width:480px;padding:10px 12px;border:1px solid var(--edge);border-radius:10px;font-family:var(--mono);font-size:12.5px">
-     </details>
-    </div>
-    <details id="uploadSec">
-     <summary style="font-size:12px;color:var(--mut);cursor:pointer">O subí un archivo</summary>
-     <div class="drop" id="drop" style="margin-top:8px">
-      <div class="ic">&#11123;</div><h3>Soltá el archivo acá</h3>
-      <p>o hacé clic para elegirlo · Jira (.doc/.html) o respaldo (.json)</p>
-      <input type="file" id="file" accept=".doc,.html,.htm,.xml,.json" style="display:none" multiple>
-     </div>
-    </details>
-    <div class="tools">
-     <button class="btn" id="btnJson">&#8675; Descargar respaldo (.json)</button>
-     <button class="btn" id="btnCsv">&#8675; Exportar tickets (.csv)</button>
-    </div>
-    <div class="logWrap">
-     <div class="logHead"><svg viewBox="0 0 24 24"><path d="M20 16.6A4.5 4.5 0 0 0 18 8h-1.3A6 6 0 1 0 5 13.7"></path></svg>Actividad</div>
-     <div class="log" id="log">Esperando archivo…</div>
-    </div>
-   </details>
+   <div class="card" id="dataConnShortcut" style="margin-bottom:14px">
+    <div class="lab" style="margin-top:0">Conexión con Jira / Cargar datos</div>
+    <p class="tinfo" style="margin:0 0 10px">Se movió a Configuración para dejar más lugar a la lista de tickets.</p>
+    <button class="btn" onclick="navTo('config');setCfgView('datos')">Ir a Configuración →</button>
+   </div>
 
    <div id="respBanner"></div>
    <div class="filtrow">
@@ -591,6 +559,84 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
    <div class="card"><div class="lab" style="margin-top:0">Tickets cargados</div><div id="teleList"></div></div>
   </section>
 
+  <section class="view" id="v-config">
+   <div class="eyebrow">AJUSTES</div>
+   <h2 class="vt">Configuración</h2>
+   <p class="sub">Conexión de datos con Jira, modo de color predeterminado y tu perfil.</p>
+   <div class="seg" style="margin-bottom:14px">
+    <button id="btnCfgDatos" class="on" onclick="setCfgView('datos')">Conexión de datos</button>
+    <button id="btnCfgApariencia" onclick="setCfgView('apariencia')">Apariencia</button>
+    <button id="btnCfgPerfil" onclick="setCfgView('perfil')">Mi perfil</button>
+   </div>
+
+   <div id="cfgDatos">
+    <p class="tinfo" style="margin:0 0 10px">Traé los tickets reales de Jira, o subí un export/respaldo. Todo se combina sin duplicar, se etiqueta por cliente (CERVEPAR→Cervepar, SG→Quilmes) y recalcula tiempos con las fechas reales.</p>
+    <div class="card" style="margin-top:0">
+     <div class="lab" style="margin-top:0">Traer tickets de Jira</div>
+     <p class="tinfo" style="margin:0 0 10px">Elegí qué tickets traer. Podés combinar varios tipos y varios clientes a la vez (dejar sin marcar = todos).</p>
+     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <div class="msel" id="mselTipos">
+       <button type="button" class="mselBtn" id="mselTiposBtn">Tipo de ticket: Todos <span class="arrow">▾</span></button>
+       <div class="mselPanel" id="mselTiposPanel"></div>
+      </div>
+      <div class="msel" id="mselClientes">
+       <button type="button" class="mselBtn" id="mselClientesBtn">Cliente: Todos <span class="arrow">▾</span></button>
+       <div class="mselPanel" id="mselClientesPanel"></div>
+      </div>
+      <button class="btn primary" id="btnApi">Traer datos</button>
+      <button class="btn" id="btnClearData" title="Empezar de cero">Vaciar base</button>
+     </div>
+     <p class="tinfo" style="margin:8px 0 0">Cada consulta <b>reemplaza</b> la base para que coincida exacto con Jira.</p>
+     <details id="apiAdvSec" style="margin-top:10px">
+      <summary style="font-size:12px;color:var(--mut);cursor:pointer">Configuración avanzada (URL de conexión)</summary>
+      <p class="tinfo" style="margin:6px 0 8px">La URL de conexión ya queda guardada automáticamente para todos. Solo tocá esto si necesitás apuntar a otra función/servidor.</p>
+      <input id="apiUrl" type="text" placeholder="https://tu-cloud-function-url" style="width:100%;max-width:480px;padding:10px 12px;border:1px solid var(--edge);border-radius:10px;font-family:var(--mono);font-size:12.5px">
+     </details>
+    </div>
+    <details id="uploadSec">
+     <summary style="font-size:12px;color:var(--mut);cursor:pointer">O subí un archivo</summary>
+     <div class="drop" id="drop" style="margin-top:8px">
+      <div class="ic">&#11123;</div><h3>Soltá el archivo acá</h3>
+      <p>o hacé clic para elegirlo · Jira (.doc/.html) o respaldo (.json)</p>
+      <input type="file" id="file" accept=".doc,.html,.htm,.xml,.json" style="display:none" multiple>
+     </div>
+    </details>
+    <div class="tools">
+     <button class="btn" id="btnJson">&#8675; Descargar respaldo (.json)</button>
+     <button class="btn" id="btnCsv">&#8675; Exportar tickets (.csv)</button>
+    </div>
+    <div class="logWrap">
+     <div class="logHead"><svg viewBox="0 0 24 24"><path d="M20 16.6A4.5 4.5 0 0 0 18 8h-1.3A6 6 0 1 0 5 13.7"></path></svg>Actividad</div>
+     <div class="log" id="log">Esperando archivo…</div>
+    </div>
+   </div>
+
+   <div id="cfgApariencia" style="display:none">
+    <div class="card" style="max-width:480px">
+     <div class="lab" style="margin-top:0">Modo de color predeterminado</div>
+     <p class="tinfo" style="margin:0 0 12px">Elegí cómo querés ver la consola en este navegador.</p>
+     <div class="seg" id="segTheme">
+      <button data-t="" onclick="setThemePref('')">Según el sistema</button>
+      <button data-t="light" onclick="setThemePref('light')">Claro</button>
+      <button data-t="dark" onclick="setThemePref('dark')">Oscuro</button>
+     </div>
+    </div>
+   </div>
+
+   <div id="cfgPerfil" style="display:none">
+    <div class="card" style="max-width:480px">
+     <div class="lab" style="margin-top:0">Mi perfil</div>
+     <p class="tinfo" style="margin:0 0 12px">Se guarda para tu cuenta y se sincroniza si entrás desde otra PC.</p>
+     <div class="fRow"><div class="lab" style="margin-top:0">Nombre</div><input class="finput" id="perfNombre" placeholder="Ej: Diego"></div>
+     <div class="fRow"><div class="lab">Apellido</div><input class="finput" id="perfApellido" placeholder="Ej: Ferreira"></div>
+     <div class="fRow"><div class="lab">Correo</div><input class="finput" id="perfCorreo" disabled></div>
+     <div class="fRow"><div class="lab">Teléfono</div><input class="finput" id="perfTelefono" placeholder="Ej: +54 9 11 1234-5678"></div>
+     <button class="btn primary" id="btnSavePerfil" style="margin-top:6px">Guardar perfil</button>
+     <span class="tinfo" id="perfSaved" style="margin-left:8px"></span>
+    </div>
+   </div>
+  </section>
+
  </div>
 </div>
 
@@ -636,7 +682,7 @@ function load(){ try{const s=localStorage.getItem(STORE); DATA=s?JSON.parse(s):A
  CLIENTS.forEach(c=>{ if(!c.origen) c.origen='jira'; });
  loadTele();
  try{OVERRIDES=JSON.parse(localStorage.getItem(OSTORE))||{};}catch(e){OVERRIDES={};}
- loadFichas(); }
+ loadFichas(); loadProfiles(); }
 function persist(){ try{localStorage.setItem(STORE,JSON.stringify(DATA.map(({_blob,_cblob,_n,_d,_cli,...r})=>r)));}catch(e){} }
 function persistCli(){ try{localStorage.setItem(CSTORE,JSON.stringify(CLIENTS));localStorage.setItem(OSTORE,JSON.stringify(OVERRIDES));}catch(e){} }
 
@@ -856,16 +902,36 @@ function renderKPIs(){
 // goFn opcional: nombre de una función global (ej. "goTipo") a la que se le pasa la etiqueta de la
 // barra al hacer clic — mismo criterio que ya usan "1ª respuesta por tipo" y "Quién respondió".
 // Sin goFn queda como antes (usado en el resumen mini de Matriz N1, que no es clickeable).
-function barRows(rows,max,cls,goFn){
- return rows.map(r=>{const w=Math.max(3,Math.round(r[1]/max*100));
-  const cls2=(cls||'')+(goFn?' rbar':'');
-  const attrs=goFn?` data-v="${esc(r[0])}" onclick="${goFn}(this.dataset.v)" title="Ver tickets de &quot;${esc(r[0])}&quot;"`:'';
-  return `<div class="bar ${cls2}"${attrs}><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${r[1]}</span></div>`;}).join(''); }
+let barOpen=new Set();
+// mismo patrón que tkpiDetailHtml (v64): lista de hasta 25 tickets clickeables (goTicket) + botón
+// que aplica el filtro real (goTipo/goInformador/goAsignado/goCliente) y navega a Tickets.
+function ticketBarDetailHtml(items,goFn,arg){
+ const rows=items.slice(0,25);
+ if(!rows.length) return '<p class="tinfo" style="margin-top:8px">Sin tickets.</p>';
+ return `<div class="tkpiDetail">${rows.map(i=>`<div class="tkpiRow" onclick="goTicket('${esc(i.key)}')" title="Ver ${esc(i.key)} en Tickets"><span class="kk">${esc(i.key)}</span><span class="tt">${esc(i.title||'')}</span><span class="bv">${esc(i._cli||'')}</span></div>`).join('')}</div>
+  <button class="btn sm" style="margin-top:8px" data-gf="${esc(goFn)}" data-gv="${esc(arg)}" onclick="event.stopPropagation();window[this.dataset.gf](this.dataset.gv)">Ver ${items.length>25?'los primeros 25 (de '+items.length+')':'los '+items.length} en Tickets →</button>`;
+}
+// goFn/matchField/source opcionales: si se pasan, cada barra queda desplegable (mismo criterio que
+// cada ticket individual en la pestaña Tickets) con la lista de tickets detrás de esa barra.
+// Sin esos parámetros se comporta igual que antes (usado en el resumen mini de Matriz N1).
+function barRows(rows,max,cls,goFn,matchField,source){
+ return rows.map(r=>{
+  const w=Math.max(3,Math.round(r[1]/max*100));
+  const inner=`<span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${r[1]}</span>`;
+  if(!goFn) return `<div class="bar ${cls||''}">${inner}</div>`;
+  const bk='br:'+goFn+':'+r[0];
+  const items=(source||FSET).filter(i=>matchField(i)===r[0]);
+  return `<details class="bar ${cls||''} tkCard rbar" data-bk="${esc(bk)}"${barOpen.has(bk)?' open':''}><summary>${inner}</summary>${ticketBarDetailHtml(items,goFn,r[0])}</details>`;
+ }).join(''); }
 function cliBarRows(withClick){ const cc=clientCounts(); const rows=Object.entries(cc).sort((a,b)=>b[1]-a[1]); const mx=Math.max(...rows.map(x=>x[1]),1);
- return rows.map(r=>{const w=Math.max(3,Math.round(r[1]/mx*100));
-  const cls=withClick?' rbar':'';
-  const attrs=withClick?` data-v="${esc(r[0])}" onclick="goCliente(this.dataset.v)" title="Ver tickets de ${esc(r[0])}"`:'';
-  return `<div class="bar${cls}"${attrs}><span class="bn"><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r[0])};margin-right:6px"></span>${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%;background:${clientColor(r[0])}"></div></div><span class="bv">${r[1]}</span></div>`;}).join(''); }
+ return rows.map(r=>{
+  const w=Math.max(3,Math.round(r[1]/mx*100));
+  const inner=`<span class="bn"><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r[0])};margin-right:6px"></span>${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%;background:${clientColor(r[0])}"></div></div><span class="bv">${r[1]}</span>`;
+  if(!withClick) return `<div class="bar">${inner}</div>`;
+  const bk='br:goCliente:'+r[0];
+  const items=DATA.filter(i=>i._cli===r[0]);
+  return `<details class="bar tkCard rbar" data-bk="${esc(bk)}"${barOpen.has(bk)?' open':''}><summary>${inner}</summary>${ticketBarDetailHtml(items,'goCliente',r[0])}</details>`;
+ }).join(''); }
 function renderMini(){
  document.getElementById('miniCli').innerHTML=cliBarRows();
  const t=A.byType.slice(0,6),mx=Math.max(...t.map(x=>x[1]),1);
@@ -1170,11 +1236,14 @@ function renderAnalisis(){
    <p class="tinfo" style="margin:6px 0 4px">Hacé clic en una persona para ver en el historial los tickets que respondió.</p>
    ${resp.length?resp.map(r=>{const w=Math.max(3,Math.round(r[1]/mx3*100));const cls=TEAM.has(r[0])?'int':'cli';return `<div class="bar ${cls} rbar" data-n="${esc(r[0])}" onclick="goResponder(this.dataset.n)" title="Ver tickets respondidos por ${esc(r[0])}"><span class="bn">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${r[1]}</span></div>`;}).join(''):'<p class="tinfo">Sin datos.</p>'}</div>
   <div class="card"><div class="lab">Tickets por cliente (toda la base)</div>${cliBarRows(true)}</div>
-  <div class="card"><div class="lab">Tickets por tipo de desagío${scopeCli?' · '+esc(scopeCli):''}</div>${bt.length?barRows(bt,mx1,'','goTipo'):'<p class="tinfo">Sin datos.</p>'}</div>
-  <div class="card"><div class="lab">Clientes que más cargaron tickets</div>${rep.length?barRows(rep,mx2,'','goInformador'):'<p class="tinfo">Sin datos.</p>'}</div>
-  <div class="card"><div class="lab">Responsables asignados</div>${asg.length?barRows(asg,mx4,'','goAsignado'):'<p class="tinfo">Sin datos.</p>'}</div>`;
+  <div class="card"><div class="lab">Tickets por tipo de desagío${scopeCli?' · '+esc(scopeCli):''}</div>${bt.length?barRows(bt,mx1,'','goTipo',i=>i.tipo):'<p class="tinfo">Sin datos.</p>'}</div>
+  <div class="card"><div class="lab">Clientes que más cargaron tickets</div>${rep.length?barRows(rep,mx2,'','goInformador',i=>i.informador):'<p class="tinfo">Sin datos.</p>'}</div>
+  <div class="card"><div class="lab">Responsables asignados</div>${asg.length?barRows(asg,mx4,'','goAsignado',i=>i.asignado):'<p class="tinfo">Sin datos.</p>'}</div>`;
  box.querySelectorAll('.tkpi .tkCard').forEach(d=>{
   d.addEventListener('toggle',()=>{ const k=d.dataset.k; if(d.open)tkpiOpen.add(k); else tkpiOpen.delete(k); });
+ });
+ box.querySelectorAll('[data-bk].tkCard').forEach(d=>{
+  d.addEventListener('toggle',()=>{ const k=d.dataset.bk; if(d.open)barOpen.add(k); else barOpen.delete(k); });
  });
 }
 
@@ -1397,6 +1466,18 @@ function esJira(nombre){
 }
 
 let ejecView='lista', ejecCliente='', ejecOpenSections=new Set();
+let cfgView='datos';
+window.setCfgView=v=>{
+ cfgView=v;
+ document.getElementById('btnCfgDatos').classList.toggle('on',v==='datos');
+ document.getElementById('btnCfgApariencia').classList.toggle('on',v==='apariencia');
+ document.getElementById('btnCfgPerfil').classList.toggle('on',v==='perfil');
+ document.getElementById('cfgDatos').style.display=v==='datos'?'':'none';
+ document.getElementById('cfgApariencia').style.display=v==='apariencia'?'':'none';
+ document.getElementById('cfgPerfil').style.display=v==='perfil'?'':'none';
+ if(v==='apariencia') renderApariencia();
+ if(v==='perfil') renderPerfil();
+};
 // borradores en memoria (no persistidos) para fichas nuevas todavía no guardadas — evita que cada re-render (ej. "+ Agregar fila") las reinicie en blanco, sin ensuciar FICHAS/Cartera/KPIs antes de Guardar
 let _newFichaDrafts={};
 window.setEjecView=v=>{
@@ -2298,11 +2379,35 @@ function saveApiCfg(c){ try{localStorage.setItem(APISTORE,JSON.stringify(c));}ca
    va a Firebase (Firestore), no a localhost:8787. El proxy de Jira (apiUrl, más abajo en
    fetchApi) queda totalmente separado y sigue local, con el token. */
 function fbWait(){ return window.__fb?Promise.resolve():new Promise(res=>window.addEventListener('fb-ready',res,{once:true})); }
+// Mi perfil (Configuración → Mi perfil): nombre/apellido/teléfono por cuenta, clave = email de Firebase Auth.
+// Se guarda junto al resto en kb_state/main (clave nueva "perfiles"), así sigue a la persona si entra desde otra PC.
+const PROFILESTORE='kb_cmq_profiles_v1';
+let PROFILES={};
+function loadProfiles(){ try{PROFILES=JSON.parse(localStorage.getItem(PROFILESTORE))||{};}catch(e){PROFILES={};} }
+function saveProfiles(){ try{localStorage.setItem(PROFILESTORE,JSON.stringify(PROFILES));}catch(e){} }
+function renderPerfil(){
+ const p=PROFILES[currentUserEmail]||{};
+ document.getElementById('perfCorreo').value=currentUserEmail;
+ document.getElementById('perfNombre').value=p.nombre||'';
+ document.getElementById('perfApellido').value=p.apellido||'';
+ document.getElementById('perfTelefono').value=p.telefono||'';
+ document.getElementById('perfSaved').textContent='';
+}
+document.getElementById('btnSavePerfil').onclick=()=>{
+ if(!currentUserEmail)return;
+ PROFILES[currentUserEmail]={
+  nombre:document.getElementById('perfNombre').value.trim(),
+  apellido:document.getElementById('perfApellido').value.trim(),
+  telefono:document.getElementById('perfTelefono').value.trim(),
+ };
+ saveProfiles(); pushState();
+ const s=document.getElementById('perfSaved'); s.textContent='✔ Guardado'; setTimeout(()=>{s.textContent='';},2000);
+};
 async function pushState(){
  try{
   await fbWait();
   const {db,doc,setDoc}=window.__fb;
-  await setDoc(doc(db,'kb_state','main'),{overrides:OVERRIDES,clients:CLIENTS,fichas:FICHAS,tele:TELE,apiCfg:loadApiCfg(),actualizado:new Date().toISOString()});
+  await setDoc(doc(db,'kb_state','main'),{overrides:OVERRIDES,clients:CLIENTS,fichas:FICHAS,tele:TELE,apiCfg:loadApiCfg(),perfiles:PROFILES,actualizado:new Date().toISOString()});
  }catch(e){ console.error('Firebase (guardar):',e); }
 }
 async function pullState(){
@@ -2317,6 +2422,7 @@ async function pullState(){
   if(j&&j.overrides&&typeof j.overrides==='object'){OVERRIDES=j.overrides;ch=true;}
   if(j&&j.fichas&&typeof j.fichas==='object'){FICHAS={};Object.keys(j.fichas).forEach(k=>{FICHAS[k]=migrateFicha(j.fichas[k],k);});saveFichas();renderEjecutivos();}
   if(j&&Array.isArray(j.tele)){TELE=j.tele.map(migrateTeleItem);saveTele();renderTelematica();}
+  if(j&&j.perfiles&&typeof j.perfiles==='object'){PROFILES=j.perfiles;saveProfiles();if(cfgView==='perfil')renderPerfil();}
   if(j&&j.apiCfg&&typeof j.apiCfg==='object'&&j.apiCfg.url&&!loadApiCfg().url&&!apiCfgTouched){
    saveApiCfg(j.apiCfg);
    const eu=document.getElementById('apiUrl');
@@ -2504,6 +2610,16 @@ document.getElementById('btnTheme').onclick=()=>{
  applyTheme(next);
 };
 window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{ let saved=null; try{ saved=localStorage.getItem(THEME_KEY); }catch(e){} if(!saved) applyTheme(null); });
+// selector de 3 vías en Configuración → Apariencia (arriba, btnTheme sigue siendo el atajo rápido claro/oscuro)
+window.setThemePref=(t)=>{
+ try{ if(t){ localStorage.setItem(THEME_KEY,t); } else { localStorage.removeItem(THEME_KEY); } }catch(e){}
+ applyTheme(t||null);
+ renderApariencia();
+};
+function renderApariencia(){
+ let saved=''; try{ saved=localStorage.getItem(THEME_KEY)||''; }catch(e){}
+ document.querySelectorAll('#segTheme button').forEach(b=>b.classList.toggle('on',b.dataset.t===saved));
+}
 
 /* Autenticación (Firebase Auth) — solo emails @cesetti.com.ar pueden entrar. La app (appRoot)
    queda oculta hasta que onAuthStateChanged confirme una sesión válida; recién ahí arranca la
@@ -2511,8 +2627,9 @@ window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{
    esto es la puerta de la interfaz, no el único lugar donde se exige el dominio. */
 const ALLOWED_DOMAIN='@cesetti.com.ar';
 function isAllowedEmail(email){ return !!email && email.toLowerCase().trim().endsWith(ALLOWED_DOMAIN); }
-let appBooted=false;
-function showApp(){
+let appBooted=false, currentUserEmail='';
+function showApp(email){
+ currentUserEmail=email||'';
  document.getElementById('loginScreen').style.display='none';
  document.getElementById('appRoot').style.display='';
  if(!appBooted){ appBooted=true; load(); DATA.forEach(prep); rebuildAll(); pullState();
@@ -2528,7 +2645,7 @@ async function initAuth(){
  await fbWait();
  const {auth,onAuthStateChanged,signInWithEmailAndPassword,signOut}=window.__fbAuth;
  onAuthStateChanged(auth,user=>{
-  if(user && isAllowedEmail(user.email)){ showApp(); }
+  if(user && isAllowedEmail(user.email)){ showApp(user.email); }
   else if(user){ signOut(auth); showLogin('Ese usuario no tiene acceso a esta consola.'); }
   else{ showLogin(); }
  });
