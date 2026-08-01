@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-01T00:00:00.000Z",
+  "title": "Design System: Consola de Soporte CMQ (Televidentes)",
+  "extensions": {
+    "colorMeta": {
+      "signal-teal": { "role": "primary", "displayName": "Signal Teal", "canonical": "#0aa2c0", "tonalRamp": ["#043d49", "#076e83", "#0aa0bd", "#11cef3", "#4cdaf6", "#86e6f9", "#c0f2fc", "#e7fafe"] },
+      "signal-teal-deep": { "role": "primary", "displayName": "Signal Teal Deep", "canonical": "#087f96", "tonalRamp": ["#043d49", "#076f83", "#0aa0bd", "#12cef2", "#4cdaf5", "#86e6f9", "#c0f2fc", "#e7fafe"] },
+      "confirm-green": { "role": "success", "displayName": "Confirm Green", "canonical": "#16b364", "tonalRamp": ["#084426", "#0f7b45", "#16b163", "#20e481", "#57eaa0", "#8df1bf", "#c4f8de", "#e8fcf2"] },
+      "client-amber": { "role": "warning", "displayName": "Client Amber", "canonical": "#b4690e", "tonalRamp": ["#472906", "#804b0a", "#b96c0e", "#ed8c17", "#f1a850", "#f6c589", "#fae1c1", "#fdf3e7"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#0b1220", "tonalRamp": ["#142039", "#233a66", "#335394", "#456ebf", "#7391cf", "#a0b5de", "#ced8ee", "#ecf0f8"] },
+      "quiet-slate": { "role": "neutral", "displayName": "Quiet Slate", "canonical": "#5c6b82", "tonalRamp": ["#20252d", "#394251", "#526074", "#6d7e97", "#919db1", "#b4bdca", "#d8dde4", "#f0f2f4"] },
+      "soft-slate": { "role": "neutral", "displayName": "Soft Slate", "canonical": "#667490", "tonalRamp": ["#20242d", "#394151", "#525e74", "#6d7b97", "#919bb1", "#b4bcca", "#d8dce4", "#f0f2f4"] },
+      "fog-bg": { "role": "neutral", "displayName": "Fog Background", "canonical": "#eef2f7", "tonalRamp": ["#182534", "#2c425e", "#405f87", "#557daf", "#7f9dc3", "#a8bdd6", "#d2ddea", "#eef2f7"] },
+      "panel-white": { "role": "neutral", "displayName": "Panel White", "canonical": "#ffffff", "tonalRamp": ["#262626", "#454545", "#636363", "#828282", "#a1a1a1", "#bfbfbf", "#dedede", "#f2f2f2"] },
+      "hairline-edge": { "role": "neutral", "displayName": "Hairline Edge", "canonical": "#dbe3ee", "tonalRamp": ["#192434", "#2c415e", "#405e87", "#557baf", "#7f9bc2", "#a8bcd6", "#d2dcea", "#eef2f7"] },
+      "whisper-edge": { "role": "neutral", "displayName": "Whisper Edge", "canonical": "#eef2f8", "tonalRamp": ["#162336", "#283f62", "#3a5b8d", "#4e78b6", "#7999c8", "#a5bada", "#d0dbec", "#edf1f8"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Readout", "purpose": "Valores de KPI y datos numéricos grandes en Panel — nunca títulos." },
+      "headline": { "displayName": "Headline", "purpose": "Títulos de vista y de documentos exportados." },
+      "title": { "displayName": "Title", "purpose": "Títulos de sección dentro de un módulo." },
+      "body": { "displayName": "Body", "purpose": "Texto corrido y base de la app." },
+      "label": { "displayName": "Label", "purpose": "Eyebrows de tarjeta, encabezados de tabla, labels de campo." }
+    },
+    "shadows": [
+      { "name": "resting", "value": "0 1px 2px rgba(16,32,60,.04)", "purpose": "Borde casi invisible en tarjetas en reposo." },
+      { "name": "hover-lift", "value": "0 10px 26px rgba(16,32,60,.1)", "purpose": "KPIs al pasar el mouse, junto con translateY(-2px)." },
+      { "name": "button-hover", "value": "0 3px 10px rgba(16,32,60,.08)", "purpose": "Botones al pasar el mouse, junto con translateY(-1px)." },
+      { "name": "floating-surface", "value": "0 20px 60px rgba(0,0,0,.18)", "purpose": "Login box y modales — única familia de sombra prominente en reposo." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(.16,1,.3,1)", "purpose": "Curva por defecto para toda transición de estado (150–250ms típico)." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "640px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Acción principal — Guardar, Traer datos, Ingresar.",
+      "html": "<button class=\"ds-btn-primary\">Guardar</button>",
+      "css": ".ds-btn-primary{border:1.5px solid var(--accent);background:var(--accent);color:#fff;border-radius:11px;padding:10px 14px;font-family:var(--sans);font-weight:600;font-size:13px;cursor:pointer;transition:transform .15s var(--ease),box-shadow .2s var(--ease),background .2s var(--ease)}.ds-btn-primary:hover{background:var(--accent2);transform:translateY(-1px)}.ds-btn-primary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.ds-btn-primary:active{transform:scale(.97)}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Acción secundaria — Cancelar, Limpiar filtros, acciones de tarjeta.",
+      "html": "<button class=\"ds-btn-secondary\">Cancelar</button>",
+      "css": ".ds-btn-secondary{border:1.5px solid var(--edge);background:var(--panel);color:var(--ink);border-radius:11px;padding:10px 14px;font-family:var(--sans);font-weight:600;font-size:13px;cursor:pointer;transition:transform .15s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease),color .2s var(--ease)}.ds-btn-secondary:hover{border-color:var(--accent);color:var(--accent2);transform:translateY(-1px);box-shadow:0 3px 10px rgba(16,32,60,.08)}.ds-btn-secondary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}"
+    },
+    {
+      "name": "KPI Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Tarjeta plana en reposo, lecturas de instrumento en mono al hover levanta.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-lab\">Tickets por cliente</div><div class=\"ds-card-n\">128</div></div>",
+      "css": ".ds-card{background:var(--panel);border:1px solid var(--edge);border-radius:var(--r);padding:18px 20px;box-shadow:0 1px 2px rgba(16,32,60,.04);transition:transform .25s var(--ease),box-shadow .25s var(--ease)}.ds-card:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(16,32,60,.1)}.ds-card-lab{font-family:var(--sans);font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.06em}.ds-card-n{font-family:var(--mono);font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--ink)}"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Chip de filtro/estado, con variante seleccionada en teal sólido.",
+      "html": "<div style=\"display:flex;gap:8px\"><span class=\"ds-chip\">Pendiente</span><span class=\"ds-chip ds-chip--on\">Resuelto</span></div>",
+      "css": ".ds-chip{display:inline-flex;align-items:center;padding:6px 13px;border:1px solid var(--edge);background:var(--panel);border-radius:20px;font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--mut);cursor:pointer;transition:transform .15s var(--ease),border-color .2s var(--ease),background .2s var(--ease),color .2s var(--ease)}.ds-chip:hover{border-color:var(--accent);color:var(--accent2)}.ds-chip--on{background:var(--accent);border-color:var(--accent);color:#fff}"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo de texto estándar de formulario, con anillo de foco en box-shadow.",
+      "html": "<input class=\"ds-input\" placeholder=\"Nombre del cliente\">",
+      "css": ".ds-input{width:100%;padding:8px 10px;border:1px solid var(--edge);border-radius:9px;font-family:var(--sans);font-size:13px;background:var(--panel);color:var(--ink);transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}.ds-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accdim)}"
+    },
+    {
+      "name": "Rail Nav Item",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Ítem del rail lateral — componente de firma del sistema. Hoy con fondo fijo oscuro (ver DESIGN.md Do's and Don'ts: marcado como pendiente de que siga el tema claro/oscuro).",
+      "html": "<a class=\"ds-nav-item ds-nav-item--on\"><span class=\"ds-nav-ic\">●</span>Tickets<span class=\"ds-nav-cnt\">42</span></a>",
+      "css": ".ds-nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:#8aa0bd;font-family:var(--sans);font-weight:600;font-size:13.5px;text-decoration:none;cursor:pointer;transition:background .25s var(--ease),color .25s var(--ease)}.ds-nav-item:hover{background:#12233a;color:#e8f1fb}.ds-nav-item--on{background:linear-gradient(90deg,rgba(10,162,192,.22),rgba(10,162,192,.05));color:#fff;box-shadow:inset 3px 0 0 var(--accent)}.ds-nav-cnt{margin-left:auto;font-family:var(--mono);font-size:11px;background:#12233a;color:#9fd7e6;padding:1px 7px;border-radius:20px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Situation Room",
+    "overview": "La Consola se piensa como una sala de control: un rail de navegación que ancla al costado, tarjetas de KPI que funcionan como lecturas de instrumento (números grandes en monoespaciada, peso 800, como si fueran displays digitales), y un único color de señal — el teal — que marca lo activo, lo interactivo, lo que pide atención. Todo lo demás se mantiene neutro y silencioso para que esos puntos de señal se noten.\n\nEl tono es denso y confiable, sin ruido: prioriza que se puedan leer muchos datos por pantalla antes que dejar espacio en blanco decorativo. Anti-referente confirmado: dashboards SaaS genéricos de tarjetas gigantes con mucho espacio vacío.",
+    "keyCharacteristics": [
+      "Densidad alta: mucha información por pantalla, tipografía compacta (14px base), sin relleno decorativo.",
+      "Los números son los protagonistas: cualquier valor cuantitativo usa tipografía monoespaciada en negrita, nunca la tipografía de texto corrido.",
+      "Un solo acento de color (teal/cian) para todo lo interactivo/activo; el resto de la paleta es neutra.",
+      "Superficies planas en reposo; la sombra aparece solo como respuesta a hover/focus.",
+      "Modo claro y oscuro con tokens semánticos propios por tema, no inversión automática."
+    ],
+    "rules": [
+      { "name": "The One Signal Rule", "body": "El teal es la única fuente de color intencional para indicar interactividad o estado activo. Un nuevo componente no debería introducir un segundo acento — si hace falta distinguir algo más, se resuelve con peso tipográfico, tamaño o los dos colores semánticos ya existentes (verde/ámbar).", "section": "colors" },
+      { "name": "The Readout Rule", "body": "Todo valor numérico que representa un dato real (conteos, horas, %, fechas, claves de ticket) se tipografía en monoespaciada, nunca en la tipografía de texto corrido.", "section": "colors" },
+      { "name": "The Instrument Weight Rule", "body": "Los pesos saltan directo de 400 (cuerpo) a 700–800 (títulos, labels, números) — no hay un escalón intermedio. La distinción se hace con tamaño y color, no con pesos intermedios.", "section": "typography" },
+      { "name": "The Flat-At-Rest Rule", "body": "Ninguna superficie tiene sombra decorativa en reposo. La sombra siempre comunica una interacción (hover/focus) o una superficie flotante (modal/login).", "section": "elevation" }
+    ],
+    "dos": [
+      "Do usar tipografía monoespaciada para cualquier valor numérico real, nunca la tipografía de texto corrido.",
+      "Do mantener las superficies planas en reposo; la sombra solo aparece en hover/focus o en superficies flotantes.",
+      "Do usar 20px de radio para cualquier elemento tipo cápsula (chip/tag/pill/badge) y 14px para tarjetas.",
+      "Do mantener WCAG AA como piso en cualquier componente nuevo (contraste 4.5:1, foco visible, targets táctiles ≥44px).",
+      "Do usar transiciones de 150–250ms con la curva ease-standard para cualquier cambio de estado nuevo."
+    ],
+    "donts": [
+      "Don't introducir un segundo color de acento — el teal es la única señal de interactividad/estado activo.",
+      "Don't agregar sombra decorativa a una tarjeta o superficie en reposo.",
+      "Don't copiar el patrón de rail siempre-oscuro en componentes nuevos — quedó marcado como inconsistencia a corregir, no como decisión de marca a imitar.",
+      "Don't usar tarjetas gigantes con mucho espacio en blanco tipo landing SaaS — la densidad alta es intencional."
+    ]
+  }
+}

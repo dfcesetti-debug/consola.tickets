@@ -11,6 +11,14 @@ tablero/*
 !tablero/main.py
 !tablero/run_local.py
 
+# Contexto del skill "impeccable" (producto + sistema de diseño) — se sube para
+# que persista entre sesiones/máquinas, ver tablero/PRODUCT.md y DESIGN.md.
+!tablero/PRODUCT.md
+!tablero/DESIGN.md
+!tablero/.impeccable/
+tablero/.impeccable/*
+!tablero/.impeccable/design.json
+
 # Nunca subir el token real ni los datos locales viejos (ver README).
 tablero/token_local.json
 tablero/kb_state.json
