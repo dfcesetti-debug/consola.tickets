@@ -482,6 +482,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
     <div class="msel" id="mselFTipo"><button type="button" class="mselBtn" id="mselFTipoBtn">Tipo: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsTipo"></div></div>
     <div class="msel" id="mselFEstado"><button type="button" class="mselBtn" id="mselFEstadoBtn">Estado: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsEstado"></div></div>
     <div class="msel" id="mselFAsig"><button type="button" class="mselBtn" id="mselFAsigBtn">Responsable: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsAsig"></div></div>
+    <div class="msel" id="mselFOrigen"><button type="button" class="mselBtn" id="mselFOrigenBtn">Origen: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsOrigen"></div></div>
    </div>
    <div class="filters">
     <select class="sel" id="fSort">
@@ -867,19 +868,20 @@ function analytics(arr){
 }
 function clientCounts(){ const m={}; DATA.forEach(i=>m[i._cli]=(m[i._cli]||0)+1); return m; }
 
-let A={}, SC=[], FSET=[];
-function clearFilters(){ curTypes.clear(); curEstados.clear(); curAsig.clear(); respFilter=null; const qi=document.getElementById('q'); if(qi)qi.value=''; }
+let A={}, SC=[], FSET=[], curOrigen=new Set();
+function clearFilters(){ curTypes.clear(); curEstados.clear(); curAsig.clear(); curOrigen.clear(); respFilter=null; const qi=document.getElementById('q'); if(qi)qi.value=''; }
 function matchDims(i,skip){ const q=qv().toLowerCase();
  return (skip==='tipo'||curTypes.size===0||curTypes.has(i.tipo))
    &&(skip==='estado'||curEstados.size===0||curEstados.has(i.estado))
    &&(skip==='asig'||curAsig.size===0||curAsig.has(i.asignado))
+   &&(skip==='origen'||curOrigen.size===0||curOrigen.has(i._tele?'telematica':'jira'))
    &&passResp(i)&&(!q||i._blob.includes(q)); }
 function FS(){ return SC.filter(i=>matchDims(i,null)); }
 function facet(dim){ const m={}; SC.forEach(i=>{ if(matchDims(i,dim)){ const k=dim==='tipo'?i.tipo:dim==='estado'?i.estado:i.asignado; if(k!==''&&k!=null)m[k]=(m[k]||0)+1; } }); return m; }
 function rebuildAll(){ SC=scoped(); renderClientBar(); renderEjecutivos(); renderTelematica(); refresh(); }
 function refresh(){ FSET=FS(); A=analytics(FSET); renderScopeNotes(); renderKPIs(); buildFilters(); renderMatrix(qv()); renderAnalisis(); applyTickets(); updateCounts(); renderClearBtn(); }
-function renderClearBtn(){ const b=document.getElementById('btnClearFilters'); if(!b)return; const active=curTypes.size||curEstados.size||curAsig.size||respFilter||qv(); b.style.display=active?'inline-flex':'none'; }
-function updateCounts(){ document.getElementById('c-tickets').textContent=FSET.length; document.getElementById('c-matriz').textContent=A.byType.length; document.getElementById('c-clientes').textContent=CLIENTS.length; }
+function renderClearBtn(){ const b=document.getElementById('btnClearFilters'); if(!b)return; const active=curTypes.size||curEstados.size||curAsig.size||curOrigen.size||respFilter||qv(); b.style.display=active?'inline-flex':'none'; }
+function updateCounts(){ document.getElementById('c-tickets').textContent=filtered.length; document.getElementById('c-matriz').textContent=A.byType.length; document.getElementById('c-clientes').textContent=CLIENTS.length; }
 function animate(el){ if(!el)return; el.classList.remove('up'); void el.offsetWidth; el.classList.add('up'); }
 function renderScopeNotes(){
  const parts=[];
@@ -993,6 +995,27 @@ function buildFilters(){
  chipRow('chipsTipo','mselFTipoBtn','Tipo','tipo',curTypes);
  chipRow('chipsEstado','mselFEstadoBtn','Estado','estado',curEstados);
  chipRow('chipsAsig','mselFAsigBtn','Responsable','asig',curAsig);
+ buildOrigenFilter();
+}
+// filtro de Origen (Jira / Telemática) en Tickets: a diferencia de Tipo/Estado/Responsable
+// (que solo miran SC, tickets de Jira), acá hay que sumar también las tareas de Telemática
+// del cliente en alcance — facet() no sirve porque solo conoce SC.
+function origenCounts(){
+ const jira=SC.filter(i=>matchDims(i,'origen')).length;
+ const teleScope=scopeCli?TELE.filter(t=>t.cliente===scopeCli):TELE;
+ const tele=teleScope.map(teleToTicket).filter(i=>matchDims(i,'origen')).length;
+ return {jira,telematica:tele};
+}
+function buildOrigenFilter(){
+ const c=origenCounts(); const total=c.jira+c.telematica;
+ const box=document.getElementById('chipsOrigen'); const btn=document.getElementById('mselFOrigenBtn'); if(!box||!btn)return;
+ const opts=[['jira','Jira'],['telematica','Telemática']];
+ box.innerHTML=`<div class="mselItem allOpt${curOrigen.size===0?' on':''}" data-v="">Todos <span class="c">${total}</span><span class="chk">✓</span></div>`+
+  opts.map(([v,l])=>`<div class="mselItem${curOrigen.has(v)?' on':''}" data-v="${v}">${esc(l)} <span class="c">${c[v]}</span><span class="chk">✓</span></div>`).join('');
+ box.querySelectorAll('.mselItem').forEach(it=>it.onclick=(e)=>{ e.stopPropagation();
+  const v=it.dataset.v; if(v===''){curOrigen.clear();} else { curOrigen.has(v)?curOrigen.delete(v):curOrigen.add(v); } shown=PAGE; refresh();
+ });
+ btn.innerHTML=(curOrigen.size?('Origen: '+[...curOrigen].map(v=>v==='jira'?'Jira':'Telemática').join(', ')):'Origen: Todos')+' <span class="arrow">▾</span>';
 }
 function qv(){return document.getElementById('q').value.trim();}
 function passResp(i){ if(!respFilter)return true;
@@ -1003,10 +1026,48 @@ function passResp(i){ if(!respFilter)return true;
 function renderRespBanner(){ const el=document.getElementById('respBanner'); if(!respFilter){el.innerHTML='';return;}
  const lbl=respFilter.mode==='author'?('respondidos por <b>'+esc(respFilter.value)+'</b>'):respFilter.mode==='int'?'con <b>respuesta interna</b>':'con <b>respuesta de cliente</b>';
  el.innerHTML=`<div class="respBanner">Mostrando tickets ${lbl}<span class="x" onclick="clearResp()">Quitar filtro ✕</span></div>`; }
+// convierte una tarea de Telemática en un objeto con la misma forma que un ticket de Jira,
+// para que pueda mezclarse en la lista de Tickets y pasar por los mismos filtros/búsqueda
+// (matchDims solo mira .tipo/.estado/.asignado/._blob, no le importa el origen). Sin SLA ni
+// comentarios (no aplica); en su lugar se muestra la cantidad de horas cargada.
+// la clave se arma con el prefijo del cliente (el mismo que usan los tickets reales de Jira,
+// ej. SG-/CERVEPAR-) + un número correlativo entre las tareas de ese cliente — ej. "CN-1".
+// Si el cliente no tiene prefijo cargado (pestaña Clientes), cae a "TELE-<id>" para no
+// arriesgar que dos clientes sin prefijo generen la misma clave.
+function teleKey(t){
+ const cli=CLIENTS.find(c=>c.name===t.cliente);
+ // ojo: si el cliente es de origen Jira (Quilmes/Cervepar), NUNCA se reusa el prefijo real
+ // (arriba, en la ficha) — colisionaría con la clave de un ticket real de Jira. En su lugar
+ // usa el "Prefijo Telemática" (segundo prefijo, cargado en Clientes) si existe, o si no el
+ // nombre del cliente tal cual (ej. "Quilmes-1"). En clientes de origen Telemática, el
+ // prefijo de siempre no tiene ese riesgo (no hay proyecto real de Jira detrás).
+ let prefix='';
+ if(cli){
+  if(cli.origen==='telematica') prefix=cli.prefix?String(cli.prefix).toUpperCase().replace(/-$/,''):'';
+  else prefix=cli.prefixTele?String(cli.prefixTele).toUpperCase().replace(/-$/,''):String(cli.name||'').trim();
+ }
+ if(!prefix) return 'TELE-'+t.id;
+ const sameCli=TELE.filter(x=>x.cliente===t.cliente);
+ const num=sameCli.findIndex(x=>x.id===t.id)+1;
+ return prefix+'-'+(num>0?num:sameCli.length+1);
+}
+function teleToTicket(t){
+ const o={
+  key:teleKey(t), title:t.tipo+(t.detalle?' — '+t.detalle:''),
+  tipo:t.tipo, estado:t.estado, prioridad:'',
+  asignado:t.responsable||'', informador:t.responsable||'',
+  creada:t.fecha||'', actualizada:t.fecha||'',
+  descripcion:t.detalle||'', comments:[], sla:null,
+ };
+ prep(o); o._cli=t.cliente; o._tele=true; o._teleHorasMs=tiempoAsignadoMs(t);
+ return o;
+}
 function _applyTicketsImpl(){
  const so=document.getElementById('fSort').value;
- filtered=FSET.slice().sort((a,b)=> so==='recent'? b._d-a._d : so==='key'? a.key.localeCompare(b.key,undefined,{numeric:true}) : (b._n-a._n)||(b._d-a._d));
- document.getElementById('tkCount').textContent=filtered.length+' de '+SC.length+' tickets';
+ const teleScope=scopeCli?TELE.filter(t=>t.cliente===scopeCli):TELE;
+ const teleMatched=teleScope.map(teleToTicket).filter(i=>matchDims(i,null));
+ filtered=FSET.concat(teleMatched).sort((a,b)=> so==='recent'? b._d-a._d : so==='key'? a.key.localeCompare(b.key,undefined,{numeric:true}) : (b._n-a._n)||(b._d-a._d));
+ document.getElementById('tkCount').textContent=filtered.length+' de '+(SC.length+teleScope.length)+' tickets';
  renderRespBanner(); renderTickets();
 }
 function applyTickets(){
@@ -1024,15 +1085,16 @@ function renderTickets(){
   return `<div class="tk" id="tk-${i.key}" style="animation-delay:${delay}ms">
    <details class="tkCard"${(openAll||expandedTickets.has(i.key))?' open':''}>
     <summary>
-     <div class="hd"><div><span class="tkArrow">▸</span><span class="kk">${i.key}</span><div class="tt">${hl(i.title,q)}</div></div><span class="ev ${i._n?'':'zero'}">${i._n} ${i._n===1?'respuesta':'respuestas'}</span></div>
+     <div class="hd"><div><span class="tkArrow">▸</span><span class="kk">${i.key}</span><div class="tt">${hl(i.title,q)}</div></div>${i._tele?'':`<span class="ev ${i._n?'':'zero'}">${i._n} ${i._n===1?'respuesta':'respuestas'}</span>`}</div>
      <div class="tmeta"><span class="tag cl"><span class="cdot" style="background:${clientColor(i._cli)}"></span>${esc(i._cli)}</span><span class="tag">${esc(i.tipo||'—')}</span>${i.estado?`<span class="tag st">${esc(i.estado)}</span>`:''}${i.prioridad?`<span class="tag pr">${esc(i.prioridad)}</span>`:''}
-      <select class="reassign" onclick="event.stopPropagation()" onchange="setClient('${i.key}',this.value)" title="Reasignar cliente">${cliOptions(i._cli)}</select></div>
+      ${i._tele?`<span class="tag" title="Tarea cargada en Telemática, no viene de Jira" style="background:var(--accdim);color:var(--accent2)">Telemática</span>`:`<select class="reassign" onclick="event.stopPropagation()" onchange="setClient('${i.key}',this.value)" title="Reasignar cliente">${cliOptions(i._cli)}</select>`}</div>
     </summary>
     <div class="tkBody">
      ${slaLine(i.sla)}
-     <div class="tinfo"><b>Cargó:</b> ${hl(i.informador,q)} &nbsp;·&nbsp; <b>Asignado:</b> ${esc(i.asignado||'—')} &nbsp;·&nbsp; <b>Creada:</b> ${esc(i.creada||'—')}${resp.length?` &nbsp;·&nbsp; <b>Respondió:</b> ${resp.map(esc).join(', ')}`:''}</div>
+     ${i._tele?`<div class="tmeta" style="margin-top:2px"><span class="tag">Horas: ${fmtDur(i._teleHorasMs)}</span></div>`:''}
+     <div class="tinfo">${i._tele?`<b>Responsable:</b> ${hl(i.informador,q)} &nbsp;·&nbsp; <b>Fecha:</b> ${esc(i.creada||'—')}`:`<b>Cargó:</b> ${hl(i.informador,q)} &nbsp;·&nbsp; <b>Asignado:</b> ${esc(i.asignado||'—')} &nbsp;·&nbsp; <b>Creada:</b> ${esc(i.creada||'—')}`}${resp.length?` &nbsp;·&nbsp; <b>Respondió:</b> ${resp.map(esc).join(', ')}`:''}</div>
      ${i.descripcion?`<div class="desc">${hl(i.descripcion.slice(0,280),q)}${i.descripcion.length>280?'…':''}</div>`:''}
-     ${i.comments.length?`<details class="cm" ${openAll?'open':''}><summary>Ver ${i.comments.length} respuesta(s)</summary>${i.comments.map(c=>{const int=TEAM.has(c.author);return `<div class="cmt${mineOf(c)?' mine':''}"><span class="who ${int?'int':'cli'}">${esc(c.author||'—')}</span>${int?'<span class="badge-int">interno</span>':''} <span class="date">${esc(c.date)}</span><br>${hl(c.text,q)||'<span class="tinfo">(sin texto)</span>'}</div>`;}).join('')}</details>`:'<div class="tinfo" style="color:#a9b4c6;margin-top:4px">Sin respuestas registradas</div>'}
+     ${i._tele?'':(i.comments.length?`<details class="cm" ${openAll?'open':''}><summary>Ver ${i.comments.length} respuesta(s)</summary>${i.comments.map(c=>{const int=TEAM.has(c.author);return `<div class="cmt${mineOf(c)?' mine':''}"><span class="who ${int?'int':'cli'}">${esc(c.author||'—')}</span>${int?'<span class="badge-int">interno</span>':''} <span class="date">${esc(c.date)}</span><br>${hl(c.text,q)||'<span class="tinfo">(sin texto)</span>'}</div>`;}).join('')}</details>`:'<div class="tinfo" style="color:#a9b4c6;margin-top:4px">Sin respuestas registradas</div>')}
     </div>
    </details>
   </div>`;
@@ -2010,6 +2072,7 @@ function renderClientes(){
    </div>
    <div class="cliActions">
     <div class="seg"><button class="${c.origen!=='telematica'?'on':''}" data-origen-btn="jira" data-idx="${idx}">Jira</button><button class="${c.origen==='telematica'?'on':''}" data-origen-btn="telematica" data-idx="${idx}">Referente Telemática</button></div>
+    ${c.origen!=='telematica'?`<input type="text" class="cliPrefix" style="max-width:150px" value="${esc(c.prefixTele||'')}" oninput="CLIENTS[${idx}].prefixTele=this.value.trim().toUpperCase().replace(/-$/,'')" placeholder="Prefijo Telemática" title="Prefijo para las tareas que se carguen en Telemática para este cliente. No usa el prefijo de Jira de arriba (colisionaría con tickets reales) — si se deja vacío, usa el nombre del cliente.">`:''}
     ${estado?`<span class="tag ${estado==='Demo'?'demo':'fijo'}">${esc(estado)}</span>`:'<span class="tinfo">Sin ficha técnica todavía</span>'}
     ${f&&f.datos.ref_comercial?`<span class="tinfo">Ejecutivo: ${esc(f.datos.ref_comercial)}</span>`:''}
     <div class="grow">
@@ -2512,6 +2575,7 @@ document.getElementById('mselClientesBtn').onclick=(e)=>{ e.stopPropagation(); r
 document.getElementById('mselFTipoBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsTipo'); };
 document.getElementById('mselFEstadoBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsEstado'); };
 document.getElementById('mselFAsigBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsAsig'); };
+document.getElementById('mselFOrigenBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsOrigen'); };
 document.getElementById('mselTeleCliBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsTeleCli'); };
 document.getElementById('mselTeleRespBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsTeleResp'); };
 document.getElementById('mselTeleTipoBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsTeleTipo'); };
