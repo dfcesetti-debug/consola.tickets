@@ -224,6 +224,18 @@ details.cm[open] summary::before{content:'▾ '}
 .tkpi .box .n .u{font-size:12px;font-weight:600;color:var(--mut);margin-left:3px}
 .tkpi .box .l{font-size:11.5px;color:var(--mut);margin-top:2px}
 .tkpi .box.int{border-left:3px solid var(--sig)}.tkpi .box.cli{border-left:3px solid var(--cli)}.tkpi .box.tot{border-left:3px solid var(--accent)}
+.tkpi .box.tkCard{cursor:pointer}
+.tkpi .box.tkCard summary{display:block;list-style:none;cursor:pointer;position:relative;padding-right:18px}
+.tkpi .box.tkCard summary::-webkit-details-marker{display:none}
+.tkpi .box.tkCard summary::marker{content:''}
+.tkpi .box.tkCard summary::after{content:'▸';position:absolute;right:0;top:2px;color:var(--mut2);transition:transform .15s var(--ease)}
+.tkpi .box.tkCard[open] summary::after{transform:rotate(90deg)}
+.tkpiDetail{margin-top:10px;padding-top:10px;border-top:1px solid var(--edge);display:flex;flex-direction:column;gap:2px;max-height:260px;overflow-y:auto}
+.tkpiRow{display:grid;grid-template-columns:82px 1fr auto;gap:8px;align-items:center;padding:5px 6px;border-radius:8px;cursor:pointer;font-size:12px;transition:background .15s var(--ease)}
+.tkpiRow:hover{background:var(--bg2)}
+.tkpiRow .kk{font-family:var(--mono);font-weight:700;color:var(--accent2);font-size:11.5px}
+.tkpiRow .tt{color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tkpiRow .bv{font-family:var(--mono);font-weight:700;white-space:nowrap;color:var(--ink)}
 
 .drop{border:2.5px dashed var(--dropborder);border-radius:16px;background:linear-gradient(180deg,var(--panel),var(--dropg2));padding:34px 26px;text-align:center;cursor:pointer;transition:.18s}
 .drop.hot{border-color:var(--accent);background:var(--accdim)}
@@ -841,9 +853,19 @@ function renderKPIs(){
  const k=[['Tickets',FSET.length],['Tipos de desagío',A.byType.length],['Respuestas',A.totalComments],['Clientes que cargaron',A.reporters.length],['Personas que respondieron',A.responders.length]];
  document.getElementById('kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="n">${x[1]}</div><div class="l">${x[0]}</div></div>`).join('');
 }
-function barRows(rows,max,cls){ return rows.map(r=>{const w=Math.max(3,Math.round(r[1]/max*100));return `<div class="bar ${cls||''}"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${r[1]}</span></div>`;}).join(''); }
-function cliBarRows(){ const cc=clientCounts(); const rows=Object.entries(cc).sort((a,b)=>b[1]-a[1]); const mx=Math.max(...rows.map(x=>x[1]),1);
- return rows.map(r=>{const w=Math.max(3,Math.round(r[1]/mx*100));return `<div class="bar"><span class="bn"><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r[0])};margin-right:6px"></span>${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%;background:${clientColor(r[0])}"></div></div><span class="bv">${r[1]}</span></div>`;}).join(''); }
+// goFn opcional: nombre de una función global (ej. "goTipo") a la que se le pasa la etiqueta de la
+// barra al hacer clic — mismo criterio que ya usan "1ª respuesta por tipo" y "Quién respondió".
+// Sin goFn queda como antes (usado en el resumen mini de Matriz N1, que no es clickeable).
+function barRows(rows,max,cls,goFn){
+ return rows.map(r=>{const w=Math.max(3,Math.round(r[1]/max*100));
+  const cls2=(cls||'')+(goFn?' rbar':'');
+  const attrs=goFn?` data-v="${esc(r[0])}" onclick="${goFn}(this.dataset.v)" title="Ver tickets de &quot;${esc(r[0])}&quot;"`:'';
+  return `<div class="bar ${cls2}"${attrs}><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${r[1]}</span></div>`;}).join(''); }
+function cliBarRows(withClick){ const cc=clientCounts(); const rows=Object.entries(cc).sort((a,b)=>b[1]-a[1]); const mx=Math.max(...rows.map(x=>x[1]),1);
+ return rows.map(r=>{const w=Math.max(3,Math.round(r[1]/mx*100));
+  const cls=withClick?' rbar':'';
+  const attrs=withClick?` data-v="${esc(r[0])}" onclick="goCliente(this.dataset.v)" title="Ver tickets de ${esc(r[0])}"`:'';
+  return `<div class="bar${cls}"${attrs}><span class="bn"><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r[0])};margin-right:6px"></span>${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%;background:${clientColor(r[0])}"></div></div><span class="bv">${r[1]}</span></div>`;}).join(''); }
 function renderMini(){
  document.getElementById('miniCli').innerHTML=cliBarRows();
  const t=A.byType.slice(0,6),mx=Math.max(...t.map(x=>x[1]),1);
@@ -961,6 +983,11 @@ window.goResponder=(name)=>{ clearFilters(); respFilter={mode:'author',value:nam
 window.goRespType=(mode)=>{ clearFilters(); respFilter={mode}; navTo('tickets'); shown=PAGE; refresh(); };
 window.goTipo=(tipo)=>{ clearFilters(); curTypes.add(tipo); navTo('tickets'); shown=PAGE; refresh(); };
 window.goCliente=(cliente)=>{ scopeCli=cliente; clearFilters(); shown=PAGE; rebuildAll(); navTo('tickets'); };
+window.goAsignado=(name)=>{ clearFilters(); curAsig.add(name); navTo('tickets'); shown=PAGE; refresh(); };
+// "informador" (quién cargó el ticket) no tiene un Set de filtro propio como tipo/estado/asignado —
+// se reusa el buscador de texto (mismo mecanismo que ya usa goTicket con la clave del ticket).
+window.goInformador=(name)=>{ clearFilters(); document.getElementById('q').value=name; navTo('tickets'); shown=PAGE; refresh(); };
+window.goTeleCliente=(cliente)=>{ teleClearFilters(); teleFilterCli.add(cliente); renderTelematica(); navTo('telematica'); };
 window.clearResp=()=>{ respFilter=null; refresh(); };
 
 /* Horario laboral: lunes a viernes, 8:00 a 17:00. Sábado y domingo no cuentan.
@@ -1038,7 +1065,17 @@ function clientTimeStats(){
    aTot:avg(T.map(t=>t.total)) };
  });
 }
-let respView='all', panelRange='';
+let respView='all', panelRange='', tkpiOpen=new Set();
+// detalle desplegable de cada KPI de "Tiempos de respuesta y resolución": lista de los tickets
+// detrás del promedio (los más lentos primero), cada uno clickeable a goTicket(); "Ver todos en
+// Tickets" abajo reusa el mismo scope (cliente) que ya tiene el Panel, sin el filtro de fecha propio del Panel.
+function tkpiDetailHtml(TZ,field,hasSla){
+ const rows=TZ.filter(z=>z.t[field]!=null).sort((a,b)=>b.t[field]-a.t[field]).slice(0,25);
+ if(!rows.length) return '<p class="tinfo" style="margin-top:8px">Sin tickets con este dato en el rango elegido.</p>';
+ return `<div class="tkpiDetail">${rows.map(z=>`<div class="tkpiRow" onclick="goTicket('${esc(z.it.key)}')" title="Ver ${esc(z.it.key)} en Tickets"><span class="kk">${esc(z.it.key)}</span><span class="tt">${esc(z.it.title||'')}</span><span class="bv">${hasSla?fmtDur(z.t[field]*864e5):fmtD(z.t[field])}</span></div>`).join('')}</div>
+  <button class="btn sm" style="margin-top:8px" onclick="event.stopPropagation();goScopeTickets()">Ver ${rows.length<25?'estos '+rows.length:'todos'} en Tickets →</button>`;
+}
+window.goScopeTickets=()=>{ clearFilters(); navTo('tickets'); shown=PAGE; refresh(); };
 window.setRespView=v=>{ respView=v; renderAnalisis(); };
 window.setPanelRange=v=>{ panelRange=v; renderAnalisis(); };
 /* SLA acordado con cada cliente — solo de referencia por ahora: la app no distingue
@@ -1081,6 +1118,7 @@ function renderAnalisis(){
  const hasSla=TF.some(i=>i.sla);
  const wcComputed=TF.some(i=>i.sla&&i.sla.waiting_customer&&i.sla.waiting_customer.computed);
  const T=TF.map(ticketTimes);
+ const TZ=TF.map((it,ix)=>({it,t:T[ix]}));
  const aInt=avg(T.map(t=>t.intResp)), aCli=avg(T.map(t=>t.cliResp)), aTot=avg(T.map(t=>t.total));
  const nInt=T.filter(t=>t.intResp!=null).length, nCli=T.filter(t=>t.cliResp!=null).length;
  const nIntBreach=T.filter(t=>t.intIncumplido).length, nTotBreach=T.filter(t=>t.totIncumplido).length;
@@ -1103,9 +1141,9 @@ function renderAnalisis(){
    </div>
    <p class="tinfo" style="margin:0 0 10px">${panelRange?RANGE_OPTS.find(r=>r[0]===panelRange)[1]+' · '+TF.length+' ticket'+(TF.length===1?'':'s')+' en este rango':'Sin rango de fechas — se están usando todos los tickets cargados.'}</p>
    <div class="tkpi">
-    <div class="box int"><div class="n">${hasSla?fmtDur(aInt*864e5):fmtD(aInt)}</div><div class="l">${hasSla?'Tiempo de 1ª respuesta (SLA, prom.)':'1ª respuesta interna (prom.)'} · ${nInt} tickets${nIntBreach?` · <span style="color:var(--cli)">${nIntBreach} incumplidos</span>`:''}</div></div>
-    <div class="box cli"><div class="n">${hasSla?fmtDur(aCli*864e5):fmtD(aCli)}</div><div class="l">${hasSla?('Espera de respuesta del cliente '+(wcComputed?'(tiempo en estado)':'(SLA)')+', prom.'):'1ª respuesta del cliente (prom.)'} · ${nCli} tickets</div></div>
-    <div class="box tot"><div class="n">${hasSla?fmtDur(aTot*864e5):fmtD(aTot)}</div><div class="l">${hasSla?'Tiempo de resolución (SLA, prom.)':'Resolución total (creación → última actualización)'}${nTotBreach?` · <span style="color:var(--cli)">${nTotBreach} incumplidos</span>`:''}</div></div>
+    <details class="box int tkCard"${tkpiOpen.has('int')?' open':''} data-k="int"><summary><div class="n">${hasSla?fmtDur(aInt*864e5):fmtD(aInt)}</div><div class="l">${hasSla?'Tiempo de 1ª respuesta (SLA, prom.)':'1ª respuesta interna (prom.)'} · ${nInt} tickets${nIntBreach?` · <span style="color:var(--cli)">${nIntBreach} incumplidos</span>`:''}</div></summary>${tkpiDetailHtml(TZ,'intResp',hasSla)}</details>
+    <details class="box cli tkCard"${tkpiOpen.has('cli')?' open':''} data-k="cli"><summary><div class="n">${hasSla?fmtDur(aCli*864e5):fmtD(aCli)}</div><div class="l">${hasSla?('Espera de respuesta del cliente '+(wcComputed?'(tiempo en estado)':'(SLA)')+', prom.'):'1ª respuesta del cliente (prom.)'} · ${nCli} tickets</div></summary>${tkpiDetailHtml(TZ,'cliResp',hasSla)}</details>
+    <details class="box tot tkCard"${tkpiOpen.has('tot')?' open':''} data-k="tot"><summary><div class="n">${hasSla?fmtDur(aTot*864e5):fmtD(aTot)}</div><div class="l">${hasSla?'Tiempo de resolución (SLA, prom.)':'Resolución total (creación → última actualización)'}${nTotBreach?` · <span style="color:var(--cli)">${nTotBreach} incumplidos</span>`:''}</div></summary>${tkpiDetailHtml(TZ,'total',hasSla)}</details>
    </div>
    <div class="lab" style="margin-top:16px">${hasSla?'Tiempo de 1ª respuesta promedio por tipo — dónde mejorar':'1ª respuesta interna promedio por tipo — dónde mejorar'}</div>
    ${rowsTT.length?rowsTT.map(r=>{const w=Math.max(3,Math.round(r[1]/mxT*100));return `<div class="bar rbar" data-v="${esc(r[0])}" onclick="goTipo(this.dataset.v)" title="Ver tickets de tipo &quot;${esc(r[0])}&quot;"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1]*864e5)}</span></div>`;}).join(''):'<p class="tinfo">Sin fechas suficientes.</p>'}
@@ -1124,17 +1162,20 @@ function renderAnalisis(){
   <div class="card"><div class="lab">Tiempos por cliente · vía Referente Telemática <span class="tinfo" style="text-transform:none;font-weight:400">(tickets cargados manualmente en el módulo Telemática — incluye clientes con Jira si se usa para coordinaciones u otras tareas que no pasan por Jira)</span></div>
    <div class="cmpTable" style="--cols:1.5fr .7fr .8fr 1.1fr 1fr">
     <div class="cmpRow cmpHead" style="grid-template-columns:var(--cols)"><span>Cliente</span><span>Tickets</span><span>Resueltos</span><span>Tiempo asignado (real, total)</span><span>Promedio semanal <span class="tinfo" style="text-transform:none;font-weight:400">(8hs/día)</span></span></div>
-    ${teleCli.length?teleCli.map(r=>`<div class="cmpRow" style="grid-template-columns:var(--cols)"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cliente)};margin-right:6px"></span>${esc(r.cliente)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${r.nResueltos}</span><span class="cmpn">${r.totalAsignadoMs==null?'—':fmtDur(r.totalAsignadoMs)+' ('+r.nAsignado+')'}</span><span class="cmpn">${r.promSemanalMs==null?'—':fmtDur(r.promSemanalMs)}</span></div>`).join(''):'<p class="tinfo">Todavía no hay clientes marcados como "Referente Telemática" con tickets cargados. Se configura en Clientes, y se cargan tickets en el módulo Telemática.</p>'}
+    ${teleCli.length?teleCli.map(r=>`<div class="cmpRow clickRow" data-cli="${esc(r.cliente)}" onclick="goTeleCliente(this.dataset.cli)" title="Ver tareas de ${esc(r.cliente)} en Telemática"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cliente)};margin-right:6px"></span>${esc(r.cliente)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${r.nResueltos}</span><span class="cmpn">${r.totalAsignadoMs==null?'—':fmtDur(r.totalAsignadoMs)+' ('+r.nAsignado+')'}</span><span class="cmpn">${r.promSemanalMs==null?'—':fmtDur(r.promSemanalMs)}</span></div>`).join(''):'<p class="tinfo">Todavía no hay clientes marcados como "Referente Telemática" con tickets cargados. Se configura en Clientes, y se cargan tickets en el módulo Telemática.</p>'}
    </div>
   </div>
   <div class="card"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div class="lab" style="margin:0">Quién respondió los tickets</div>
     <div class="seg"><button class="${rv==='all'?'on':''}" onclick="setRespView('all')">Todos</button><button class="${rv==='int'?'on int':''}" onclick="setRespView('int')">Internos</button><button class="${rv==='cli'?'on cli':''}" onclick="setRespView('cli')">Clientes</button></div>${jump}</div>
    <p class="tinfo" style="margin:6px 0 4px">Hacé clic en una persona para ver en el historial los tickets que respondió.</p>
    ${resp.length?resp.map(r=>{const w=Math.max(3,Math.round(r[1]/mx3*100));const cls=TEAM.has(r[0])?'int':'cli';return `<div class="bar ${cls} rbar" data-n="${esc(r[0])}" onclick="goResponder(this.dataset.n)" title="Ver tickets respondidos por ${esc(r[0])}"><span class="bn">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${r[1]}</span></div>`;}).join(''):'<p class="tinfo">Sin datos.</p>'}</div>
-  <div class="card"><div class="lab">Tickets por cliente (toda la base)</div>${cliBarRows()}</div>
-  <div class="card"><div class="lab">Tickets por tipo de desagío${scopeCli?' · '+esc(scopeCli):''}</div>${bt.length?barRows(bt,mx1):'<p class="tinfo">Sin datos.</p>'}</div>
-  <div class="card"><div class="lab">Clientes que más cargaron tickets</div>${rep.length?barRows(rep,mx2):'<p class="tinfo">Sin datos.</p>'}</div>
-  <div class="card"><div class="lab">Responsables asignados</div>${asg.length?barRows(asg,mx4):'<p class="tinfo">Sin datos.</p>'}</div>`;
+  <div class="card"><div class="lab">Tickets por cliente (toda la base)</div>${cliBarRows(true)}</div>
+  <div class="card"><div class="lab">Tickets por tipo de desagío${scopeCli?' · '+esc(scopeCli):''}</div>${bt.length?barRows(bt,mx1,'','goTipo'):'<p class="tinfo">Sin datos.</p>'}</div>
+  <div class="card"><div class="lab">Clientes que más cargaron tickets</div>${rep.length?barRows(rep,mx2,'','goInformador'):'<p class="tinfo">Sin datos.</p>'}</div>
+  <div class="card"><div class="lab">Responsables asignados</div>${asg.length?barRows(asg,mx4,'','goAsignado'):'<p class="tinfo">Sin datos.</p>'}</div>`;
+ box.querySelectorAll('.tkpi .tkCard').forEach(d=>{
+  d.addEventListener('toggle',()=>{ const k=d.dataset.k; if(d.open)tkpiOpen.add(k); else tkpiOpen.delete(k); });
+ });
 }
 
 /* ejecutivos de cuenta — ficha técnica histórica por cliente + cartera por referente comercial CSTT */
@@ -2426,7 +2467,18 @@ document.getElementById('btnCsv').onclick=()=>{ const h=['key','cliente','tipo',
 function dl(name,content,type){ const b=new Blob([content],{type}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u;a.download=name;a.click(); setTimeout(()=>URL.revokeObjectURL(u),1000); }
 
 function _navToImpl(v){ document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v)); document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v)); const cb=document.getElementById('clientbar'); if(cb)cb.style.display=(v==='panel'||v==='tickets')?'':'none'; const m=document.querySelector('.main'); if(m&&m.scrollTo)m.scrollTo({top:0,behavior:'smooth'}); }
-function navTo(v){ if(document.startViewTransition){ document.startViewTransition(()=>_navToImpl(v)); } else { _navToImpl(v); } }
+function curViewId(){ const el=document.querySelector('.view.on'); return el?el.id.replace('v-',''):null; }
+// historial del navegador: cada cambio de pestaña (directo o vía un drill-down que ya usa navTo)
+// queda como una entrada — Atrás/Adelante mueven entre pestañas visitadas, como cualquier sitio.
+// Nota: solo recuerda QUÉ PESTAÑA estaba abierta, no los filtros/cliente elegidos en ese momento.
+function navTo(v){
+ if(curViewId()!==v) history.pushState({v},'','#'+v);
+ if(document.startViewTransition){ document.startViewTransition(()=>_navToImpl(v)); } else { _navToImpl(v); }
+}
+window.addEventListener('popstate',(e)=>{
+ const v=(e.state&&e.state.v)||(location.hash?location.hash.slice(1):'panel');
+ if(document.startViewTransition){ document.startViewTransition(()=>_navToImpl(v)); } else { _navToImpl(v); }
+});
 document.getElementById('nav').addEventListener('click',e=>{const a=e.target.closest('a');if(a)navTo(a.dataset.v);});
 let deb; document.getElementById('q').addEventListener('input',()=>{ clearTimeout(deb); deb=setTimeout(()=>{ const cur=document.querySelector('.nav a.on').dataset.v; shown=PAGE; refresh(); if(cur!=='tickets'&&cur!=='matriz'&&qv())navTo('tickets'); },170); });
 document.getElementById('fSort').addEventListener('change',()=>{shown=PAGE;applyTickets();});
@@ -2463,7 +2515,9 @@ let appBooted=false;
 function showApp(){
  document.getElementById('loginScreen').style.display='none';
  document.getElementById('appRoot').style.display='';
- if(!appBooted){ appBooted=true; load(); DATA.forEach(prep); rebuildAll(); pullState(); }
+ if(!appBooted){ appBooted=true; load(); DATA.forEach(prep); rebuildAll(); pullState();
+  const initV=curViewId()||'panel'; history.replaceState({v:initV},'','#'+initV);
+ }
 }
 function showLogin(msg){
  document.getElementById('appRoot').style.display='none';
