@@ -220,6 +220,8 @@ details.cm[open] summary::before{content:'▾ '}
 .seg button.on{background:var(--solid);color:var(--onsolid)}
 .seg button.on.int{background:var(--sig)}.seg button.on.cli{background:var(--cli)}
 .rbar{cursor:pointer;transition:.12s}.rbar:hover .bn{color:var(--accent2);text-decoration:underline}.rbar:hover .fill{filter:brightness(1.08)}
+.rbar.on{background:var(--accdim);border-radius:8px}
+.rbar.on .bn{color:var(--accent2);font-weight:700}
 .respBanner{display:flex;align-items:center;gap:10px;background:var(--accdim);border:1px solid var(--accborder);border-radius:12px;padding:10px 14px;margin:2px 0 10px;font-size:13px;color:var(--accent2);font-weight:650}
 .respBanner b{color:var(--ink)}
 .respBanner .x{margin-left:auto;background:var(--panel);border:1px solid var(--accborder);border-radius:8px;padding:3px 10px;cursor:pointer;font-weight:700;color:var(--accent2)}
@@ -260,6 +262,7 @@ details.cm[open] summary::before{content:'▾ '}
 
 .bar{display:grid;grid-template-columns:210px 1fr 100px;align-items:center;gap:10px;margin:6px 0}
 .bar.pct{grid-template-columns:210px 1fr 62px 54px 68px}
+.bar.pct.noKpi{grid-template-columns:210px 1fr 62px 54px}
 .bar .bn{font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar.tkCard{display:block;cursor:pointer}
 .bar.tkCard>summary{display:grid;grid-template-columns:210px 1fr 100px;align-items:center;gap:10px;list-style:none;cursor:pointer}
@@ -453,10 +456,20 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 
   <section class="view on" id="v-panel">
    <div class="eyebrow">RESUMEN OPERATIVO</div>
-   <h2 class="vt">Panel de la mesa de ayuda <span class="scopenote" id="scope1"></span></h2>
-   <p class="sub">Todos los indicadores en un solo lugar. Usá el selector de cliente de arriba para acotar todo, y hacé clic en una persona de “Quién respondió” para saltar a su historial de tickets.</p>
-   <div class="kpis" id="kpis"></div>
-   <div id="analisis"></div>
+   <h2 class="vt">Panel <span id="panelModeTitle">Jira</span> <span class="scopenote" id="scope1"></span></h2>
+   <p class="sub" id="panelModeSub">Todos los indicadores en un solo lugar. Usá el selector de cliente de arriba para acotar todo, y hacé clic en una persona de “Quién respondió” para saltar a su historial de tickets.</p>
+   <div class="seg" style="margin-bottom:14px">
+    <button id="btnPanelJira" class="on" onclick="setPanelMode('jira')">Jira</button>
+    <button id="btnPanelTele" onclick="setPanelMode('telematica')">Telemática</button>
+   </div>
+   <div id="panelJiraView">
+    <div class="kpis" id="kpis"></div>
+    <div id="analisis"></div>
+   </div>
+   <div id="panelTeleView" style="display:none">
+    <div class="kpis" id="kpisPanelTele"></div>
+    <div id="analisisPanelTele"></div>
+   </div>
   </section>
 
   <section class="view" id="v-matriz">
@@ -879,7 +892,7 @@ function matchDims(i,skip){ const q=qv().toLowerCase();
 function FS(){ return SC.filter(i=>matchDims(i,null)); }
 function facet(dim){ const m={}; SC.forEach(i=>{ if(matchDims(i,dim)){ const k=dim==='tipo'?i.tipo:dim==='estado'?i.estado:i.asignado; if(k!==''&&k!=null)m[k]=(m[k]||0)+1; } }); return m; }
 function rebuildAll(){ SC=scoped(); renderClientBar(); renderEjecutivos(); renderTelematica(); refresh(); }
-function refresh(){ FSET=FS(); A=analytics(FSET); renderScopeNotes(); renderKPIs(); buildFilters(); renderMatrix(qv()); renderAnalisis(); applyTickets(); updateCounts(); renderClearBtn(); }
+function refresh(){ FSET=FS(); A=analytics(FSET); renderScopeNotes(); renderKPIs(); buildFilters(); renderMatrix(qv()); renderAnalisis(); renderPanelTele(); applyTickets(); updateCounts(); renderClearBtn(); }
 function renderClearBtn(){ const b=document.getElementById('btnClearFilters'); if(!b)return; const active=curTypes.size||curEstados.size||curAsig.size||curOrigen.size||respFilter||qv(); b.style.display=active?'inline-flex':'none'; }
 function updateCounts(){ document.getElementById('c-tickets').textContent=filtered.length; document.getElementById('c-matriz').textContent=A.byType.length; document.getElementById('c-clientes').textContent=CLIENTS.length; }
 function animate(el){ if(!el)return; el.classList.remove('up'); void el.offsetWidth; el.classList.add('up'); }
@@ -905,6 +918,146 @@ function renderClientBar(){
 function renderKPIs(){
  const k=[['Tickets',FSET.length],['Tipos de desagío',A.byType.length],['Respuestas',A.totalComments],['Clientes que cargaron',A.reporters.length],['Personas que respondieron',A.responders.length]];
  document.getElementById('kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="n">${x[1]}</div><div class="l">${x[0]}</div></div>`).join('');
+}
+const PANEL_TELE_DIMS={
+ categoria:{label:'Categoría',short:'Categoría'},
+ responsable:{label:'Responsable',short:'Responsable'},
+ cliente:{label:'Cliente',short:'Cliente'},
+};
+const PANEL_TELE_METRICS={
+ asignado:{label:'Total',rowsKey:{categoria:'rowsTipoA',responsable:'rowsRespA',cliente:'rowsCliA'}},
+ semanal:{label:'Promedio semanal',rowsKey:{categoria:'rowsTipoASem',responsable:'rowsRespASem',cliente:'rowsCliASem'}},
+};
+window.setPanelTeleDim=(d)=>{ panelTeleDim=d; renderPanelTele(); };
+window.setPanelTeleMetric=(m)=>{ panelTeleMetric=m; renderPanelTele(); };
+function panelTeleBarsHtml(rows){
+ if(!rows.length) return '<p class="tinfo">Sin datos para esta combinación.</p>';
+ const mx=Math.max(...rows.map(r=>r[1]),1);
+ return rows.map(r=>{const w=Math.max(3,Math.round(r[1]/mx*100));return `<div class="bar"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span></div>`;}).join('');
+}
+// Tarjeta "Tiempos por categoría, sub categoría, responsable y cliente": gráfico de barras con
+// 4 filtros cruzados (mismo patrón msel de Tickets/Telemática) + rango de fecha + selector de qué
+// dimensión graficar. Clic en una barra alterna esa opción como filtro de su propia dimensión.
+let panelTreeCat=new Set(), panelTreeSub=new Set(), panelTreeCli=new Set(), panelTreeResp=new Set(), panelTreeRange='', panelTreeMselOpenKey='', panelTeleTreeDim='categoria';
+const PANEL_TREE_DIMS2={
+ categoria:{label:'Categoría',get:t=>categoriaOf(t.tipo)},
+ sub:{label:'Sub categoría',get:t=>t.tipo||'—'},
+ cliente:{label:'Cliente',get:t=>t.cliente},
+ responsable:{label:'Responsable',get:t=>t.responsable||'—'},
+};
+const PANEL_TREE_RANGE_OPTS=[['','Todos'],['dia','Último día'],['semana','Última semana'],['mes','Último mes'],['trimestre','Último trimestre'],['semestre','Último semestre'],['anio','Último año']];
+function panelTreeSets(){ return {categoria:panelTreeCat, sub:panelTreeSub, cliente:panelTreeCli, responsable:panelTreeResp}; }
+function panelTreeClear(){ panelTreeCat.clear(); panelTreeSub.clear(); panelTreeCli.clear(); panelTreeResp.clear(); }
+function panelTreeRangeStart(){
+ if(!panelTreeRange) return null;
+ const d=new Date();
+ if(panelTreeRange==='dia') d.setDate(d.getDate()-1);
+ else if(panelTreeRange==='semana') d.setDate(d.getDate()-7);
+ else if(panelTreeRange==='mes') d.setMonth(d.getMonth()-1);
+ else if(panelTreeRange==='trimestre') d.setMonth(d.getMonth()-3);
+ else if(panelTreeRange==='semestre') d.setMonth(d.getMonth()-6);
+ else if(panelTreeRange==='anio') d.setFullYear(d.getFullYear()-1);
+ return d.getTime();
+}
+function panelTreeMatch(t,skip){
+ const sets=panelTreeSets();
+ const start=panelTreeRangeStart();
+ if(start){ const ts=parseDate(t.fecha); if(!ts||ts<start) return false; }
+ return Object.keys(PANEL_TREE_DIMS2).every(k=>{
+  if(skip===k) return true;
+  const sel=sets[k]; if(sel.size===0) return true;
+  return sel.has(PANEL_TREE_DIMS2[k].get(t));
+ });
+}
+function panelTreeFacet(list,dim){
+ const m={};
+ list.forEach(t=>{ if(!panelTreeMatch(t,dim)) return; const k=PANEL_TREE_DIMS2[dim].get(t); if(k) m[k]=(m[k]||0)+1; });
+ return m;
+}
+window.setPanelTreeDim=(d)=>{ panelTeleTreeDim=d; renderPanelTele(); };
+window.setPanelTreeRange=(v)=>{ panelTreeRange=v; renderPanelTele(); };
+window.panelTreeClearBtn=()=>{ panelTreeClear(); panelTreeRange=''; renderPanelTele(); };
+window.panelTreeBarClick=(val)=>{ const sel=panelTreeSets()[panelTeleTreeDim]; sel.has(val)?sel.delete(val):sel.add(val); renderPanelTele(); };
+function panelTreeChipsHtml(list){
+ const sets=panelTreeSets();
+ return Object.entries(PANEL_TREE_DIMS2).map(([k,d])=>{
+  const sel=sets[k]; const counts=panelTreeFacet(list,k); const vals=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);
+  const total=Object.values(counts).reduce((a,b)=>a+b,0);
+  const label=sel.size?(d.label+': '+[...sel].slice(0,2).map(esc).join(', ')+(sel.size>2?' +'+(sel.size-2):'')):(d.label+': Todos');
+  return `<div class="msel">
+   <button type="button" class="mselBtn" data-ptmsel="${k}">${label} <span class="arrow">▾</span></button>
+   <div class="mselPanel${panelTreeMselOpenKey===k?' on':''}" id="ptPanel_${k}">
+    <div class="mselItem allOpt${sel.size===0?' on':''}" data-ptclear="${k}">Todos <span class="c">${total}</span><span class="chk">✓</span></div>
+    ${vals.map(v=>`<div class="mselItem${sel.has(v)?' on':''}" data-ptitem="${k}" data-v="${esc(v)}">${esc(v)} <span class="c">${counts[v]}</span><span class="chk">✓</span></div>`).join('')}
+   </div>
+  </div>`;
+ }).join('');
+}
+function panelTreeBarsHtml(list){
+ const dimDef=PANEL_TREE_DIMS2[panelTeleTreeDim]||PANEL_TREE_DIMS2.categoria;
+ const matched=list.filter(t=>panelTreeMatch(t,null));
+ const groups={};
+ matched.forEach(t=>{ const ms=tiempoAsignadoMs(t); if(ms==null)return; const k=dimDef.get(t); groups[k]=(groups[k]||0)+ms; });
+ const rows=Object.entries(groups).sort((a,b)=>b[1]-a[1]);
+ if(!rows.length) return '<p class="tinfo">Sin datos para esta combinación.</p>';
+ const mx=Math.max(...rows.map(r=>r[1]),1); const sel=panelTreeSets()[panelTeleTreeDim];
+ const total=rows.reduce((a,r)=>a+r[1],0)||1;
+ return rows.map(r=>{const w=Math.max(3,Math.round(r[1]/mx*100)); const pct=Math.round(r[1]/total*100);
+  return `<div class="bar pct noKpi rbar${sel.has(r[0])?' on':''}" data-v="${esc(r[0])}" onclick="panelTreeBarClick(this.dataset.v)" title="Clic para filtrar por &quot;${esc(r[0])}&quot;"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span><span class="bpct" title="% sobre el total mostrado">${pct}%</span></div>`;
+ }).join('');
+}
+function renderKPIsPanelTele(list,st){
+ const k=[['Tareas cargadas',list.length],['Resueltas',st.nResueltos],['Tiempo total',st.totalAsignadoMs==null?'—':fmtDur(st.totalAsignadoMs)],['Promedio semanal',st.promSemanalMs==null?'—':fmtDur(st.promSemanalMs)]];
+ document.getElementById('kpisPanelTele').innerHTML=k.map(x=>`<div class="kpi"><div class="n">${x[1]}</div><div class="l">${x[0]}</div></div>`).join('');
+}
+function renderPanelTele(){
+ const box=document.getElementById('analisisPanelTele'); if(!box)return;
+ const listScoped=scopeCli?TELE.filter(t=>t.cliente===scopeCli):TELE;
+ const st=teleStats(listScoped);
+ renderKPIsPanelTele(listScoped,st);
+ const dim=PANEL_TELE_DIMS[panelTeleDim]?panelTeleDim:'categoria';
+ const metric=PANEL_TELE_METRICS[panelTeleMetric]?panelTeleMetric:'asignado';
+ const rows=st[PANEL_TELE_METRICS[metric].rowsKey[dim]]||[];
+ const cliStats=teleClientStats();
+ box.innerHTML=`
+  <details class="card" data-pc="teleTarea"${panelCardClosed.has('teleTarea')?'':' open'}>
+   <summary class="lab">Tiempos por tarea, responsable y cliente${scopeCli?' · '+esc(scopeCli):''}</summary>
+   <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:6px 0 10px">
+    <div class="seg" onclick="event.stopPropagation()">${Object.entries(PANEL_TELE_DIMS).map(([k,d])=>`<button class="${dim===k?'on':''}" onclick="setPanelTeleDim('${k}')">${esc(d.label)}</button>`).join('')}</div>
+    <div class="seg" onclick="event.stopPropagation()">${Object.entries(PANEL_TELE_METRICS).map(([k,m])=>`<button class="${metric===k?'on':''}" onclick="setPanelTeleMetric('${k}')">${esc(m.label)}</button>`).join('')}</div>
+   </div>
+   ${panelTeleBarsHtml(rows)}
+  </details>
+  <details class="card" data-pc="teleCliSem"${panelCardClosed.has('teleCliSem')?'':' open'}>
+   <summary class="lab">Tiempo total por cliente en la semana <span class="tinfo" style="text-transform:none;font-weight:400">(no depende del filtro de cliente de arriba — es para comparar entre todos)</span></summary>
+   <div class="cmpTable">
+    <div class="cmpRow cmpHead"><span>Cliente</span><span>Tareas</span><span>Tiempo total</span><span>Promedio semanal</span></div>
+    ${cliStats.length?cliStats.map(r=>`<div class="cmpRow clickRow" data-cli="${esc(r.cliente)}" onclick="goTeleCliente(this.dataset.cli)" title="Ver tareas de ${esc(r.cliente)} en Telemática"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cliente)};margin-right:6px"></span>${esc(r.cliente)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${r.totalAsignadoMs==null?'—':fmtDur(r.totalAsignadoMs)}</span><span class="cmpn">${r.promSemanalMs==null?'—':fmtDur(r.promSemanalMs)}</span></div>`).join(''):'<p class="tinfo">Todavía no hay tareas cargadas en Telemática.</p>'}
+   </div>
+  </details>
+  <details class="card" data-pc="teleArbol"${panelCardClosed.has('teleArbol')?'':' open'}>
+   <summary class="lab">Tiempos por categoría, sub categoría, responsable y cliente${scopeCli?' · '+esc(scopeCli):''}</summary>
+   <div class="filtrow" onclick="event.stopPropagation()" style="align-items:center;flex-wrap:wrap">
+    ${panelTreeChipsHtml(listScoped)}
+    <select class="sel" onchange="setPanelTreeRange(this.value)">${PANEL_TREE_RANGE_OPTS.map(([v,l])=>`<option value="${v}" ${panelTreeRange===v?'selected':''}>${esc(l)}</option>`).join('')}</select>
+    <button class="btn sm" onclick="panelTreeClearBtn()">Limpiar filtros ✕</button>
+   </div>
+   <div class="seg" onclick="event.stopPropagation()" style="margin:10px 0">${Object.entries(PANEL_TREE_DIMS2).map(([k,d])=>`<button class="${panelTeleTreeDim===k?'on':''}" onclick="setPanelTreeDim('${k}')">${esc(d.label)}</button>`).join('')}</div>
+   <p class="tinfo" style="margin:0 0 6px">Clic en una barra para usarla como filtro (se puede combinar con los de arriba).</p>
+   ${panelTreeBarsHtml(listScoped)}
+  </details>`;
+ box.querySelectorAll(':scope > [data-pc]').forEach(d=>{
+  d.addEventListener('toggle',()=>{ const k=d.dataset.pc; if(d.open)panelCardClosed.delete(k); else panelCardClosed.add(k); });
+ });
+ box.querySelectorAll('[data-ptmsel]').forEach(btn=>{
+  btn.onclick=(e)=>{ e.stopPropagation(); const k=btn.dataset.ptmsel; panelTreeMselOpenKey=(panelTreeMselOpenKey===k?'':k); renderPanelTele(); };
+ });
+ box.querySelectorAll('[data-ptitem]').forEach(it=>{
+  it.onclick=(e)=>{ e.stopPropagation(); const dim=it.dataset.ptitem, v=it.dataset.v, sel=panelTreeSets()[dim]; sel.has(v)?sel.delete(v):sel.add(v); renderPanelTele(); };
+ });
+ box.querySelectorAll('[data-ptclear]').forEach(it=>{
+  it.onclick=(e)=>{ e.stopPropagation(); panelTreeSets()[it.dataset.ptclear].clear(); renderPanelTele(); };
+ });
 }
 // goFn opcional: nombre de una función global (ej. "goTipo") a la que se le pasa la etiqueta de la
 // barra al hacer clic — mismo criterio que ya usan "1ª respuesta por tipo" y "Quién respondió".
@@ -1203,6 +1356,22 @@ let respView='all', panelRange='', tkpiOpen=new Set();
 // se recuerda cuáles se cerraron a mano, para no perder ese estado entre re-renders (cada cambio
 // de filtro re-arma este HTML entero).
 let panelCardClosed=new Set();
+// Panel Jira / Panel Telemática: dos vistas separadas dentro de la misma pestaña Panel, para medir
+// tiempos por separado (Panel Telemática es el que usa gerencia). panelTeleDim/Metric son propios
+// de la tarjeta "Tiempos por tarea, responsable y cliente" — no comparten estado con la pestaña
+// Telemática (teleMetric), para que cambiar uno no mueva el otro.
+let panelMode='jira', panelTeleDim='categoria', panelTeleMetric='asignado';
+window.setPanelMode=(m)=>{
+ panelMode=m;
+ document.getElementById('btnPanelJira').classList.toggle('on',m==='jira');
+ document.getElementById('btnPanelTele').classList.toggle('on',m==='telematica');
+ document.getElementById('panelJiraView').style.display=m==='jira'?'':'none';
+ document.getElementById('panelTeleView').style.display=m==='telematica'?'':'none';
+ document.getElementById('panelModeTitle').textContent=m==='jira'?'Jira':'Telemática';
+ document.getElementById('panelModeSub').textContent=m==='jira'
+  ?'Todos los indicadores en un solo lugar. Usá el selector de cliente de arriba para acotar todo, y hacé clic en una persona de "Quién respondió" para saltar a su historial de tickets.'
+  :'Tiempos cargados en Telemática, para medir dedicación por tarea, responsable y cliente — el mismo criterio que usa gerencia para seguimiento.';
+};
 // detalle desplegable de cada KPI de "Tiempos de respuesta y resolución": lista de los tickets
 // detrás del promedio (los más lentos primero), cada uno clickeable a goTicket(); "Ver todos en
 // Tickets" abajo reusa el mismo scope (cliente) que ya tiene el Panel, sin el filtro de fecha propio del Panel.
@@ -1263,7 +1432,6 @@ function renderAnalisis(){
  const rowsTT=Object.entries(tt).map(([k,a])=>[k,avg(a)]).filter(r=>r[1]!=null).sort((a,b)=>b[1]-a[1]);
  const mxT=Math.max(...rowsTT.map(x=>x[1]),1);
  const cts=clientTimeStats();
- const teleCli=teleClientStats();
  const rangeSel=`<select class="sel" onchange="setPanelRange(this.value)">${RANGE_OPTS.map(([v,l])=>`<option value="${v}" ${panelRange===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
  // responders con filtro interno/cliente
  const rv=respView;
@@ -1296,13 +1464,6 @@ function renderAnalisis(){
    <div class="cmpTable">
     <div class="cmpRow cmpHead"><span>Cliente</span><span>Tickets</span><span>1ª respuesta</span><span>Espera cliente</span><span>Resolución</span></div>
     ${cts.length?cts.map(r=>`<div class="cmpRow clickRow" data-cli="${esc(r.cli)}" onclick="goCliente(this.dataset.cli)" title="Ver tickets de ${esc(r.cli)}"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cli)};margin-right:6px"></span>${esc(r.cli)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${fmtDur(r.aInt*864e5)} <span class="tinfo">(${r.nInt})</span></span><span class="cmpn">${fmtDur(r.aCli*864e5)} <span class="tinfo">(${r.nCli})</span></span><span class="cmpn">${fmtDur(r.aTot*864e5)}</span></div>`).join(''):'<p class="tinfo">Sin datos.</p>'}
-   </div>
-  </details>
-  <details class="card" data-pc="clitele"${pcOpen('clitele')}>
-   <summary class="lab">Tiempos por cliente · vía Referente Telemática <span class="tinfo" style="text-transform:none;font-weight:400">(tickets cargados manualmente en el módulo Telemática — incluye clientes con Jira si se usa para coordinaciones u otras tareas que no pasan por Jira)</span></summary>
-   <div class="cmpTable" style="--cols:1.5fr .7fr .8fr 1.1fr 1fr">
-    <div class="cmpRow cmpHead" style="grid-template-columns:var(--cols)"><span>Cliente</span><span>Tickets</span><span>Resueltos</span><span>Tiempo asignado (real, total)</span><span>Promedio semanal <span class="tinfo" style="text-transform:none;font-weight:400">(8hs/día)</span></span></div>
-    ${teleCli.length?teleCli.map(r=>`<div class="cmpRow clickRow" data-cli="${esc(r.cliente)}" onclick="goTeleCliente(this.dataset.cli)" title="Ver tareas de ${esc(r.cliente)} en Telemática"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cliente)};margin-right:6px"></span>${esc(r.cliente)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${r.nResueltos}</span><span class="cmpn">${r.totalAsignadoMs==null?'—':fmtDur(r.totalAsignadoMs)+' ('+r.nAsignado+')'}</span><span class="cmpn">${r.promSemanalMs==null?'—':fmtDur(r.promSemanalMs)}</span></div>`).join(''):'<p class="tinfo">Todavía no hay clientes marcados como "Referente Telemática" con tickets cargados. Se configura en Clientes, y se cargan tickets en el módulo Telemática.</p>'}
    </div>
   </details>
   <details class="card" data-pc="quienresp"${pcOpen('quienresp')}>
@@ -2223,6 +2384,9 @@ function teleStats(list){
  const byCliA={}; asignados.forEach(t=>{(byCliA[t.cliente]=byCliA[t.cliente]||[]).push(t);});
  const rowsCliA=Object.entries(byCliA).map(([k,items])=>[k,items.reduce((s,t)=>s+t._a,0)]).sort((a,b)=>b[1]-a[1]);
  const rowsCliASem=Object.entries(byCliA).map(([k,items])=>[k,weeklyAvgFromItems(items)]).sort((a,b)=>b[1]-a[1]);
+ const byRespA={}; asignados.forEach(t=>{(byRespA[t.responsable||'—']=byRespA[t.responsable||'—']||[]).push(t);});
+ const rowsRespA=Object.entries(byRespA).map(([k,items])=>[k,items.reduce((s,t)=>s+t._a,0)]).sort((a,b)=>b[1]-a[1]);
+ const rowsRespASem=Object.entries(byRespA).map(([k,items])=>[k,weeklyAvgFromItems(items)]).sort((a,b)=>b[1]-a[1]);
  // matriz cliente × tipo: para cada cliente, qué % de SU tiempo corresponde a cada tipo de solicitud
  // (cada fila suma 100%) — es el "% por cliente" que pidió el usuario como etiqueta aparte, separada
  // del % global de cada tarjeta, pensada para el futuro módulo de Métricas.
@@ -2233,8 +2397,16 @@ function teleStats(list){
   return {cliente, totalMs, celdas:tiposOrder.map(tipo=>({tipo, ms:tiposMs[tipo]||0, pct:(tiposMs[tipo]||0)/totalMs*100}))};
  }).sort((a,b)=>b.totalMs-a.totalMs);
  return {nResueltos, jornadaCounts,
-  totalAsignadoMs, promSemanalMs, nAsignado:asignados.length, rowsTipoA, rowsCliA, rowsTipoASem, rowsCliASem, matrizCliTipo, tiposOrder};
+  totalAsignadoMs, promSemanalMs, nAsignado:asignados.length, rowsTipoA, rowsCliA, rowsRespA, rowsTipoASem, rowsCliASem, rowsRespASem, matrizCliTipo, tiposOrder};
 }
+// a qué categoría (grupo de TELE_TIPO_GROUPS) pertenece un sub-tipo cargado — el dato guardado en
+// cada tarea es el sub-tipo (ej. "Soporte - Instalaciones"), no la categoría (ej. "Soporte").
+function categoriaOf(tipo){
+ const g=TELE_TIPO_GROUPS.find(([,opts])=>opts.includes(tipo));
+ return g?g[0]:(tipo||'—');
+}
+// árbol Categoría → Sub categoría → filas de Responsable+Cliente con el tiempo asignado sumado,
+// para la tarjeta "Tiempos por categoría, sub categoría, responsable y cliente" del Panel Telemática.
 const TELE_METRICS={
  asignado:{label:'Asignado (total)',tipo:'rowsTipoA',cli:'rowsCliA',sub:'(real, total acumulado)'},
  semanal:{label:'Promedio semanal',tipo:'rowsTipoASem',cli:'rowsCliASem',sub:'(sobre una semana laboral de 40hs: 8hs diarias x 5 días, con 1h de almuerzo descontada)'}
@@ -2580,7 +2752,7 @@ document.getElementById('mselTeleCliBtn').onclick=(e)=>{ e.stopPropagation(); ms
 document.getElementById('mselTeleRespBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsTeleResp'); };
 document.getElementById('mselTeleTipoBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsTeleTipo'); };
 document.getElementById('btnTeleClearFilters').onclick=()=>{ teleClearFilters(); renderTelematica(); };
-document.addEventListener('click',(e)=>{ if(!e.target.closest('.msel')){ document.querySelectorAll('.mselPanel').forEach(p=>p.classList.remove('on')); } });
+document.addEventListener('click',(e)=>{ if(!e.target.closest('.msel')){ document.querySelectorAll('.mselPanel').forEach(p=>p.classList.remove('on')); panelTreeMselOpenKey=''; } });
 
 async function fetchComboPaged(url,q,proj){
  const out=[]; let token=null, isLast=false, pages=0;
