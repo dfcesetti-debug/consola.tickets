@@ -2,7 +2,7 @@
 
 **Documento preparado como analista funcional.** Objetivo: que cualquier persona del equipo —de soporte o de sistemas— entienda qué es la Consola, cómo se usa día a día, y cómo está construida por dentro, sin depender de quien la desarrolló.
 
-Fecha de este documento: 01/08/2026. Versión de la app cubierta: hasta v67 (ver `README.md` → Registro de cambios para los hitos, o `git log` para el detalle completo versión por versión).
+Fecha de este documento: 01/08/2026. Versión de la app cubierta: hasta v69 (ver `README.md` → Registro de cambios para los hitos, o `git log` para el detalle completo versión por versión).
 
 ---
 
@@ -29,13 +29,21 @@ Se puede abrir de dos formas, y ambas muestran los mismos datos compartidos:
 La barra lateral tiene 6 secciones:
 
 ### 2.1 Panel
-Vista de arranque. Resume en KPIs y gráficos: cantidad de tickets, tiempos de respuesta/resolución (con SLA real de Jira cuando existe), quién respondió cada ticket, y una comparación entre clientes con SLA de Jira vs. clientes atendidos por Referente de Telemática. Tiene un filtro de rango de fechas propio para la sección de tiempos.
+Vista de arranque. Desde v69 tiene un selector arriba de todo — **Panel Jira** / **Panel Telemática** — para medir los tiempos de cada fuente por separado (las 8 tarjetas son desplegables desde v67):
+
+- **Panel Jira**: el original. KPIs y gráficos de cantidad de tickets, tiempos de respuesta/resolución (con SLA real de Jira cuando existe) y quién respondió cada ticket. Tiene un filtro de rango de fechas propio para la sección de tiempos.
+- **Panel Telemática**: pensado para que **gerencia** haga seguimiento de tiempos sobre las tareas cargadas en Telemática (no se mezcla con las métricas de Jira, son dos formas distintas de medir). Tres tarjetas desplegables:
+  1. **Tiempos por tarea, responsable y cliente** — selector de dimensión + selector total/promedio semanal.
+  2. **Tiempo total por cliente en la semana** — no se acota por el cliente elegido arriba (comparación entre todos); tabla con Tareas, Tiempo total, **%** sobre el total de todos los clientes, y Promedio semanal.
+  3. **Tiempos por categoría, sub categoría, responsable y cliente** — gráfico de barras interactivo: 4 filtros cruzados (Categoría/Sub categoría/Cliente/Responsable), un rango de fecha (Día/Semana/Mes/Trimestre/Semestre/Año) y un selector de qué dimensión graficar; clic en una barra la suma o saca como filtro. Cada barra muestra su duración y el **%** que representa sobre el total mostrado.
 
 ### 2.2 Matriz N1
 Guía rápida de respuesta para el primer nivel de soporte: por cada tipo de ticket frecuente, qué preguntar y qué plantilla de respuesta usar. Se acota al cliente elegido arriba.
 
 ### 2.3 Tickets
 Historial completo, buscable y filtrable (por tipo, estado, responsable — con selección múltiple, y desde v65 también clickeable: cada barra/celda del Panel que hace drill-down aterriza acá ya filtrada). Cada ticket es una tarjeta desplegable (colapsada por defecto desde v50). El bloque para traer datos de Jira **ya no vive acá** (se movió a Configuración, ver 2.6, en v66) — queda un acceso directo arriba de la lista.
+
+Desde v68, las tareas cargadas en **Telemática** aparecen mezcladas acá con los tickets reales de Jira (del cliente que corresponda), con los mismos filtros y buscador — etiquetadas "Telemática" en vez de mostrar SLA (muestran cantidad de horas). Hay un filtro adicional **Origen (Jira / Telemática)**. La clave que se les asigna (ej. "CN-1") usa el prefijo del cliente en Clientes; para clientes que vienen por Jira (Quilmes/Cervepar) el prefijo real de Jira nunca se reutiliza para esto (colisionaría con la clave de un ticket real) — usan un segundo campo, **Prefijo Telemática**, específico de la tarjeta de cliente, o si no está cargado, el nombre del cliente tal cual. Esta mezcla es solo de visualización en Tickets: el Panel Jira sigue calculándose únicamente con tickets reales de Jira (ver 2.1).
 
 ### 2.4 Clientes
 Tres sub-pestañas (fusionadas en una sola desde v47, antes "Ejecutivos" era una pestaña aparte):
@@ -184,8 +192,8 @@ flowchart TB
 | Repositorio | `https://github.com/dfcesetti-debug/consola.tickets` |
 | Conector de Jira (nube) | `https://consola-cmq-jira-proxy.df-cesetti.workers.dev` |
 | Proyecto Firebase | `tickets-be0af` (Firestore, doc `kb_state/main`) |
-| Historial de cambios | `tablero/README.md` → Registro de cambios (resumen de hitos, v1 a v67); detalle completo de cada versión en `git log` / `git show <hash>` |
+| Historial de cambios | `tablero/README.md` → Registro de cambios (resumen de hitos, v1 a v69); detalle completo de cada versión en `git log` / `git show <hash>` |
 
 ---
 
-*Este documento describe el estado de la plataforma al 01/08/2026 (hasta v67). Para cambios posteriores, consultar el Registro de cambios en `README.md`, y actualizar este documento si el cambio es estructural (arquitectura, pestañas, contrato de datos).*
+*Este documento describe el estado de la plataforma al 01/08/2026 (hasta v69). Para cambios posteriores, consultar el Registro de cambios en `README.md`, y actualizar este documento si el cambio es estructural (arquitectura, pestañas, contrato de datos).*
