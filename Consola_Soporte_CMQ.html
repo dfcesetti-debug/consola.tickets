@@ -256,9 +256,10 @@ details.cm[open] summary::before{content:'▾ '}
 .cmpTable{display:flex;flex-direction:column;gap:1px;margin-top:6px}
 .cmpRow{display:grid;grid-template-columns:1.4fr .7fr 1fr 1fr 1fr;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--edge2);font-size:12.5px}
 .cmpRow.cmpHead{font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--edge)}
+.cmpRow.cmpHead span:not(:first-child){text-align:center}
 .cmpRow .cmpn{font-family:var(--mono);font-weight:700;color:var(--ink)}
 .cmpRow .mcell{display:flex;flex-direction:column;align-items:center;gap:3px;justify-self:center}
-.cmpRow .mcell .mv{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--ink);white-space:nowrap}
+.cmpRow .mcell .mv{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent2);white-space:nowrap}
 .cmpRow .mcell .mpct{font-family:var(--mono);font-size:10.5px;font-weight:700;font-style:normal;color:var(--accent2);background:var(--accdim);padding:2px 9px;border-radius:20px;text-align:center;white-space:nowrap}
 @media(max-width:640px){.cmpRow{grid-template-columns:1.1fr .6fr 1fr 1fr 1fr;font-size:11.5px;gap:6px}}
 
@@ -557,6 +558,11 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
       <p class="tinfo" style="margin:6px 0 8px;font-style:italic">Para el detalle específico de los reportes vigentes de cada cliente, revisar la sección "Reportes" en su ficha técnica (Ejecutivos → Fichas).</p>
      </details>
     </details>
+   </div>
+   <div class="filtrow">
+    <div class="msel" id="mselTeleCli"><button type="button" class="mselBtn" id="mselTeleCliBtn">Cliente: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsTeleCli"></div></div>
+    <div class="msel" id="mselTeleResp"><button type="button" class="mselBtn" id="mselTeleRespBtn">Responsable: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsTeleResp"></div></div>
+    <button class="btn sm" id="btnTeleClearFilters" style="display:none">Limpiar filtros ✕</button>
    </div>
    <div id="analisisTele"></div>
    <div class="card"><div class="lab" style="margin-top:0">Tickets cargados</div><div id="teleList"></div></div>
@@ -1951,15 +1957,39 @@ function renderTeleForm(){
  const feEl=document.getElementById('teleFecha'); if(feEl && !feEl.value) feEl.value=todayStr();
  if(!wrap.children.length) addTeleRow();
 }
-function teleStats(){
+let teleFilterCli=new Set(), teleFilterResp=new Set();
+function teleFiltered(){
+ return TELE.filter(t=>(!teleFilterCli.size||teleFilterCli.has(t.cliente))&&(!teleFilterResp.size||teleFilterResp.has(t.responsable)));
+}
+function teleFacetCounts(dim){
+ const counts={}; TELE.forEach(t=>{ const v=t[dim]||'—'; counts[v]=(counts[v]||0)+1; }); return counts;
+}
+function teleChipRow(elId,btnId,label,dim,sel){
+ const counts=teleFacetCounts(dim); const vals=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);
+ const box=document.getElementById(elId); const btn=document.getElementById(btnId); if(!box||!btn)return;
+ box.innerHTML=`<div class="mselItem allOpt${sel.size===0?' on':''}" data-v="">Todos <span class="c">${TELE.length}</span><span class="chk">✓</span></div>`+
+  vals.map(v=>`<div class="mselItem${sel.has(v)?' on':''}" data-v="${esc(v)}">${esc(v)} <span class="c">${counts[v]}</span><span class="chk">✓</span></div>`).join('');
+ box.querySelectorAll('.mselItem').forEach(it=>it.onclick=(e)=>{ e.stopPropagation();
+  const v=it.dataset.v; if(v===''){sel.clear();} else { sel.has(v)?sel.delete(v):sel.add(v); } renderTelematica();
+ });
+ btn.innerHTML=(sel.size?(label+': '+[...sel].slice(0,2).map(esc).join(', ')+(sel.size>2?(' +'+(sel.size-2)):'')):(label+': Todos'))+' <span class="arrow">▾</span>';
+}
+function buildTeleFilters(){
+ teleChipRow('chipsTeleCli','mselTeleCliBtn','Cliente','cliente',teleFilterCli);
+ teleChipRow('chipsTeleResp','mselTeleRespBtn','Responsable','responsable',teleFilterResp);
+ const clearBtn=document.getElementById('btnTeleClearFilters');
+ if(clearBtn) clearBtn.style.display=(teleFilterCli.size||teleFilterResp.size)?'':'none';
+}
+function teleStats(list){
+ list=list||TELE;
  const jornadaCounts={semana:0,sabado:0,domingo:0};
- TELE.forEach(t=>{ const j=jornadaClass(t.fecha); if(j) jornadaCounts[j]++; });
- const nResueltos=TELE.filter(t=>t.estado==='Resuelto').length;
+ list.forEach(t=>{ const j=jornadaClass(t.fecha); if(j) jornadaCounts[j]++; });
+ const nResueltos=list.filter(t=>t.estado==='Resuelto').length;
  // tiempo asignado: se carga directo como cantidad de horas (sin hora de inicio/fin).
  // El total suma TODAS las horas cargadas (no promedia entre tickets del mismo tipo/cliente,
  // porque eso escondía el total real: 2 tickets de 3hs de Laboratorio daban "3hs" en vez de "6hs").
  // El promedio semanal sí promedia, pero por semana calendario (jornada de 8hs diarias, 1h de almuerzo).
- const asignados=TELE.map(t=>({...t,_a:tiempoAsignadoMs(t)})).filter(t=>t._a!=null);
+ const asignados=list.map(t=>({...t,_a:tiempoAsignadoMs(t)})).filter(t=>t._a!=null);
  const totalAsignadoMs=asignados.length?asignados.reduce((s,t)=>s+t._a,0):null;
  const promSemanalMs=weeklyAvgFromItems(asignados);
  const byTipoA={}; asignados.forEach(t=>{(byTipoA[t.tipo]=byTipoA[t.tipo]||[]).push(t);});
@@ -2017,10 +2047,12 @@ function matrizCliTipoHtml(matriz,tiposOrder){
 function renderTelematica(){
  const box=document.getElementById('teleList'); if(!box)return;
  renderTeleForm();
- document.getElementById('c-telematica').textContent=TELE.length;
- const st=teleStats();
- const pend=TELE.filter(t=>t.estado!=='Resuelto').length;
- const kpis=[['Tickets cargados',TELE.length],['Resueltos',st.nResueltos],['Pendientes / en curso',pend],['Tiempo asignado total',st.totalAsignadoMs==null?'—':fmtDur(st.totalAsignadoMs)],['Promedio semanal',st.promSemanalMs==null?'—':fmtDur(st.promSemanalMs)]];
+ buildTeleFilters();
+ const filtered=teleFiltered();
+ document.getElementById('c-telematica').textContent=filtered.length;
+ const st=teleStats(filtered);
+ const pend=filtered.filter(t=>t.estado!=='Resuelto').length;
+ const kpis=[['Tickets cargados',filtered.length],['Resueltos',st.nResueltos],['Pendientes / en curso',pend],['Tiempo asignado total',st.totalAsignadoMs==null?'—':fmtDur(st.totalAsignadoMs)],['Promedio semanal',st.promSemanalMs==null?'—':fmtDur(st.promSemanalMs)]];
  document.getElementById('kpisTele').innerHTML=kpis.map(k=>`<div class="kpi"><div class="n">${k[1]}</div><div class="l">${esc(k[0])}</div></div>`).join('');
  const mc=TELE_METRICS[teleMetric]||TELE_METRICS.asignado;
  const tipoRows=withPct(st[mc.tipo]), cliRows=withPct(st[mc.cli]);
@@ -2049,7 +2081,7 @@ function renderTelematica(){
   </div>`;
  const matrizDet=document.getElementById('teleMatrizSec');
  if(matrizDet) matrizDet.addEventListener('toggle',()=>{ matrizCliTipoOpen=matrizDet.open; });
- const sorted=TELE.slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+ const sorted=filtered.slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
  box.innerHTML=sorted.length?sorted.map(t=>{
   const asignadoMs=tiempoAsignadoMs(t);
   const cls=t.estado==='Resuelto'?'fijo':t.estado==='En curso'?'st':'';
@@ -2288,6 +2320,9 @@ document.getElementById('mselClientesBtn').onclick=(e)=>{ e.stopPropagation(); r
 document.getElementById('mselFTipoBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsTipo'); };
 document.getElementById('mselFEstadoBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsEstado'); };
 document.getElementById('mselFAsigBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsAsig'); };
+document.getElementById('mselTeleCliBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsTeleCli'); };
+document.getElementById('mselTeleRespBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsTeleResp'); };
+document.getElementById('btnTeleClearFilters').onclick=()=>{ teleFilterCli.clear(); teleFilterResp.clear(); renderTelematica(); };
 document.addEventListener('click',(e)=>{ if(!e.target.closest('.msel')){ document.querySelectorAll('.mselPanel').forEach(p=>p.classList.remove('on')); } });
 
 async function fetchComboPaged(url,q,proj){
