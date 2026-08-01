@@ -559,10 +559,11 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
      </details>
     </details>
    </div>
-   <div class="filtrow">
+   <div class="filtrow" style="align-items:center;flex-wrap:wrap">
     <div class="msel" id="mselTeleCli"><button type="button" class="mselBtn" id="mselTeleCliBtn">Cliente: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsTeleCli"></div></div>
     <div class="msel" id="mselTeleResp"><button type="button" class="mselBtn" id="mselTeleRespBtn">Responsable: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsTeleResp"></div></div>
     <button class="btn sm" id="btnTeleClearFilters" style="display:none">Limpiar filtros ✕</button>
+    <div class="seg" id="segTeleMetric" style="margin-left:auto"></div>
    </div>
    <div id="analisisTele"></div>
    <div class="card"><div class="lab" style="margin-top:0">Tickets cargados</div><div id="teleList"></div></div>
@@ -2058,10 +2059,9 @@ function renderTelematica(){
  const tipoRows=withPct(st[mc.tipo]), cliRows=withPct(st[mc.cli]);
  const mxT=Math.max(...tipoRows.map(x=>x[1]),1), mxC=Math.max(...cliRows.map(x=>x[1]),1);
  const jc=st.jornadaCounts, jTotal=jc.semana+jc.sabado+jc.domingo;
+ const segEl=document.getElementById('segTeleMetric');
+ if(segEl) segEl.innerHTML=Object.entries(TELE_METRICS).map(([k,m])=>`<button class="${teleMetric===k?'on':''}" onclick="setTeleMetric('${k}')">${esc(m.label)}</button>`).join('');
  document.getElementById('analisisTele').innerHTML=`
-  <div class="seg" id="segTeleMetric" style="margin-bottom:14px">
-   ${Object.entries(TELE_METRICS).map(([k,m])=>`<button class="${teleMetric===k?'on':''}" onclick="setTeleMetric('${k}')">${esc(m.label)}</button>`).join('')}
-  </div>
   <div class="grid2">
    <div class="card"><div class="lab" style="margin-top:0">Por tipo de solicitud <span class="tinfo" style="text-transform:none;font-weight:400">${mc.sub}</span></div>${tipoRows.length?teleBarsHtml(tipoRows,mxT,'tipo'):'<p class="tinfo">Todavía no hay tickets cargados con los datos necesarios para este cálculo.</p>'}</div>
    <div class="card"><div class="lab" style="margin-top:0">Por cliente <span class="tinfo" style="text-transform:none;font-weight:400">${mc.sub}</span></div>${cliRows.length?teleBarsHtml(cliRows,mxC,'cliente'):'<p class="tinfo">Todavía no hay tickets cargados con los datos necesarios para este cálculo.</p>'}</div>
