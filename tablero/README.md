@@ -597,3 +597,8 @@ A partir de una auditoría de interfaz (con capturas reales y mockups mostrados 
 - **La tarjeta "% por cliente" ahora es un `<details>` colapsable, cerrado por defecto**, con el mismo estilo y comportamiento (flecha ▸/▾, clic para abrir/cerrar) que "+ Carga de tarea" y las secciones de Configuración técnica en Fichas.
 - **Se conserva el estado abierto/cerrado entre actualizaciones**: si lo dejás abierto y cambiás de métrica (Asignado/Semanal) o cargás un ticket nuevo, la tarjeta no se vuelve a cerrar sola (mismo mecanismo que ya se usa para los tickets desplegables y las secciones de Fichas).
 - Probado en navegador real con Playwright, sin errores de consola: se confirmó que aparece colapsada al entrar a la pestaña, que se abre y cierra con un clic, y que queda abierta después de cambiar de métrica (re-render); se revisó visualmente en modo claro y oscuro, y se corrió la batería de regresión completa sin errores.
+
+### v55 (2026-07-31) — Se suma a Joaquin Macanek como responsable/integrante del equipo
+
+- **Se agregó "Joaquin Macanek" a la lista de responsables (`TEAM`)** que usa toda la consola: ahora aparece en las sugerencias de "Responsable" al cargar una tarea en Telemática, en "Guardado por" de las Fichas técnicas, y se lo reconoce como respuesta "interna" (equipo Cesetti) — no "del cliente" — en los filtros de "quién respondió" de Tickets y en el Panel.
+- Probado en navegador real con Playwright, sin errores de consola: se confirmó que "Joaquin Macanek" aparece en la lista `TEAM`, en el desplegable de sugerencias de Telemática y en el de Fichas, y se corrió la batería de regresión completa sin errores.
