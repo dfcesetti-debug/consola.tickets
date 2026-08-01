@@ -254,7 +254,8 @@ details.cm[open] summary::before{content:'▾ '}
 .legend i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:middle}
 
 .cmpTable{display:flex;flex-direction:column;gap:1px;margin-top:6px}
-.cmpRow{display:grid;grid-template-columns:1.4fr .7fr 1fr 1fr 1fr;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--edge2);font-size:12.5px}
+.cmpRow{display:grid;grid-template-columns:1.4fr .7fr 1fr 1fr 1fr;gap:10px;align-items:center;padding:11px 8px;border-bottom:1px solid var(--edge2);font-size:12.5px;border-radius:8px;transition:background .15s var(--ease)}
+.cmpRow:not(.cmpHead):hover{background:var(--bg2)}
 .cmpRow.cmpHead{font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--edge)}
 .cmpRow.cmpHead span:not(:first-child){text-align:center}
 .cmpRow .cmpn{font-family:var(--mono);font-weight:700;color:var(--ink)}
@@ -1959,16 +1960,24 @@ function renderTeleForm(){
  if(!wrap.children.length) addTeleRow();
 }
 let teleFilterCli=new Set(), teleFilterResp=new Set();
+// igual que matchDims/facet() en Tickets: al contar las opciones de UNA dimensión, se aplican los
+// filtros de las OTRAS dimensiones (skip omite la propia) — así el número junto a cada opción refleja
+// cuántos tickets van a quedar realmente si la elegís, no el total global sin cruzar.
+function teleMatchDims(t,skip){
+ return (skip==='cliente'||!teleFilterCli.size||teleFilterCli.has(t.cliente))
+   &&(skip==='responsable'||!teleFilterResp.size||teleFilterResp.has(t.responsable));
+}
 function teleFiltered(){
- return TELE.filter(t=>(!teleFilterCli.size||teleFilterCli.has(t.cliente))&&(!teleFilterResp.size||teleFilterResp.has(t.responsable)));
+ return TELE.filter(t=>teleMatchDims(t,null));
 }
-function teleFacetCounts(dim){
- const counts={}; TELE.forEach(t=>{ const v=t[dim]||'—'; counts[v]=(counts[v]||0)+1; }); return counts;
+function teleFacetCounts(dim,skip){
+ const counts={}; TELE.forEach(t=>{ if(teleMatchDims(t,skip)){ const v=t[dim]||'—'; counts[v]=(counts[v]||0)+1; } }); return counts;
 }
-function teleChipRow(elId,btnId,label,dim,sel){
- const counts=teleFacetCounts(dim); const vals=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);
+function teleChipRow(elId,btnId,label,dim,sel,skip){
+ const counts=teleFacetCounts(dim,skip); const vals=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);
+ const total=Object.values(counts).reduce((a,b)=>a+b,0);
  const box=document.getElementById(elId); const btn=document.getElementById(btnId); if(!box||!btn)return;
- box.innerHTML=`<div class="mselItem allOpt${sel.size===0?' on':''}" data-v="">Todos <span class="c">${TELE.length}</span><span class="chk">✓</span></div>`+
+ box.innerHTML=`<div class="mselItem allOpt${sel.size===0?' on':''}" data-v="">Todos <span class="c">${total}</span><span class="chk">✓</span></div>`+
   vals.map(v=>`<div class="mselItem${sel.has(v)?' on':''}" data-v="${esc(v)}">${esc(v)} <span class="c">${counts[v]}</span><span class="chk">✓</span></div>`).join('');
  box.querySelectorAll('.mselItem').forEach(it=>it.onclick=(e)=>{ e.stopPropagation();
   const v=it.dataset.v; if(v===''){sel.clear();} else { sel.has(v)?sel.delete(v):sel.add(v); } renderTelematica();
@@ -1976,8 +1985,8 @@ function teleChipRow(elId,btnId,label,dim,sel){
  btn.innerHTML=(sel.size?(label+': '+[...sel].slice(0,2).map(esc).join(', ')+(sel.size>2?(' +'+(sel.size-2)):'')):(label+': Todos'))+' <span class="arrow">▾</span>';
 }
 function buildTeleFilters(){
- teleChipRow('chipsTeleCli','mselTeleCliBtn','Cliente','cliente',teleFilterCli);
- teleChipRow('chipsTeleResp','mselTeleRespBtn','Responsable','responsable',teleFilterResp);
+ teleChipRow('chipsTeleCli','mselTeleCliBtn','Cliente','cliente',teleFilterCli,'cliente');
+ teleChipRow('chipsTeleResp','mselTeleRespBtn','Responsable','responsable',teleFilterResp,'responsable');
  const clearBtn=document.getElementById('btnTeleClearFilters');
  if(clearBtn) clearBtn.style.display=(teleFilterCli.size||teleFilterResp.size)?'':'none';
 }
@@ -2041,7 +2050,7 @@ function matrizCliTipoHtml(matriz,tiposOrder){
  const head=`<div class="cmpRow cmpHead" style="grid-template-columns:${cols}"><span>Cliente</span>${tiposOrder.map(t=>`<span title="${esc(t)}">${esc(t)}</span>`).join('')}</div>`;
  const rows=matriz.map(m=>{
   const byTipo=Object.fromEntries(m.celdas.map(c=>[c.tipo,c]));
-  return `<div class="cmpRow" style="grid-template-columns:${cols}"><span class="cmpn">${esc(m.cliente)}</span>${tiposOrder.map(t=>{const c=byTipo[t]; const ms=c?c.ms:0; const pct=c?c.pct:0; return `<span class="mcell" data-kpi="cliente_tipo" data-cliente="${esc(m.cliente)}" data-tipo="${esc(t)}" title="${esc(m.cliente)} · ${esc(t)}"><b class="mv">${fmtDur(ms)}</b><i class="mpct">${pct.toFixed(0)}%</i></span>`;}).join('')}</div>`;
+  return `<div class="cmpRow" style="grid-template-columns:${cols}"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(m.cliente)};margin-right:6px"></span>${esc(m.cliente)}</span>${tiposOrder.map(t=>{const c=byTipo[t]; const ms=c?c.ms:0; const pct=c?c.pct:0; return `<span class="mcell" data-kpi="cliente_tipo" data-cliente="${esc(m.cliente)}" data-tipo="${esc(t)}" title="${esc(m.cliente)} · ${esc(t)}"><b class="mv">${fmtDur(ms)}</b><i class="mpct">${pct.toFixed(0)}%</i></span>`;}).join('')}</div>`;
  }).join('');
  return `<div class="cfgTableWrap"><div class="cmpTable" style="min-width:${minW}px">${head}${rows}</div></div>`;
 }
