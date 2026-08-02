@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Consola de Soporte · Base de Conocimiento CMQ</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCc+PHJlY3Qgd2lkdGg9JzI0JyBoZWlnaHQ9JzI0JyByeD0nNicgZmlsbD0nIzBhMWEyOScvPjxjaXJjbGUgY3g9JzcuNScgY3k9JzE2LjUnIHI9JzIuNCcgZmlsbD0nIzIyYzNlMicvPjxwYXRoIGQ9J002LjQgMTIuMmE3IDcgMCAwIDEgNS40IDUuNCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjMjJjM2UyJyBzdHJva2Utd2lkdGg9JzInIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcvPjxwYXRoIGQ9J002LjEgNy45YTExLjQgMTEuNCAwIDAgMSAxMCAxMCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjMjJjM2UyJyBzdHJva2Utd2lkdGg9JzInIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgb3BhY2l0eT0nLjYnLz48L3N2Zz4=">
 <style>
 /* Plus Jakarta Sans embebida (variable, peso 200-800) -- sin link a CDN de fuentes,
    no suma una dependencia de red nueva mas alla de la que ya existe (Firebase). */
@@ -63,7 +64,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
 .loginBox{width:100%;max-width:360px;background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.18)}
 .loginBrand{display:flex;align-items:center;gap:10px;margin-bottom:16px}
-.loginBrand .dot{width:34px;height:34px;border-radius:9px;background:radial-gradient(circle at 30% 30%,#22d3ee,#0aa2c0);box-shadow:0 0 0 3px var(--accdim);flex:none}
+.loginBrand .dot{width:38px;height:38px;border-radius:11px;background:linear-gradient(160deg,#12283a,#0a1a29);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 0 1px rgba(10,162,192,.28),0 4px 10px rgba(8,32,48,.28);flex:none;display:grid;place-items:center}
+.loginBrand .dot svg{width:23px;height:23px;display:block}
 .loginBrand b{color:var(--ink);font-size:15px;line-height:1.2;display:block}
 .loginBrand span{font-size:11px;color:var(--mut)}
 .loginBox .btn.primary{width:100%;justify-content:center;margin-top:8px}
@@ -71,7 +73,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .railfoot a{color:var(--railtx);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .railfoot a:hover{color:var(--railon)}
 .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 16px;border-bottom:1px solid var(--railborder);margin-bottom:12px;transition:border-color .25s var(--ease)}
-.brand .dot{width:30px;height:30px;border-radius:8px;background:radial-gradient(circle at 30% 30%,#22d3ee,#0aa2c0);box-shadow:0 0 0 3px rgba(10,162,192,.18);flex:none}
+.brand .dot{width:32px;height:32px;border-radius:9px;background:linear-gradient(160deg,#12283a,#0a1a29);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 0 1px rgba(10,162,192,.28),0 3px 8px rgba(8,32,48,.22);flex:none;display:grid;place-items:center}
+.brand .dot svg{width:20px;height:20px;display:block}
 .brand b{color:var(--railon);font-size:14px;line-height:1.1;transition:color .25s var(--ease)}.brand span{font-size:10.5px;color:var(--mut2)}
 .nav{display:flex;flex-direction:column;gap:3px;margin-top:6px}
 .nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--railtx);cursor:pointer;font-weight:600;font-size:13.5px;text-decoration:none;transition:background .25s var(--ease),color .25s var(--ease),transform .15s var(--ease)}
@@ -91,6 +94,21 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .search input:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accdim);transform:translateY(-1px)}
 .search .mag{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--mut2)}
 .search .kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:10.5px;color:var(--mut2);border:1px solid var(--edge);border-radius:6px;padding:2px 6px;background:var(--panel)}
+/* v75 · login elevado */
+.loginScreen{overflow:hidden}
+.loginScreen::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(600px 320px at 18% -8%,rgba(10,162,192,.10),transparent 60%),radial-gradient(520px 320px at 100% 118%,rgba(10,162,192,.07),transparent 60%)}
+.loginBox{position:relative}
+.loginBox::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.85}
+.loginTag{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--accent2);text-transform:uppercase;margin:18px 0 2px;display:flex;align-items:center;gap:8px}
+.loginTag::after{content:"";flex:1;height:1px;background:var(--edge)}
+/* v75 · topbar de comando */
+.iconbtn{border:1.5px solid var(--edge);background:var(--panel);color:var(--ink);border-radius:11px;padding:0;width:40px;height:40px;cursor:pointer;display:grid;place-items:center;flex:none;transition:border-color .18s var(--ease),color .18s var(--ease),transform .18s var(--ease),box-shadow .18s var(--ease)}
+.iconbtn:hover{border-color:var(--accborder);color:var(--accent2);transform:translateY(-1px);box-shadow:0 3px 10px rgba(16,32,60,.08)}
+.iconbtn:active{transform:scale(.97)}
+.iconbtn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.iconbtn .ibl{display:none}
+.tbdivide{width:1px;height:24px;background:var(--edge);flex:none;margin:0 2px}
+@media(max-width:720px){.tbdivide{display:none}}
 .btn{border:1.5px solid var(--edge);background:var(--panel);color:var(--ink);border-radius:11px;padding:10px 14px;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:transform .15s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease),color .2s var(--ease),background .2s var(--ease);white-space:nowrap}
 .btn:hover{border-color:var(--accent);color:var(--accent2);transform:translateY(-1px);box-shadow:0 3px 10px rgba(16,32,60,.08)}
 .btn:active{transform:scale(.97)}
@@ -116,11 +134,26 @@ h2.vt{font-size:20px;font-weight:700;margin:2px 0}
 .scopenote{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--accent2);background:var(--accdim);border:1px solid var(--accborder);border-radius:20px;padding:3px 12px;font-weight:650;margin-left:8px}
 
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:8px 0 22px}
-.kpi{background:var(--panel);border:1px solid var(--edge);border-radius:var(--r);padding:15px 17px;position:relative;overflow:hidden;transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+.kpi{background:var(--panel);border:1px solid var(--edge);border-radius:var(--r);padding:15px 17px;position:relative;overflow:hidden;display:flex;flex-direction:column;transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
 .kpi:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(16,32,60,.1)}
-.kpi::after{content:'';position:absolute;right:-18px;top:-18px;width:60px;height:60px;border-radius:50%;background:var(--accdim);opacity:.6}
-.kpi .n{font-size:26px;font-weight:800;font-family:var(--mono);letter-spacing:-.5px;color:var(--ink);position:relative;z-index:1}
-.kpi .l{font-size:12px;color:var(--mut);margin-top:3px;position:relative;z-index:1}
+.kpi .l{order:1;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut2);margin:0;display:flex;align-items:center;gap:6px;position:relative;z-index:1}
+.kpi .l svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.85;flex:none}
+.kpi .n{order:2;font-size:27px;font-weight:800;font-family:var(--mono);letter-spacing:-.5px;color:var(--ink);line-height:1.05;margin-top:7px;position:relative;z-index:1}
+.kpi .kfoot{order:5;font-size:11px;color:var(--mut);margin-top:5px;position:relative;z-index:1}
+.kpi .n .u{font-size:14px;color:var(--mut2);font-weight:700;margin-left:1px}
+.ktrend{order:3;align-self:flex-start;display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px;margin-top:7px;position:relative;z-index:1}
+.ktrend.good{color:var(--sig);background:var(--sigbg)}
+.ktrend.bad{color:var(--danger);background:var(--dangerbg)}
+.ktrend.flat{color:var(--mut2);background:var(--edge2)}
+.kspark{order:4;margin-top:8px;width:100%;position:relative;z-index:1}
+.kspark svg{display:block;width:100%;height:20px}
+.kpi.focal{background:linear-gradient(155deg,var(--accent),var(--accent2));border-color:transparent}
+.kpi.focal .l{color:rgba(255,255,255,.9)}.kpi.focal .n{color:#fff}.kpi.focal .n .u{color:rgba(255,255,255,.82)}.kpi.focal .kfoot{color:rgba(255,255,255,.88)}
+.sk{background:linear-gradient(100deg,var(--edge2) 30%,var(--edge) 50%,var(--edge2) 70%);background-size:200% 100%;animation:shimmer 1.3s var(--ease) infinite;border-radius:7px}
+@keyframes shimmer{to{background-position:-200% 0}}
+.kpi.skwrap{pointer-events:none}.kpi.skwrap:hover{transform:none;box-shadow:none}
+.kpi .sk-l{width:58%;height:11px}.kpi .sk-n{width:44%;height:22px;margin-top:10px}.kpi .sk-f{width:70%;height:10px;margin-top:9px}
+@media(prefers-reduced-motion:reduce){.sk{animation:none}}
 .kpi .n.up{animation:pop .5s}
 @keyframes pop{0%{transform:scale(.7);color:var(--accent)}100%{transform:none}}
 
@@ -430,8 +463,9 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 <body>
 <div id="loginScreen" class="loginScreen">
  <div class="loginBox">
-  <div class="loginBrand"><div class="dot"></div><div><b>Televidentes</b><span>Soporte · Base de conocimiento</span></div></div>
-  <p class="tinfo" style="margin:0 0 16px">Acceso exclusivo para el equipo Cesetti.</p>
+  <div class="loginBrand"><div class="dot"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="16.5" r="2.4" fill="var(--accent)"></circle><path d="M6.4 12.2a7 7 0 0 1 5.4 5.4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"></path><path d="M6.1 7.9a11.4 11.4 0 0 1 10 10" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" opacity=".6"></path></svg></div><div><b>Televidentes</b><span>Soporte · Base de conocimiento</span></div></div>
+  <div class="loginTag">Acceso seguro</div>
+  <p class="tinfo" style="margin:0 0 16px">Acceso exclusivo para el equipo Cesetti. Solo cuentas <b>@cesetti.com.ar</b>.</p>
   <div class="fRow"><label class="lab" for="loginEmail" style="margin-top:0">Email</label><input class="finput" id="loginEmail" type="email" placeholder="nombre@cesetti.com.ar" autocomplete="username"></div>
   <div class="fRow"><label class="lab" for="loginPass" style="margin-top:0">Contraseña</label><input class="finput" id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
   <button class="btn primary" id="btnLogin">Ingresar</button>
@@ -440,7 +474,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 </div>
 <div id="appRoot" style="display:none">
 <aside class="rail">
- <div class="brand"><div class="dot"></div><div><b>Televidentes</b><br><span>Soporte · Base de conocimiento</span></div></div>
+ <div class="brand"><div class="dot"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="16.5" r="2.4" fill="var(--accent)"></circle><path d="M6.4 12.2a7 7 0 0 1 5.4 5.4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"></path><path d="M6.1 7.9a11.4 11.4 0 0 1 10 10" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" opacity=".6"></path></svg></div><div><b>Televidentes</b><br><span>Soporte · Base de conocimiento</span></div></div>
  <nav class="nav" id="nav">
   <a data-v="panel" class="on"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg></span> Panel</a>
   <a data-v="matriz"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="9" y1="10" x2="9" y2="20"></line></svg></span> Matriz N1 <span class="cnt" id="c-matriz">0</span></a>
@@ -456,12 +490,13 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
  <div class="topbar">
   <div class="toprow">
    <div class="search"><span class="mag">&#9906;</span><input id="q" placeholder="Buscar ticket, cliente, síntoma, respuesta…" autocomplete="off"><span class="kbd">/</span></div>
-   <button class="btn" id="btnTheme" title="Cambiar entre modo claro y oscuro">
+   <div class="tbdivide"></div>
+   <button class="iconbtn" id="btnTheme" aria-label="Cambiar entre modo claro y oscuro" title="Cambiar entre modo claro y oscuro">
     <svg id="themeIcSun" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
     <svg id="themeIcMoon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"></path></svg>
-    <span id="themeLabel">Oscuro</span>
+    <span id="themeLabel" class="ibl">Oscuro</span>
    </button>
-   <button class="btn" id="btnReset" title="Volver a la base original">&#8635; Restablecer</button>
+   <button class="iconbtn" id="btnReset" aria-label="Restablecer a la base original" title="Volver a la base original"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v5h5"></path></svg><span class="ibl">Restablecer</span></button>
   </div>
   <div class="clientbar" id="clientbar"></div>
  </div>
@@ -936,9 +971,83 @@ function renderClientBar(){
  bar.querySelectorAll('.cchip').forEach(c=>c.onclick=()=>{scopeCli=c.dataset.c;clearFilters();shown=PAGE;rebuildAll();});
 }
 
+const KPI_IC={
+ t:'<svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8Z"/></svg>',
+ clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+ check:'<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>',
+ shield:'<svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg>',
+ calendar:'<svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/></svg>',
+ cli:'<svg viewBox="0 0 24 24"><rect x="3" y="7.5" width="18" height="12" rx="2"/><path d="M8 7.5V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1.5"/></svg>',
+ user:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c.7-3.5 3.2-5.5 6.5-5.5s5.8 2 6.5 5.5"/></svg>'};
+// Ventana de comparación de los KPIs de tiempo: última semana vs. la semana anterior.
+// Todo se computa de las fechas reales de Jira (via ticketTimes), solo sobre tickets Jira
+// (se excluye Telemática). Si un período no tiene datos suficientes, el valor cae a "—" y
+// la tendencia/sparkline no se muestran — nunca se inventa un número.
+const _wkKey=ts=>{const d=new Date(ts);const off=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-off);return d.getTime();};
+function panelJiraKpis(){
+ const items=FSET.filter(i=>!i._tele);
+ const DAY=864e5, now=Date.now();
+ const curStart=now-7*DAY, prevStart=now-14*DAY;
+ const created=i=>i._createdTs||parseDate(i.creada);
+ const resolved=i=>i._resolvedTs||null;
+ const abiertos=items.filter(i=>!resolved(i));
+ const nSin=abiertos.filter(i=>!i.asignado||i.asignado==='—').length;
+ const winAvg=(a,b,field)=>{const v=items.filter(i=>{const t=created(i);return t&&t>=a&&t<b;}).map(i=>ticketTimes(i)[field]).filter(x=>x!=null);return v.length?v.reduce((s,x)=>s+x,0)/v.length:null;};
+ const winSla=(a,b)=>{const r=items.filter(i=>{const t=resolved(i);return t&&t>=a&&t<b;}).map(ticketTimes).filter(t=>t.fromSla);const y=r.filter(t=>!t.totIncumplido).length;return r.length?{pct:Math.round(y/r.length*100),y,n:r.length}:null;};
+ const WK=6, wStarts=[]; {const m=_wkKey(now); for(let i=WK-1;i>=0;i--)wStarts.push(m-i*7*DAY);}
+ const sparkAvg=field=>wStarts.map(ws=>winAvg(ws,ws+7*DAY,field));
+ const sparkSla=()=>wStarts.map(ws=>{const s=winSla(ws,ws+7*DAY);return s?s.pct:null;});
+ return {abiertos:abiertos.length,nSin,
+  intCur:winAvg(curStart,now,'intResp'),intPrev:winAvg(prevStart,curStart,'intResp'),intSpark:sparkAvg('intResp'),
+  totCur:winAvg(curStart,now,'total'),totPrev:winAvg(prevStart,curStart,'total'),totSpark:sparkAvg('total'),
+  sla:winSla(curStart,now),slaPrev:winSla(prevStart,curStart),slaSpark:sparkSla()};
+}
+// tendencia % (mode 'lower' = menos es mejor, ej. tiempos); 'higherPP' compara en puntos (SLA)
+function trendPill(cur,prev,mode){
+ if(cur==null||prev==null)return '';
+ if(mode==='higherPP'){ const d=Math.round(cur-prev); if(d===0)return '<span class="ktrend flat" title="vs. semana previa">≈ igual</span>'; return `<span class="ktrend ${d>0?'good':'bad'}" title="vs. semana previa">${d>0?'▲':'▼'} ${Math.abs(d)} pts</span>`; }
+ if(prev===0)return ''; const dp=(cur-prev)/Math.abs(prev)*100, mag=Math.abs(Math.round(dp));
+ if(mag<1)return '<span class="ktrend flat" title="vs. semana previa">≈ igual</span>';
+ const good = dp<0; // menos tiempo = mejor
+ return `<span class="ktrend ${good?'good':'bad'}" title="vs. semana previa">${dp<0?'▼':'▲'} ${mag}%</span>`;
+}
+// tendencia sin connotación bueno/malo (carga de trabajo: más horas no es "peor")
+function trendNeutral(cur,prev){
+ if(cur==null||prev==null||prev===0)return '';
+ const dp=Math.round((cur-prev)/Math.abs(prev)*100);
+ if(dp===0)return '';
+ return `<span class="ktrend flat" title="vs. semana previa">${dp<0?'▼':'▲'} ${Math.abs(dp)}%</span>`;
+}
+function sparkline(series){
+ const pts=series.map((v,i)=>[i,v]).filter(p=>p[1]!=null);
+ if(pts.length<2)return '';
+ const xs=series.length-1, ys=pts.map(p=>p[1]), mn=Math.min(...ys), mx=Math.max(...ys), rng=mx-mn||1, W=64,H=20;
+ const path=pts.map(p=>{const x=(p[0]/xs)*W, y=H-((p[1]-mn)/rng)*(H-3)-1.5; return x.toFixed(1)+','+y.toFixed(1);}).join(' ');
+ const lp=pts[pts.length-1], lx=(lp[0]/xs)*W, ly=H-((lp[1]-mn)/rng)*(H-3)-1.5;
+ return `<div class="kspark"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline points="${path}" fill="none" stroke="var(--accent2)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="1.9" fill="var(--accent)"/></svg></div>`;
+}
+// como fmtD pero con 1 decimal en horas (headline de KPI, más preciso que el detalle)
+const fmtDk=x=>x==null?'—':x<1?((Math.round(x*24*10)/10)+'<span class="u">h</span>'):((Math.round(x*10)/10)+'<span class="u">d</span>');
+// Skeleton de los KPIs de tiempo mientras "Traer datos" está en curso: el focal ("Tickets
+// abiertos") sigue con el contador en vivo (v73); los tres KPIs de tiempo, que no se pueden
+// calcular hasta que llegue la data, muestran shimmer en vez de un valor viejo o "—".
+function showKpiSkeleton(){
+ const box=document.getElementById('kpis'); if(!box)return;
+ const prev=box.querySelector('.kpi:first-child .n');
+ const cur=prev?(parseInt(prev.textContent,10)||0):0;
+ const sk='<div class="kpi skwrap"><div class="sk sk-l"></div><div class="sk sk-n"></div><div class="sk sk-f"></div></div>';
+ box.innerHTML=`<div class="kpi focal"><div class="l">${KPI_IC.t}Tickets abiertos</div><div class="n">${cur}</div><div class="kfoot">cargando…</div></div>`+sk+sk+sk;
+}
 function renderKPIs(){
- const k=[['Tickets',FSET.length],['Tipos de desagío',A.byType.length],['Respuestas',A.totalComments],['Clientes que cargaron',A.reporters.length],['Personas que respondieron',A.responders.length]];
- document.getElementById('kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="n">${x[1]}</div><div class="l">${x[0]}</div></div>`).join('');
+ const d=panelJiraKpis();
+ const cards=[];
+ cards.push(`<div class="kpi focal"><div class="l">${KPI_IC.t}Tickets abiertos</div><div class="n">${d.abiertos}</div><div class="kfoot">${d.nSin?d.nSin+' sin asignar':'todos asignados'}</div></div>`);
+ cards.push(`<div class="kpi"><div class="l">${KPI_IC.clock}1ª respuesta</div><div class="n">${fmtDk(d.intCur)}</div>${trendPill(d.intCur,d.intPrev,'lower')}${sparkline(d.intSpark)}</div>`);
+ cards.push(`<div class="kpi"><div class="l">${KPI_IC.check}Resolución</div><div class="n">${fmtDk(d.totCur)}</div>${trendPill(d.totCur,d.totPrev,'lower')}${sparkline(d.totSpark)}</div>`);
+ const slaVal=d.sla?`${d.sla.pct}<span class="u">%</span>`:'—';
+ const slaFoot=d.sla?`${d.sla.y} de ${d.sla.n} en plazo`:'sin datos de SLA';
+ cards.push(`<div class="kpi"><div class="l">${KPI_IC.shield}SLA cumplido</div><div class="n">${slaVal}</div>${d.sla&&d.slaPrev?trendPill(d.sla.pct,d.slaPrev.pct,'higherPP'):''}<div class="kfoot">${slaFoot}</div></div>`);
+ document.getElementById('kpis').innerHTML=cards.join('');
 }
 const PANEL_TELE_DIMS={
  categoria:{label:'Categoría',short:'Categoría'},
@@ -1027,9 +1136,29 @@ function panelTreeBarsHtml(list){
   return `<div class="bar pct noKpi rbar${sel.has(r[0])?' on':''}" data-v="${esc(r[0])}" onclick="panelTreeBarClick(this.dataset.v)" title="Clic para filtrar por &quot;${esc(r[0])}&quot;"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span><span class="bpct" title="% sobre el total mostrado">${pct}%</span></div>`;
  }).join('');
 }
+// KPIs instrumento del Panel Telemática — mismo lenguaje que Panel Jira, pero con las métricas
+// propias de Telemática (dedicación por cliente/responsable). Todo de datos reales; si falta, "—".
+function panelTeleKpis(list){
+ const DAY=864e5, now=Date.now();
+ const w=list.map(t=>({t,ms:tiempoAsignadoMs(t),ts:parseDate(t.fecha)})).filter(x=>x.ms!=null);
+ const totalMs=w.reduce((s,x)=>s+x.ms,0);
+ const byCli={}, byResp={};
+ w.forEach(x=>{const c=x.t.cliente||'—';byCli[c]=(byCli[c]||0)+x.ms;const r=x.t.responsable||'—';byResp[r]=(byResp[r]||0)+x.ms;});
+ const top=o=>{const e=Object.entries(o).sort((a,b)=>b[1]-a[1])[0];return e?{name:e[0],pct:Math.round(e[1]/(totalMs||1)*100)}:null;};
+ const wkStart=ts=>{const d=new Date(ts);const off=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-off);return d.getTime();};
+ const weekTotal=(a,b)=>w.filter(x=>x.ts&&x.ts>=a&&x.ts<b).reduce((s,x)=>s+x.ms,0);
+ const WK=6, ws=[]; {const m=wkStart(now); for(let i=WK-1;i>=0;i--)ws.push(m-i*7*DAY);}
+ const spark=ws.map(s=>{const v=weekTotal(s,s+7*DAY);return v||null;});
+ return {totalMs, nTareas:w.length, curW:weekTotal(now-7*DAY,now), prevW:weekTotal(now-14*DAY,now-7*DAY), spark, topCli:top(byCli), topResp:top(byResp)};
+}
 function renderKPIsPanelTele(list,st){
- const k=[['Tareas cargadas',list.length],['Resueltas',st.nResueltos],['Tiempo total',st.totalAsignadoMs==null?'—':fmtDur(st.totalAsignadoMs)],['Promedio semanal',st.promSemanalMs==null?'—':fmtDur(st.promSemanalMs)]];
- document.getElementById('kpisPanelTele').innerHTML=k.map(x=>`<div class="kpi"><div class="n">${x[1]}</div><div class="l">${x[0]}</div></div>`).join('');
+ const d=panelTeleKpis(list);
+ const cards=[];
+ cards.push(`<div class="kpi focal"><div class="l">${KPI_IC.clock}Tiempo total</div><div class="n">${d.totalMs?fmtDur(d.totalMs):'—'}</div><div class="kfoot">${d.nTareas} ${d.nTareas===1?'tarea':'tareas'}</div></div>`);
+ cards.push(`<div class="kpi"><div class="l">${KPI_IC.calendar}Promedio semanal</div><div class="n">${st.promSemanalMs==null?'—':fmtDur(st.promSemanalMs)}</div>${trendNeutral(d.curW,d.prevW)}${sparkline(d.spark)}</div>`);
+ cards.push(`<div class="kpi"><div class="l">${KPI_IC.cli}Cliente con más carga</div><div class="n">${d.topCli?d.topCli.pct+'<span class="u">%</span>':'—'}</div><div class="kfoot">${d.topCli?esc(d.topCli.name):'sin datos'}</div></div>`);
+ cards.push(`<div class="kpi"><div class="l">${KPI_IC.user}Responsable con más carga</div><div class="n">${d.topResp?d.topResp.pct+'<span class="u">%</span>':'—'}</div><div class="kfoot">${d.topResp?esc(d.topResp.name):'sin datos'}</div></div>`);
+ document.getElementById('kpisPanelTele').innerHTML=cards.join('');
 }
 function renderPanelTele(){
  const box=document.getElementById('analisisPanelTele'); if(!box)return;
@@ -2855,6 +2984,7 @@ async function runApiFetch(url,tipos,clientesSel,tiposLbl,cliLbl){
  const btn=document.getElementById('btnApi');
  if(btn.disabled)return false; // evita disparar la misma consulta dos veces mientras está en curso
  const btnLabel=btn.textContent; btn.disabled=true; btn.textContent='Consultando…';
+ showKpiSkeleton();
  try{
   const combos=[]; tipos.forEach(q=>clientesSel.forEach(proj=>combos.push({q,proj})));
   log('⟳ Consultando '+combos.length+' combinación'+(combos.length>1?'es':'')+' ('+tiposLbl+' × '+cliLbl+'), de a páginas cortas para que ande en cualquier conexión …','d');
@@ -2882,6 +3012,9 @@ async function runApiFetch(url,tipos,clientesSel,tiposLbl,cliLbl){
   return true;
  } finally {
   btn.disabled=false; btn.textContent=btnLabel;
+  // Limpia el skeleton pase lo que pase: en éxito rebuildAll() ya dejó los KPIs reales; en
+  // error/sin-datos (que salen por return sin rebuildAll) esto los recalcula con la base actual.
+  try{ renderKPIs(); }catch(e){}
  }
 }
 async function fetchApi(){
