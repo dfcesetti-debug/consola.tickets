@@ -6,6 +6,7 @@ colors:
   signal-teal-deep: "#087f96"
   confirm-green: "#16b364"
   client-amber: "#b4690e"
+  danger-red: "#c0392b"
   ink: "#0b1220"
   quiet-slate: "#5c6b82"
   soft-slate: "#667490"
@@ -110,7 +111,8 @@ Paleta mayormente neutra (grises azulados) con un único acento de señal (teal)
 
 ### Secondary (semántico)
 - **Confirm Green** (`#16b364` — dark: `#34d399`): estado "Resuelto", checkmarks de selección, indicadores de éxito.
-- **Client Amber** (`#b4690e` — dark: `#e0954a`): estado "Demo" en fichas de cliente, acento de peligro suave (hover del botón "Quitar cliente").
+- **Client Amber** (`#b4690e` — dark: `#e0954a`): estado "Demo" en fichas de cliente, SLA incumplido (warning), avisos del log de Actividad.
+- **Danger Red** (`#c0392b` — dark: `#e57373`, con `--dangerbg` de fondo `#fdece9`/`#2a1512`): acciones destructivas (error de login, "Quitar cliente" al hover, eliminar tarea de Telemática, errores del log). Antes vivía como hex suelto sin tokenizar y sin variante de modo oscuro (v73) — no reusar `--cli` (ámbar) para esto, son roles distintos: ámbar es advertencia/estado, rojo es acción destructiva o error real.
 
 ### Neutral
 - **Ink** (`#0b1220` — dark: `#e9eff8`): texto principal.
@@ -195,7 +197,11 @@ Carácter general: preciso y sin fricción — bordes definidos, esquinas modera
 - **Error / Disabled:** disabled baja opacidad a 0.35–0.5 + cursor `not-allowed`; no hay un estado de error de campo formalizado todavía (los errores de formulario hoy se resuelven vía `confirm()`/log, no inline por campo).
 
 ### Navigation (rail)
-- **Style:** fondo con gradiente oscuro (`#0d1a2b`→`#0a1524`) — **actualmente fijo, no sigue el tema claro/oscuro** (ver Do's and Don'ts: esto queda marcado como pendiente de corregir, no como regla a mantener). Ítem activo: gradiente horizontal teal translúcido + sombra interior de 3px en el borde izquierdo (`inset 3px 0 0 var(--accent)`). Hover: fondo azul oscuro sutil. Cada ítem combina ícono SVG + label + badge de conteo opcional (nunca solo ícono).
+- **Style:** sigue el tema claro/oscuro como el resto de la app (corregido en v71 — antes quedaba fijo oscuro sin importar el tema, era una inconsistencia, no una decisión de marca). Tokens propios (`--railbg1/2`, `--railtx`, `--railon`, `--railhover`, `--railborder`, `--railfootmut`) para que el contraste se mantenga en ambos modos. Ítem activo: gradiente horizontal teal translúcido + sombra interior de 3px en el borde izquierdo (`inset 3px 0 0 var(--accent)`). Cada ítem combina ícono SVG + label + badge de conteo opcional (nunca solo ícono) — el badge reusa el estilo pill teal (`--accdim`/`--accent2`) en vez de un gris propio.
+
+### Empty states
+- **Style:** ícono SVG centrado (mismo trazo que los íconos del rail: `stroke-width:1.5`, esquinas redondeadas, sin relleno) a 34px, opacidad .5, seguido de un título en negrita y una línea secundaria en `--mut`. Reemplazaron glifos Unicode sueltos (v73) — no volver a usar un carácter Unicode como ícono acá.
+- **Copy:** en estados de "primer uso" (nada cargado todavía), la segunda línea nombra la acción concreta a seguir (ej. "Abrí 'Carga de tarea' arriba"), no solo "no hay datos". En estados de filtro-sin-resultados, alcanza con nombrar la ausencia — no hace falta una acción sugerida.
 
 ## Do's and Don'ts
 
@@ -205,9 +211,11 @@ Carácter general: preciso y sin fricción — bordes definidos, esquinas modera
 - **Do** usar 20px de radio para cualquier elemento tipo cápsula (chip/tag/pill/badge) y 14px para tarjetas — no introducir un tercer valor de radio para el mismo rol.
 - **Do** mantener WCAG AA como piso en cualquier componente nuevo (contraste 4.5:1, foco visible vía `box-shadow` no `outline: none` sin reemplazo, targets táctiles ≥44px) — confirmado en PRODUCT.md como principio permanente, no solo la corrección de v70.
 - **Do** transiciones de 150–250ms con `cubic-bezier(.16,1,.3,1)` para cualquier cambio de estado nuevo, para no romper el ritmo de movimiento ya establecido.
+- **Do** usar `--danger`/`--dangerbg` (nunca un hex suelto) para errores y acciones destructivas — ver Danger Red en Colors.
+- **Do** animar un número que cambia por una acción real (ej. el contador de tickets mientras "Traer datos" trae páginas) en vez de saltar de golpe — ver el contador en vivo de v73 (`animateTicketCount`, ~400ms, respeta `prefers-reduced-motion`). No animar números que cambian por navegación/filtros de rutina.
 
 ### Don't:
 - **Don't** introducir un segundo color de acento — el teal es la única señal de interactividad/estado activo (ver The One Signal Rule).
 - **Don't** agregar sombra decorativa a una tarjeta o superficie en reposo — rompe The Flat-At-Rest Rule.
-- **Don't** copiar el patrón de "rail siempre oscuro" en componentes nuevos: quedó marcado en esta sesión como una inconsistencia a corregir (el usuario prefiere que el rail siga el tema claro/oscuro), no como una decisión de marca a imitar. Ver nota más abajo.
 - **Don't** usar tarjetas gigantes con mucho espacio en blanco tipo landing SaaS — la densidad alta es intencional (ver Overview, anti-referente confirmado).
+- **Don't** usar un carácter Unicode como ícono (glifo, emoji) en contenido nuevo — dibujar un SVG propio con el mismo trazo que ya usan el rail y los estados vacíos.

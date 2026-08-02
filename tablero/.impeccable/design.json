@@ -8,6 +8,7 @@
       "signal-teal-deep": { "role": "primary", "displayName": "Signal Teal Deep", "canonical": "#087f96", "tonalRamp": ["#043d49", "#076f83", "#0aa0bd", "#12cef2", "#4cdaf5", "#86e6f9", "#c0f2fc", "#e7fafe"] },
       "confirm-green": { "role": "success", "displayName": "Confirm Green", "canonical": "#16b364", "tonalRamp": ["#084426", "#0f7b45", "#16b163", "#20e481", "#57eaa0", "#8df1bf", "#c4f8de", "#e8fcf2"] },
       "client-amber": { "role": "warning", "displayName": "Client Amber", "canonical": "#b4690e", "tonalRamp": ["#472906", "#804b0a", "#b96c0e", "#ed8c17", "#f1a850", "#f6c589", "#fae1c1", "#fdf3e7"] },
+      "danger-red": { "role": "error", "displayName": "Danger Red", "canonical": "#c0392b", "tonalRamp": ["#3d120d", "#6e2019", "#9f2f24", "#d14032", "#dd6f64", "#e89e96", "#f4cec9", "#fbeeec"] },
       "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#0b1220", "tonalRamp": ["#142039", "#233a66", "#335394", "#456ebf", "#7391cf", "#a0b5de", "#ced8ee", "#ecf0f8"] },
       "quiet-slate": { "role": "neutral", "displayName": "Quiet Slate", "canonical": "#5c6b82", "tonalRamp": ["#20252d", "#394251", "#526074", "#6d7e97", "#919db1", "#b4bdca", "#d8dde4", "#f0f2f4"] },
       "soft-slate": { "role": "neutral", "displayName": "Soft Slate", "canonical": "#667490", "tonalRamp": ["#20242d", "#394151", "#525e74", "#6d7b97", "#919bb1", "#b4bcca", "#d8dce4", "#f0f2f4"] },

@@ -2,7 +2,7 @@
 
 **Documento preparado como analista funcional.** Objetivo: que cualquier persona del equipo —de soporte o de sistemas— entienda qué es la Consola, cómo se usa día a día, y cómo está construida por dentro, sin depender de quien la desarrolló.
 
-Fecha de este documento: 01/08/2026. Versión de la app cubierta: hasta v69 (ver `README.md` → Registro de cambios para los hitos, o `git log` para el detalle completo versión por versión).
+Fecha de este documento: 01/08/2026. Versión de la app cubierta: hasta v73 (ver `README.md` → Registro de cambios para los hitos, o `git log` para el detalle completo versión por versión).
 
 ---
 
@@ -69,7 +69,7 @@ Con esos datos, la Consola calcula (desde v49, solo a partir de la cantidad de h
 
 ### 2.6 Configuración
 Nueva desde v66, con 3 sub-pestañas:
-- **Conexión de datos**: es el bloque para traer tickets de Jira, que antes vivía en Tickets — dos botones desplegables con tildes (**Tipo de ticket** y **Cliente**, solo los que tienen proyecto real en Jira), botón **Traer datos** (dispara la consulta contra el conector en la nube, sección 3.3, y reemplaza la base para que coincida exacto con Jira), **Configuración avanzada** (plegada, para cambiar la URL del conector si hiciera falta), carga de archivo/respaldo, exportar `.json`/`.csv`, y el log de Actividad.
+- **Conexión de datos**: es el bloque para traer tickets de Jira, que antes vivía en Tickets — dos botones desplegables con tildes (**Tipo de ticket** y **Cliente**, solo los que tienen proyecto real en Jira), botón **Traer datos** (dispara la consulta contra el conector en la nube, sección 3.3, y reemplaza la base para que coincida exacto con Jira), **Configuración avanzada** (plegada, para cambiar la URL del conector si hiciera falta), carga de archivo/respaldo, exportar `.json`/`.csv`, y el log de Actividad. Desde v72, el campo de URL nunca queda vacío (cae al conector de producción, `DEFAULT_API_URL` en el código, si no hay ninguno configurado) y **al iniciar sesión la Consola trae automáticamente los tickets "Abiertos" de ambos clientes Jira** en segundo plano (`autoFetchAbiertosOnLogin()`), sin esperar a que alguien toque "Traer datos" — comparte el mismo estado de carga del botón (`runApiFetch()`) para que una carga manual y la automática nunca se pisen entre sí.
 - **Apariencia**: modo de color predeterminado (Según el sistema / Claro / Oscuro).
 - **Mi perfil**: nombre, apellido y teléfono de la cuenta con la que se inició sesión (el correo es fijo). Se guarda en Firebase por email — sigue a la persona si entra desde otra PC.
 
@@ -192,8 +192,8 @@ flowchart TB
 | Repositorio | `https://github.com/dfcesetti-debug/consola.tickets` |
 | Conector de Jira (nube) | `https://consola-cmq-jira-proxy.df-cesetti.workers.dev` |
 | Proyecto Firebase | `tickets-be0af` (Firestore, doc `kb_state/main`) |
-| Historial de cambios | `tablero/README.md` → Registro de cambios (resumen de hitos, v1 a v69); detalle completo de cada versión en `git log` / `git show <hash>` |
+| Historial de cambios | `tablero/README.md` → Registro de cambios (resumen de hitos, v1 a v73); detalle completo de cada versión en `git log` / `git show <hash>` |
 
 ---
 
-*Este documento describe el estado de la plataforma al 01/08/2026 (hasta v69). Para cambios posteriores, consultar el Registro de cambios en `README.md`, y actualizar este documento si el cambio es estructural (arquitectura, pestañas, contrato de datos).*
+*Este documento describe el estado de la plataforma al 01/08/2026 (hasta v73). Para cambios posteriores, consultar el Registro de cambios en `README.md`, y actualizar este documento si el cambio es estructural (arquitectura, pestañas, contrato de datos).*

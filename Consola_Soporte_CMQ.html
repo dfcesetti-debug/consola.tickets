@@ -9,7 +9,7 @@
  --ink:#0b1220;--railtx:#5c6b82;--railon:#0b1220;--railbg1:#ffffff;--railbg2:#eef2f7;--railhover:#eef2f8;--railborder:#dbe3ee;--railfootmut:#667490;
  --bg:#eef2f7;--panel:#ffffff;--edge:#dbe3ee;--edge2:#eef2f8;--mut:#5c6b82;--mut2:#667490;
  --accent:#0aa2c0;--accent2:#087f96;--accdim:#e2f5fa;--accborder:#bfe6ef;
- --sig:#16b364;--sigbg:#e6f7ee;--sigink:#12432a;--warnbg:#fdf3e3;--cli:#b4690e;
+ --sig:#16b364;--sigbg:#e6f7ee;--sigink:#12432a;--warnbg:#fdf3e3;--cli:#b4690e;--danger:#c0392b;--dangerbg:#fdece9;
  --scrollthumb:#c3cede;--bg2:#f4f5f7;--hoverline:#bcd2e6;
  --zerobg:#c3cede;--zeroink:#42506a;--minebg:#eefaf3;
  --boxg2:#f7fbfd;--dropborder:#b9cbe0;--dropg2:#f7fafd;
@@ -24,7 +24,7 @@
  --ink:#e9eff8;--railtx:#8aa0bd;--railon:#e8f1fb;--railbg1:#0d1a2b;--railbg2:#0a1524;--railhover:#12233a;--railborder:#1b2c44;--railfootmut:#54658a;
  --bg:#0b1220;--panel:#141f33;--edge:#28374f;--edge2:#1c2a40;--mut:#9fb0c8;--mut2:#7f93b0;
  --accent:#22c3e2;--accent2:#4fd2ea;--accdim:#123240;--accborder:#1f4f5c;
- --sig:#34d399;--sigbg:#0f2b21;--sigink:#a7f3d3;--warnbg:#2a2110;--cli:#e0954a;
+ --sig:#34d399;--sigbg:#0f2b21;--sigink:#a7f3d3;--warnbg:#2a2110;--cli:#e0954a;--danger:#e57373;--dangerbg:#2a1512;
  --scrollthumb:#33445e;--bg2:#1a2740;--hoverline:#2f5470;
  --zerobg:#25324a;--zeroink:#aab8cf;--minebg:#0f2a22;
  --boxg2:#101b2c;--dropborder:#2b3f57;--dropg2:#101b2c;
@@ -34,7 +34,7 @@
  --ink:#e9eff8;--railtx:#8aa0bd;--railon:#e8f1fb;--railbg1:#0d1a2b;--railbg2:#0a1524;--railhover:#12233a;--railborder:#1b2c44;--railfootmut:#54658a;
  --bg:#0b1220;--panel:#141f33;--edge:#28374f;--edge2:#1c2a40;--mut:#9fb0c8;--mut2:#7f93b0;
  --accent:#22c3e2;--accent2:#4fd2ea;--accdim:#123240;--accborder:#1f4f5c;
- --sig:#34d399;--sigbg:#0f2b21;--sigink:#a7f3d3;--warnbg:#2a2110;--cli:#e0954a;
+ --sig:#34d399;--sigbg:#0f2b21;--sigink:#a7f3d3;--warnbg:#2a2110;--cli:#e0954a;--danger:#e57373;--dangerbg:#2a1512;
  --scrollthumb:#33445e;--bg2:#1a2740;--hoverline:#2f5470;
  --zerobg:#25324a;--zeroink:#aab8cf;--minebg:#0f2a22;
  --boxg2:#101b2c;--dropborder:#2b3f57;--dropg2:#101b2c;
@@ -44,7 +44,7 @@
  --ink:#0b1220;--railtx:#5c6b82;--railon:#0b1220;--railbg1:#ffffff;--railbg2:#eef2f7;--railhover:#eef2f8;--railborder:#dbe3ee;--railfootmut:#667490;
  --bg:#eef2f7;--panel:#ffffff;--edge:#dbe3ee;--edge2:#eef2f8;--mut:#5c6b82;--mut2:#667490;
  --accent:#0aa2c0;--accent2:#087f96;--accdim:#e2f5fa;--accborder:#bfe6ef;
- --sig:#16b364;--sigbg:#e6f7ee;--sigink:#12432a;--warnbg:#fdf3e3;--cli:#b4690e;
+ --sig:#16b364;--sigbg:#e6f7ee;--sigink:#12432a;--warnbg:#fdf3e3;--cli:#b4690e;--danger:#c0392b;--dangerbg:#fdece9;
  --scrollthumb:#c3cede;--bg2:#f4f5f7;--hoverline:#bcd2e6;
  --zerobg:#c3cede;--zeroink:#42506a;--minebg:#eefaf3;
  --boxg2:#f7fbfd;--dropborder:#b9cbe0;--dropg2:#f7fafd;
@@ -67,7 +67,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .loginBrand b{color:var(--ink);font-size:15px;line-height:1.2;display:block}
 .loginBrand span{font-size:11px;color:var(--mut)}
 .loginBox .btn.primary{width:100%;justify-content:center;margin-top:8px}
-.loginErr{color:#c0392b;min-height:16px;margin-top:10px;font-size:12.5px}
+.loginErr{color:var(--danger);min-height:16px;margin-top:10px;font-size:12.5px}
 .railfoot a{color:var(--railtx);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .railfoot a:hover{color:var(--railon)}
 .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 16px;border-bottom:1px solid var(--railborder);margin-bottom:12px;transition:border-color .25s var(--ease)}
@@ -109,7 +109,9 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .content{padding:20px 26px 70px;max-width:1180px;width:100%;margin:0 auto}
 .view{display:none;animation:fade .5s var(--ease)}.view.on{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-h2.vt{font-size:20px;margin:2px 0}
+@keyframes flashIn{from{opacity:0;transform:scale(.9)}60%{opacity:1;transform:scale(1.04)}to{opacity:1;transform:scale(1)}}
+.flashIn{display:inline-block;color:var(--sig)!important;animation:flashIn .35s var(--ease)}
+h2.vt{font-size:20px;font-weight:700;margin:2px 0}
 .sub{color:var(--mut);font-size:13px;margin:0 0 18px}
 .scopenote{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--accent2);background:var(--accdim);border:1px solid var(--accborder);border-radius:20px;padding:3px 12px;font-weight:650;margin-left:8px}
 
@@ -211,7 +213,10 @@ details.cm[open] summary::before{content:'▾ '}
 .loadmore{display:block;margin:16px auto}
 .hl{background:#ffe08a;color:#3d2c00;border-radius:3px;padding:0 1px}
 .empty{text-align:center;color:var(--mut);padding:44px 20px}
-.empty .big{font-size:34px;margin-bottom:6px;opacity:.5}
+.empty .big{margin-bottom:10px;opacity:.5;display:flex;align-items:center;justify-content:center}
+.empty .big svg{width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.empty .t{font-weight:700;color:var(--ink);margin:0 0 4px}
+.empty .s{margin:0}
 @keyframes cardin{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
 .tk{animation:cardin .34s cubic-bezier(.22,.61,.36,1) both}
 .cmt.mine{background:var(--minebg);border-radius:8px;padding-left:8px;margin-left:-8px}
@@ -227,7 +232,7 @@ details.cm[open] summary::before{content:'▾ '}
 .respBanner{display:flex;align-items:center;gap:10px;background:var(--accdim);border:1px solid var(--accborder);border-radius:12px;padding:10px 14px;margin:2px 0 10px;font-size:13px;color:var(--accent2);font-weight:650}
 .respBanner b{color:var(--ink)}
 .respBanner .x{margin-left:auto;background:var(--panel);border:1px solid var(--accborder);border-radius:8px;padding:3px 10px;cursor:pointer;font-weight:700;color:var(--accent2)}
-.tkpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tkpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
 .tkpi .box{border:1px solid var(--edge);border-radius:12px;padding:13px 15px;background:linear-gradient(180deg,var(--panel),var(--boxg2))}
 .tkpi .box .n{font-family:var(--mono);font-size:23px;font-weight:800}
 .tkpi .box .n .u{font-size:12px;font-weight:600;color:var(--mut);margin-left:3px}
@@ -253,7 +258,7 @@ details.cm[open] summary::before{content:'▾ '}
 .logWrap .logHead{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--edge2);border-bottom:1px solid var(--edge);font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--mut2)}
 .logWrap .logHead svg{width:13px;height:13px;stroke:var(--accent2);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .log{font-family:var(--mono);font-size:12px;background:var(--panel);color:var(--mut);padding:12px 16px;white-space:pre-wrap;max-height:230px;overflow:auto;line-height:1.6}
-.log .e{color:#c0392b}.log .w{color:var(--cli)}.log .d{color:var(--accent2)}
+.log .e{color:var(--danger)}.log .w{color:var(--cli)}.log .d{color:var(--accent2)}
 .tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 
 .clirow{display:grid;grid-template-columns:26px 180px 1fr auto;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid var(--edge)}
@@ -329,7 +334,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 .teleRow:last-child{border-bottom:none}
 .teleRow .finput{padding:6px 8px;font-size:12.5px}
 .teleRow .trRemove{background:transparent;border:1px solid var(--edge);border-radius:8px;color:var(--mut2);cursor:pointer;padding:5px 8px;font-size:12px;line-height:1}
-.teleRow .trRemove:hover{color:#c0392b;border-color:#c0392b}
+.teleRow .trRemove:hover{color:var(--danger);border-color:var(--danger)}
 .teleRow .trRemove:disabled{opacity:.35;cursor:not-allowed}
 .cfgTable{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:2px;min-width:520px}
 .cfgTable th{text-align:left;font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.04em;padding:4px 6px}
@@ -352,7 +357,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 .cliPrefix{border:1px solid var(--edge);background:var(--edge2);font-family:var(--mono);font-size:10.5px;color:var(--mut2);padding:3px 8px;border-radius:20px;width:90px;text-align:center;flex:none}
 .cliStat{margin-left:auto}
 .cliClose{position:absolute;top:8px;right:8px;width:44px;height:44px;border-radius:10px;border:1px solid var(--edge);background:var(--panel);color:var(--mut2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;line-height:1;transition:border-color .2s var(--ease),color .2s var(--ease)}
-.cliClose:hover{border-color:var(--cli);color:var(--cli)}
+.cliClose:hover{border-color:var(--danger);color:var(--danger)}
 .cliActions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:13px;padding-top:12px;border-top:1px solid var(--edge2);font-size:12.5px;color:var(--mut)}
 .cliActions .grow{margin-left:auto;display:flex;gap:6px}
 .cliKw{margin-top:10px}
@@ -691,6 +696,14 @@ const TEAM=new Set(["Diego Ferreira","Lucas Di Luca","Melisa Aranda","Agustina V
 const MONTHS={ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,nov:10,dic:11};
 const PALETTE=['#0aa2c0','#7c3aed','#e8912a','#16b364','#e11d48','#2563eb','#0d9488','#b45309','#db2777','#4f46e5'];
 const UNASSIGNED='Sin asignar';
+// Iconos de los estados vacíos (.empty .big) — SVG propio, mismo lenguaje de trazo que
+// los íconos del rail (stroke-width ~1.5-1.8, esquinas redondeadas), en vez de glifos Unicode.
+const EMPTY_ICONS={
+ search:'<svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>',
+ tickets:'<svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+ people:'<svg viewBox="0 0 24 24"><circle cx="8.2" cy="9" r="3.2"/><path d="M2.5 20c0-3.4 2.5-6 5.7-6s5.7 2.6 5.7 6"/><circle cx="17.3" cy="8.2" r="2.5"/><path d="M14.3 20c.2-2.6 1.9-4.7 4.1-5.3"/></svg>',
+ phone:'<svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.3 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.9 21 3 13.1 3 3.9c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.3 1L6.6 10.8z"/></svg>',
+};
 
 const DEFAULT_CLIENTS=[
  {name:'Quilmes',color:'#0aa2c0',prefix:'SG',keywords:[],origen:'jira'},
@@ -1129,7 +1142,7 @@ function renderMatrix(q){
     <div class="lab">Tickets de referencia</div><div class="refline">${refChips||'—'}</div></div>`;
   }
  });
- box.innerHTML=html||'<div class="empty"><div class="big">&#9672;</div>Sin coincidencias.</div>';
+ box.innerHTML=html||`<div class="empty"><div class="big">${EMPTY_ICONS.search}</div>Sin coincidencias.</div>`;
  box.querySelectorAll('.copy').forEach(b=>b.onclick=()=>{navigator.clipboard.writeText(b.dataset.t);const o=b.textContent;b.textContent='✓ Copiado';setTimeout(()=>b.textContent=o,1200);});
 }
 
@@ -1232,7 +1245,7 @@ function applyTickets(){
 function cliOptions(sel){ return CLIENTS.map(c=>`<option ${c.name===sel?'selected':''}>${esc(c.name)}</option>`).join('')+`<option ${sel===UNASSIGNED?'selected':''}>${UNASSIGNED}</option>`; }
 function renderTickets(){
  const q=qv(); const box=document.getElementById('tickets');
- if(!filtered.length){ box.innerHTML='<div class="empty"><div class="big">&#9636;</div>No hay tickets que coincidan.</div>'; document.getElementById('loadmore').style.display='none'; return; }
+ if(!filtered.length){ box.innerHTML=`<div class="empty"><div class="big">${EMPTY_ICONS.tickets}</div>No hay tickets que coincidan.</div>`; document.getElementById('loadmore').style.display='none'; return; }
  const openAll=!!respFilter;
  const mineOf=(c)=>{ if(!respFilter)return false; const int=TEAM.has(c.author); return respFilter.mode==='author'? c.author===respFilter.value : respFilter.mode==='int'? int : respFilter.mode==='cli'? !int : false; };
  box.innerHTML=filtered.slice(0,shown).map((i,idx)=>{
@@ -2207,7 +2220,7 @@ function renderCartera(){
        </div>
       </div>
       ${fichaStaticHtml(f)}
-     </div>`).join(''):`<div class="empty"><div class="big">&#9733;</div>${carteraPais||carteraLogistica||carteraEjecutivo||carteraRefTele?'No hay clientes para este filtro.':'Configurá al menos un cliente en la pestaña Clientes.'}</div>`}
+     </div>`).join(''):`<div class="empty"><div class="big">${EMPTY_ICONS.people}</div>${carteraPais||carteraLogistica||carteraEjecutivo||carteraRefTele?'No hay clientes para este filtro.':'Configurá al menos un cliente en la pestaña Clientes.'}</div>`}
   </div>`;
 
  document.getElementById('carteraFiltroPais').onchange=e=>{ carteraPais=e.target.value; renderCartera(); };
@@ -2502,7 +2515,7 @@ function renderTelematica(){
     <button class="btn sm" data-tele-del="${t.id}">Eliminar</button>
    </div>
   </div>`;
- }).join(''):'<div class="empty"><div class="big">&#9742;</div>Todavía no hay tickets de Referente Telemática cargados.</div>';
+ }).join(''):`<div class="empty"><div class="big">${EMPTY_ICONS.phone}</div><p class="t">Todavía no cargaste ninguna tarea de Telemática</p><p class="s tinfo">Abrí "Carga de tarea" arriba para cargar la primera.</p></div>`;
  box.querySelectorAll('[data-tele-view]').forEach(b=>b.onclick=()=>openTeleModal(b.dataset.teleView));
  box.querySelectorAll('[data-tele-resolve]').forEach(b=>b.onclick=()=>{
   const t=TELE.find(x=>x.id===b.dataset.teleResolve); if(!t)return;
@@ -2655,7 +2668,8 @@ document.getElementById('btnSavePerfil').onclick=()=>{
   telefono:document.getElementById('perfTelefono').value.trim(),
  };
  saveProfiles(); pushState();
- const s=document.getElementById('perfSaved'); s.textContent='✔ Guardado'; setTimeout(()=>{s.textContent='';},2000);
+ const s=document.getElementById('perfSaved'); s.textContent='✔ Guardado'; s.classList.remove('flashIn'); void s.offsetWidth; s.classList.add('flashIn');
+ setTimeout(()=>{s.textContent=''; s.classList.remove('flashIn');},2000);
 };
 async function pushState(){
  try{
@@ -2705,6 +2719,7 @@ function apiTicket(r){
   asignado:r.asignado_a||r.asignado||r.assignee||r.agente||'Sin asignar', descripcion:r.descripcion||r.description||r.resumen||'',
   comments:coms, _createdTs:cts, _resolvedTs:rts, sla:(r.sla&&typeof r.sla==='object')?r.sla:null };
 }
+const DEFAULT_API_URL='https://consola-cmq-jira-proxy.df-cesetti.workers.dev';
 const API_TIPOS=[
  {v:'abiertos',l:'Abiertos'},{v:'en_progreso',l:'En progreso'},
  {v:'resueltos_semana',l:'Resueltos esta semana'},{v:'resueltos_mes',l:'Resueltos este mes'},
@@ -2781,7 +2796,9 @@ document.addEventListener('keydown',(e)=>{
  }
 });
 
-async function fetchComboPaged(url,q,proj){
+// onPage(recs) opcional: se llama con cada página cruda apenas llega, para que quien
+// pidió la consulta pueda ir mostrando resultados en vivo sin esperar a la última página.
+async function fetchComboPaged(url,q,proj,onPage){
  const out=[]; let token=null, isLast=false, pages=0;
  while(!isLast){
   const full=url+(url.includes('?')?'&':'?')+'paged=1&query='+encodeURIComponent(q)+(proj?'&proyecto='+encodeURIComponent(proj):'')+(token?'&page_token='+encodeURIComponent(token):'');
@@ -2799,36 +2816,57 @@ async function fetchComboPaged(url,q,proj){
   token=j.nextPageToken||null;
   isLast=!!j.isLast||!token;
   if(pages%5===0) log('   … '+q+(proj?(' ['+proj+']'):'')+': '+out.length+' tickets traídos hasta ahora ('+pages+' páginas)…','d');
+  if(onPage&&recs.length) onPage(recs);
  }
  return out;
 }
-async function fetchApi(){
- const url=document.getElementById('apiUrl').value.trim();
- if(!url){ log('✖ Falta la URL de conexión (ver "Configuración avanzada" abajo).','e'); return; }
+// Contador en vivo del KPI "Tickets" mientras corre una consulta: cada página que llega
+// suma al total ya deduplicado y lo anima hasta ahí (telemetría en vivo, no un salto seco
+// al final). rebuildAll() al terminar la consulta deja el número final exacto de todos modos;
+// esto es una capa perceptual encima, no cambia el resultado.
+let _liveCountRAF=null, _liveCountVal=0;
+function easeOutQuint(t){ return 1-Math.pow(1-t,5); }
+function animateTicketCount(to){
+ const el=document.querySelector('#kpis .kpi:first-child .n');
+ if(!el)return;
+ const from=_liveCountRAF?_liveCountVal:(parseInt(el.textContent,10)||0);
+ if(to===from)return;
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent=to; _liveCountVal=to; return; }
+ let start=null; const dur=420;
+ if(_liveCountRAF) cancelAnimationFrame(_liveCountRAF);
+ function step(now){
+  if(start===null)start=now;
+  const t=Math.min(1,(now-start)/dur);
+  _liveCountVal=Math.round(from+(to-from)*easeOutQuint(t));
+  el.textContent=_liveCountVal;
+  _liveCountRAF=t<1?requestAnimationFrame(step):null;
+ }
+ _liveCountRAF=requestAnimationFrame(step);
+}
+// Núcleo compartido por la carga manual ("Traer datos") y la carga automática de
+// tickets abiertos al iniciar sesión — misma lógica de combos/paginación/merge,
+// mismo estado de carga en el botón, para que ambas no puedan pisarse entre sí.
+async function runApiFetch(url,tipos,clientesSel,tiposLbl,cliLbl){
  const btn=document.getElementById('btnApi');
- if(btn.disabled)return; // evita disparar la misma consulta dos veces mientras está en curso
+ if(btn.disabled)return false; // evita disparar la misma consulta dos veces mientras está en curso
  const btnLabel=btn.textContent; btn.disabled=true; btn.textContent='Consultando…';
  try{
-  saveApiCfg({url,tipos:[...selApiTipos],clientes:[...selApiClientes]});
-  pushState();
-  const tipos=selApiTipos.size?[...selApiTipos]:['todos'];
-  const clientesSel=selApiClientes.size?[...selApiClientes]:[''];
   const combos=[]; tipos.forEach(q=>clientesSel.forEach(proj=>combos.push({q,proj})));
-  const tiposLbl=selApiTipos.size?tipos.join(', '):'todos';
-  const cliLbl=selApiClientes.size?[...selApiClientes].map(p=>{const c=jiraClients().find(x=>x.prefix===p); return c?c.name:p;}).join(', '):'ambos';
   log('⟳ Consultando '+combos.length+' combinación'+(combos.length>1?'es':'')+' ('+tiposLbl+' × '+cliLbl+'), de a páginas cortas para que ande en cualquier conexión …','d');
   const byKey={}; let firstSample=null; let anyOk=false;
   for(const {q,proj} of combos){
    try{
-    const recs=await fetchComboPaged(url,q,proj);
-    if(recs.length&&!firstSample) firstSample=recs[0];
-    recs.map(apiTicket).filter(t=>t.key).forEach(t=>byKey[t.key]=t);
+    await fetchComboPaged(url,q,proj,(pageRecs)=>{
+     if(!firstSample) firstSample=pageRecs[0];
+     pageRecs.map(apiTicket).filter(t=>t.key).forEach(t=>byKey[t.key]=t);
+     animateTicketCount(Object.keys(byKey).length);
+    });
     anyOk=true;
    }catch(e){ log('✖ '+q+(proj?(' ['+proj+']'):'')+': '+e.message,'e'); }
   }
-  if(!anyOk){ log('✖ Ninguna consulta pudo completarse. Revisá la URL en "Configuración avanzada".','e'); return; }
+  if(!anyOk){ log('✖ Ninguna consulta pudo completarse. Revisá la URL en "Configuración avanzada".','e'); return false; }
   const inc=Object.values(byKey);
-  if(!inc.length){ log('⚠ No se obtuvieron tickets con esos filtros.','w'); return; }
+  if(!inc.length){ log('⚠ No se obtuvieron tickets con esos filtros.','w'); return false; }
   if(firstSample) log('   muestra cruda: '+JSON.stringify(firstSample).slice(0,320),'d');
   DATA=inc; DATA.forEach(prep); persist(); clearFilters(); rebuildAll();
   const cc=clientCounts();
@@ -2836,16 +2874,36 @@ async function fetchApi(){
   log('   por cliente → '+CLIENTS.map(c=>c.name+':'+(cc[c.name]||0)).concat(UNASSIGNED+':'+(cc[UNASSIGNED]||0)).join('  '),'d');
   const miss=inc.filter(t=>!t.tipo).length;
   if(miss)log('   ⓘ '+miss+' sin tipo de solicitud (revisar campo del conector).','w');
+  return true;
  } finally {
   btn.disabled=false; btn.textContent=btnLabel;
  }
+}
+async function fetchApi(){
+ if(document.getElementById('btnApi').disabled)return; // ya hay una consulta en curso (manual o automática de login)
+ const url=document.getElementById('apiUrl').value.trim()||DEFAULT_API_URL;
+ document.getElementById('apiUrl').value=url;
+ saveApiCfg({url,tipos:[...selApiTipos],clientes:[...selApiClientes]});
+ pushState();
+ const tipos=selApiTipos.size?[...selApiTipos]:['todos'];
+ const clientesSel=selApiClientes.size?[...selApiClientes]:[''];
+ const tiposLbl=selApiTipos.size?tipos.join(', '):'todos';
+ const cliLbl=selApiClientes.size?[...selApiClientes].map(p=>{const c=jiraClients().find(x=>x.prefix===p); return c?c.name:p;}).join(', '):'ambos';
+ await runApiFetch(url,tipos,clientesSel,tiposLbl,cliLbl);
+}
+// Al iniciar sesión, trae los tickets abiertos automáticamente (ambos clientes Jira) sin
+// esperar a que alguien toque "Traer datos" — usa la URL configurada o, si no hay ninguna
+// todavía, la del conector de producción. Corre en segundo plano, sin bloquear el login.
+async function autoFetchAbiertosOnLogin(){
+ const url=document.getElementById('apiUrl').value.trim()||DEFAULT_API_URL;
+ await runApiFetch(url,['abiertos'],[''],'Abiertos','ambos');
 }
 const drop=document.getElementById('drop'),file=document.getElementById('file');
 drop.onclick=()=>file.click(); file.onchange=()=>{handleFiles(file.files);file.value='';};
 document.getElementById('btnApi').onclick=fetchApi;
 document.getElementById('apiUrl').oninput=()=>{ apiCfgTouched=true; };
 renderMselTipos(); renderMselClientes(); updateMselLabels();
-(function(){const c=loadApiCfg(); if(c.url)document.getElementById('apiUrl').value=c.url;
+(function(){const c=loadApiCfg(); document.getElementById('apiUrl').value=c.url||DEFAULT_API_URL;
  if(Array.isArray(c.tipos)){selApiTipos=new Set(c.tipos);} if(Array.isArray(c.clientes)){selApiClientes=new Set(c.clientes);}
  renderMselTipos(); renderMselClientes(); updateMselLabels();
 })();
@@ -2920,6 +2978,7 @@ function showApp(email){
  document.getElementById('appRoot').style.display='';
  if(!appBooted){ appBooted=true; load(); DATA.forEach(prep); rebuildAll(); pullState();
   const initV=curViewId()||'panel'; history.replaceState({v:initV},'','#'+initV);
+  autoFetchAbiertosOnLogin();
  }
 }
 function showLogin(msg){
