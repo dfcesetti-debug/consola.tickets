@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Consola de Soporte · Base de Conocimiento CMQ</title>
 <style>
 /* Plus Jakarta Sans embebida (variable, peso 200-800) -- sin link a CDN de fuentes,
@@ -390,10 +390,15 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 }
 
 @media(max-width:720px){
- .rail{position:fixed;bottom:0;top:auto;left:0;right:0;width:100%;height:auto;flex-direction:row;padding:6px;z-index:50;overflow-x:auto}
- .brand,.railfoot{display:none}.nav{flex-direction:row;gap:2px}.nav a{flex-direction:column;gap:2px;padding:7px 10px;font-size:10.5px}.nav a .cnt{display:none}
- .main{padding-bottom:66px}.bar{grid-template-columns:130px 1fr 84px}.bar.pct{grid-template-columns:130px 1fr 56px 46px 52px}.bar .bkpi{font-size:8px;padding:2px 5px}.bar.tkCard>summary{grid-template-columns:130px 1fr 84px}
+ .rail{position:fixed;bottom:0;top:auto;left:0;right:0;width:100%;height:auto;flex-direction:row;padding:6px;padding-bottom:max(6px,env(safe-area-inset-bottom));z-index:50;overflow-x:auto;-webkit-overflow-scrolling:touch}
+ .brand,.railfoot{display:none}.nav{flex-direction:row;gap:2px}.nav a{flex-direction:column;gap:2px;padding:7px 10px;font-size:10.5px;white-space:nowrap;flex:none}.nav a .cnt{display:none}
+ .main{padding-bottom:calc(66px + env(safe-area-inset-bottom))}.bar{grid-template-columns:130px 1fr 84px}.bar.pct{grid-template-columns:130px 1fr 56px 46px 52px}.bar .bkpi{font-size:8px;padding:2px 5px}.bar.tkCard>summary{grid-template-columns:130px 1fr 84px}
  .clirow{grid-template-columns:20px 1fr;gap:8px}
+ .clientbar{-webkit-overflow-scrolling:touch}
+ .toprow{flex-wrap:wrap;gap:10px}
+ .search{flex:1 1 100%;order:-1;max-width:none}
+ .search .kbd{display:none}
+ .topbar{padding:12px 14px 0}
 }
 </style>
 <script type="module">

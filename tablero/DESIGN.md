@@ -151,7 +151,7 @@ Rail de navegación fijo de 210px + contenido principal de ancho máximo 1180px,
 
 Densidad tipo dashboard: la escala de espaciado va de 6px (separaciones mínimas dentro de un componente) a 26px (padding del contenedor principal), sin saltos grandes — nada de los 64–96px típicos de una landing page. Las tarjetas usan 18–20px de padding interno; los KPI, un poco menos (15–17px).
 
-Responsive: hay un único breakpoint definido en `@media(max-width:640px)`, que ajusta la grilla de la tabla de comparación de clientes y sube los inputs a 16px para evitar el zoom automático de iOS (agregado en v70). El grueso de la densidad de dashboard asume uso de escritorio; el uso móvil no está optimizado más allá de ese único ajuste.
+Responsive: dos breakpoints por content, no por dispositivo. `@media(max-width:640px)` ajusta la grilla de la tabla de comparación de clientes y sube los inputs a 16px para evitar el zoom automático de iOS (v70). `@media(max-width:720px)` (v74) convierte el rail en una barra inferior fija (scroll horizontal, labels en una sola línea, respeta `env(safe-area-inset-bottom)` para el home indicator de iPhone) y apila la barra de búsqueda + botones (`.toprow`) en vez de compartir una sola fila — antes de v74 esa fila se aplastaba en pantallas angostas y la búsqueda quedaba casi inusable. Se activa por ancho de viewport, así que un teléfono en horizontal (~667px+) puede caer en cualquiera de los dos layouts según el ancho real, no según "es celular" — a los 812px+ (iPhone apaisado típico) ya entra el layout de escritorio completo y funciona bien tal cual.
 
 ## Elevation & Depth
 

@@ -2,7 +2,7 @@
 
 **Documento preparado como analista funcional.** Objetivo: que cualquier persona del equipo —de soporte o de sistemas— entienda qué es la Consola, cómo se usa día a día, y cómo está construida por dentro, sin depender de quien la desarrolló.
 
-Fecha de este documento: 01/08/2026. Versión de la app cubierta: hasta v73 (ver `README.md` → Registro de cambios para los hitos, o `git log` para el detalle completo versión por versión).
+Fecha de este documento: 02/08/2026. Versión de la app cubierta: hasta v74 (ver `README.md` → Registro de cambios para los hitos, o `git log` para el detalle completo versión por versión).
 
 ---
 
@@ -192,8 +192,8 @@ flowchart TB
 | Repositorio | `https://github.com/dfcesetti-debug/consola.tickets` |
 | Conector de Jira (nube) | `https://consola-cmq-jira-proxy.df-cesetti.workers.dev` |
 | Proyecto Firebase | `tickets-be0af` (Firestore, doc `kb_state/main`) |
-| Historial de cambios | `tablero/README.md` → Registro de cambios (resumen de hitos, v1 a v73); detalle completo de cada versión en `git log` / `git show <hash>` |
+| Historial de cambios | `tablero/README.md` → Registro de cambios (resumen de hitos, v1 a v74); detalle completo de cada versión en `git log` / `git show <hash>` |
 
 ---
 
-*Este documento describe el estado de la plataforma al 01/08/2026 (hasta v73). Para cambios posteriores, consultar el Registro de cambios en `README.md`, y actualizar este documento si el cambio es estructural (arquitectura, pestañas, contrato de datos).*
+*Este documento describe el estado de la plataforma al 02/08/2026 (hasta v74). Para cambios posteriores, consultar el Registro de cambios en `README.md`, y actualizar este documento si el cambio es estructural (arquitectura, pestañas, contrato de datos).*
