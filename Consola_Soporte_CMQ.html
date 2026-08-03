@@ -71,6 +71,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .railToggle svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transition:transform .22s var(--ease)}
 .rail.collapsed .railToggle svg{transform:rotate(180deg)}
 .loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
+.bootSpin{position:relative;width:52px;height:52px;display:grid;place-items:center}
+.bootSpin .dot{width:32px;height:32px;border-radius:9px;background:linear-gradient(160deg,#12283a,#0a1a29);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 0 1px rgba(10,162,192,.28),0 3px 8px rgba(8,32,48,.22);display:grid;place-items:center}
+.bootSpin .dot svg{width:20px;height:20px;display:block}
+.bootSpin .ring{position:absolute;inset:-6px;border-radius:50%;border:2.5px solid var(--accdim);border-top-color:var(--accent);animation:bootSpin .8s linear infinite}
+@keyframes bootSpin{to{transform:rotate(360deg)}}
 .loginBox{width:100%;max-width:360px;background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.18)}
 .loginBrand{display:flex;align-items:center;gap:10px;margin-bottom:16px}
 .loginBrand .dot{width:38px;height:38px;border-radius:11px;background:linear-gradient(160deg,#12283a,#0a1a29);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 0 1px rgba(10,162,192,.28),0 4px 10px rgba(8,32,48,.28);flex:none;display:grid;place-items:center}
@@ -555,7 +560,10 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 </script>
 </head>
 <body>
-<div id="loginScreen" class="loginScreen">
+<div id="bootLoading" class="loginScreen">
+ <div class="bootSpin"><div class="dot"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="16.5" r="2.4" fill="var(--accent)"></circle><path d="M6.4 12.2a7 7 0 0 1 5.4 5.4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"></path><path d="M6.1 7.9a11.4 11.4 0 0 1 10 10" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" opacity=".6"></path></svg></div><div class="ring"></div></div>
+</div>
+<div id="loginScreen" class="loginScreen" style="display:none">
  <div class="loginBox">
   <div class="loginBrand"><div class="dot"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="16.5" r="2.4" fill="var(--accent)"></circle><path d="M6.4 12.2a7 7 0 0 1 5.4 5.4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"></path><path d="M6.1 7.9a11.4 11.4 0 0 1 10 10" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" opacity=".6"></path></svg></div><div><b>Televidentes</b><span>Soporte · Base de conocimiento</span></div></div>
   <div class="loginTag">Acceso seguro</div>
@@ -3683,10 +3691,25 @@ function renderApariencia(){
 const ALLOWED_DOMAIN='@cesetti.com.ar';
 function isAllowedEmail(email){ return !!email && email.toLowerCase().trim().endsWith(ALLOWED_DOMAIN); }
 let appBooted=false, currentUserEmail='';
+// Sesión con vencimiento por inactividad (30 min): la persistencia de Firebase Auth en sí no
+// vence, así que la manejamos a mano con una marca de "última actividad" en localStorage (sobrevive
+// a un F5) — si al entrar (o cada 60s mientras la app está abierta) pasaron más de 30 min sin que el
+// usuario haga clic/escriba/toque nada, se cierra la sesión sola y vuelve a pedir inicio de sesión.
+const SESSION_IDLE_MS=30*60*1000, ACTIVITY_KEY='cmq_last_activity';
+function touchActivity(){ try{localStorage.setItem(ACTIVITY_KEY,String(Date.now()));}catch(e){} }
+function sessionIdleExpired(){
+ let last=0; try{last=Number(localStorage.getItem(ACTIVITY_KEY))||0;}catch(e){}
+ return !!last && (Date.now()-last>SESSION_IDLE_MS);
+}
+let idleTimedOut=false, idleCheckTimer=null;
+function hideBootLoading(){ const b=document.getElementById('bootLoading'); if(b) b.style.display='none'; }
 function showApp(email){
  currentUserEmail=email||'';
+ hideBootLoading();
  document.getElementById('loginScreen').style.display='none';
  document.getElementById('appRoot').style.display='';
+ touchActivity();
+ if(!idleCheckTimer) idleCheckTimer=setInterval(()=>{ if(sessionIdleExpired()) doIdleLogout(); },60000);
  if(!appBooted){ appBooted=true; load(); DATA.forEach(prep); rebuildAll(); pullState();
   const hashV=location.hash?location.hash.slice(1):'';
   const initV=NAV_VIEWS.includes(hashV)?hashV:(curViewId()||'panel');
@@ -3696,16 +3719,29 @@ function showApp(email){
  }
 }
 function showLogin(msg){
+ hideBootLoading();
  document.getElementById('appRoot').style.display='none';
  document.getElementById('loginScreen').style.display='flex';
  document.getElementById('loginError').textContent=msg||'';
+ // se limpia acá (no en el click de "Cerrar sesión") para no pisarse con el propio evento de
+ // clic: ese mismo clic burbujea hasta el listener de actividad de más abajo y, si limpiáramos
+ // la marca antes, quedaría reescrita al toque por esa burbuja — showLogin() corre después,
+ // ya asentado el cierre de sesión real (via onAuthStateChanged), así que es el lugar seguro.
+ try{localStorage.removeItem(ACTIVITY_KEY);}catch(e){}
+}
+['click','keydown','input','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{ if(appBooted) touchActivity(); },{passive:true}));
+function doIdleLogout(){
+ idleTimedOut=true;
+ window.__fbAuth.signOut(window.__fbAuth.auth);
 }
 async function initAuth(){
  await fbWait();
  const {auth,onAuthStateChanged,signInWithEmailAndPassword,signOut}=window.__fbAuth;
  onAuthStateChanged(auth,user=>{
+  if(user && isAllowedEmail(user.email) && sessionIdleExpired()){ doIdleLogout(); return; }
   if(user && isAllowedEmail(user.email)){ showApp(user.email); }
   else if(user){ signOut(auth); showLogin('Ese usuario no tiene acceso a esta consola.'); }
+  else if(idleTimedOut){ idleTimedOut=false; showLogin('Tu sesión se cerró por 30 minutos de inactividad. Iniciá sesión de nuevo.'); }
   else{ showLogin(); }
  });
  const doLogin=async()=>{
