@@ -15,6 +15,7 @@ tiempos y métricas, todo separado por cliente.
 | `worker/` | Conector de Jira en la nube (Cloudflare Workers) — el que usa la versión publicada. El token de Jira vive ahí como secreto cifrado, nunca en el HTML. |
 | `tablero/main.py` + `tablero/run_local.py` | Mismo conector de Jira, pero para correr en tu PC (Flask) — solo hace falta para desarrollo/pruebas, no para el uso diario del equipo. |
 | `tablero/DOCUMENTACION_TECNICA.md` | Arquitectura completa (Firebase, Cloudflare Worker, GitHub Pages) y el contrato de datos del conector. |
+| `tablero/MANUAL_USUARIOS.md` | Guía práctica para el equipo: cómo entrar, por qué hay que cargar el perfil antes de usar Telemática, y cómo se usa cada sección día a día. |
 | `tablero/kb_state.json` | Ya no se usa para guardar (desde v30 eso va a Firebase). Resabio de versiones previas de esta carpeta. |
 | `README.md` | Este documento. |
 

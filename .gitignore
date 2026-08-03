@@ -8,6 +8,7 @@
 tablero/*
 !tablero/README.md
 !tablero/DOCUMENTACION_TECNICA.md
+!tablero/MANUAL_USUARIOS.md
 !tablero/main.py
 !tablero/run_local.py
 
