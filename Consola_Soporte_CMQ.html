@@ -145,7 +145,9 @@ h2.vt{font-size:20px;font-weight:700;margin:2px 0}
 .ktrend.good{color:var(--sig);background:var(--sigbg)}
 .ktrend.bad{color:var(--danger);background:var(--dangerbg)}
 .ktrend.flat{color:var(--mut2);background:var(--edge2)}
-.kspark{order:4;margin-top:8px;width:100%;position:relative;z-index:1}
+.kpi .deltaRow{order:3;display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11px;color:var(--mut);position:relative;z-index:1}
+.kpi .deltaRow .ktrend{order:0;margin-top:0}
+.kspark{order:4;margin-top:9px;padding-top:8px;border-top:1px dashed var(--edge);width:100%;position:relative;z-index:1}
 .kspark svg{display:block;width:100%;height:20px}
 .kpi.focal{background:linear-gradient(155deg,var(--accent),var(--accent2));border-color:transparent}
 .kpi.focal .l{color:rgba(255,255,255,.9)}.kpi.focal .n{color:#fff}.kpi.focal .n .u{color:rgba(255,255,255,.82)}.kpi.focal .kfoot{color:rgba(255,255,255,.88)}
@@ -335,19 +337,22 @@ details.cm[open] summary::before{content:'▾ '}
 .cmpRow .mcellClick:hover{background:var(--accdim)}
 .cmpRow .mcellClick:hover .mv{color:var(--accent)}
 @media(max-width:640px){.cmpRow{grid-template-columns:1.1fr .6fr 1fr 1fr 1fr;font-size:11.5px;gap:6px}}
-/* v77 · tabla de comparación por cliente encuadrada (Tiempos por cliente — Jira y Telemática):
-   marco propio, header con fondo, filas con hairline, numéricas alineadas a la derecha */
-.cmpTable.cmpFrame{gap:0;margin-top:10px;border:1px solid var(--edge);border-radius:12px;overflow:hidden;background:var(--panel)}
-.cmpTable.cmpFrame .cmpRow{padding:11px 14px;border-radius:0;border-bottom:1px solid var(--edge2)}
-.cmpTable.cmpFrame .cmpRow:last-child{border-bottom:none}
-.cmpTable.cmpFrame .cmpRow.cmpHead{background:var(--bg2);border-bottom:1px solid var(--edge)}
+/* v78 · tabla de comparación por cliente en formato filas-tarjeta (Tiempos por cliente — Jira
+   y Telemática): cada cliente es un panel propio, nombre como título, cada métrica un mini-stat
+   (valor mono arriba, sublabel abajo), numéricas alineadas a la derecha. */
+.cmpTable.cmpFrame{gap:8px;margin-top:12px;background:transparent}
+.cmpTable.cmpFrame .cmpRow{padding:13px 16px;border-radius:12px;transition:border-color .15s var(--ease),transform .15s var(--ease),box-shadow .15s var(--ease)}
+.cmpTable.cmpFrame .cmpRow:not(.cmpHead){background:var(--panel);border:1px solid var(--edge)}
+.cmpTable.cmpFrame .cmpRow.cmpHead{padding:0 16px 2px}
 .cmpTable.cmpFrame .cmpRow>span{justify-self:end;text-align:right}
 .cmpTable.cmpFrame .cmpRow>span:first-child{justify-self:start;text-align:left;display:flex;align-items:center;min-width:0}
+.cmpTable.cmpFrame .cmpRow:not(.cmpHead)>span:first-child{font-weight:750;font-size:14px;color:var(--ink)}
 .cmpTable.cmpFrame .cmpRow>span:first-child>*{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cmpTable.cmpFrame .cmpn{color:var(--ink)}
-.cmpTable.cmpFrame .cmpn .tinfo{margin-left:4px;font-family:var(--mono);font-size:10.5px;color:var(--mut2)}
-.cmpTable.cmpFrame .cmpRow:not(.cmpHead):nth-child(even){background:var(--edge2)}
-.cmpTable.cmpFrame .cmpRow:not(.cmpHead):hover{background:var(--bg2)}
+.cmpTable.cmpFrame .cmpn{display:flex;flex-direction:column;align-items:flex-end;line-height:1.25;color:var(--ink)}
+.cmpTable.cmpFrame .cmpn .tinfo{font-family:var(--sans);font-size:9.5px;font-weight:700;color:var(--mut2);text-transform:uppercase;letter-spacing:.03em;margin-top:2px}
+.cmpTable.cmpFrame .cmpRow.clickRow{cursor:pointer}
+.cmpTable.cmpFrame .cmpRow.clickRow:hover{border-color:var(--hoverline);transform:translateY(-1px);box-shadow:0 6px 18px rgba(16,32,60,.08)}
+.cmpTable.cmpFrame .cmpRow.clickRow:hover>span:first-child{color:var(--accent2)}
 @media(max-width:640px){.finput{font-size:16px}}
 
 .finput{width:100%;padding:8px 10px;border:1px solid var(--edge);border-radius:9px;font-size:13px;font-family:var(--sans);background:var(--panel);color:var(--ink);transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
@@ -1054,12 +1059,13 @@ function showKpiSkeleton(){
 function renderKPIs(){
  const d=panelJiraKpis();
  const cards=[];
+ const dr=t=>t?`<div class="deltaRow">${t}<span>vs. semana previa</span></div>`:'';
  cards.push(`<div class="kpi focal"><div class="l">${KPI_IC.t}Tickets abiertos</div><div class="n">${d.abiertos}</div><div class="kfoot">${d.nSin?d.nSin+' sin asignar':'todos asignados'}</div></div>`);
- cards.push(`<div class="kpi"><div class="l">${KPI_IC.clock}1ª respuesta</div><div class="n">${fmtDk(d.intCur)}</div>${trendPill(d.intCur,d.intPrev,'lower')}${sparkline(d.intSpark)}</div>`);
- cards.push(`<div class="kpi"><div class="l">${KPI_IC.check}Resolución</div><div class="n">${fmtDk(d.totCur)}</div>${trendPill(d.totCur,d.totPrev,'lower')}${sparkline(d.totSpark)}</div>`);
+ cards.push(`<div class="kpi"><div class="l">${KPI_IC.clock}1ª respuesta</div><div class="n">${fmtDk(d.intCur)}</div>${dr(trendPill(d.intCur,d.intPrev,'lower'))}${sparkline(d.intSpark)}</div>`);
+ cards.push(`<div class="kpi"><div class="l">${KPI_IC.check}Resolución</div><div class="n">${fmtDk(d.totCur)}</div>${dr(trendPill(d.totCur,d.totPrev,'lower'))}${sparkline(d.totSpark)}</div>`);
  const slaVal=d.sla?`${d.sla.pct}<span class="u">%</span>`:'—';
  const slaFoot=d.sla?`${d.sla.y} de ${d.sla.n} en plazo`:'sin datos de SLA';
- cards.push(`<div class="kpi"><div class="l">${KPI_IC.shield}SLA cumplido</div><div class="n">${slaVal}</div>${d.sla&&d.slaPrev?trendPill(d.sla.pct,d.slaPrev.pct,'higherPP'):''}<div class="kfoot">${slaFoot}</div></div>`);
+ cards.push(`<div class="kpi"><div class="l">${KPI_IC.shield}SLA cumplido</div><div class="n">${slaVal}</div>${d.sla&&d.slaPrev?dr(trendPill(d.sla.pct,d.slaPrev.pct,'higherPP')):''}<div class="kfoot">${slaFoot}</div></div>`);
  document.getElementById('kpis').innerHTML=cards.join('');
 }
 const PANEL_TELE_DIMS={
@@ -1168,7 +1174,8 @@ function renderKPIsPanelTele(list,st){
  const d=panelTeleKpis(list);
  const cards=[];
  cards.push(`<div class="kpi focal"><div class="l">${KPI_IC.clock}Tiempo total</div><div class="n">${d.totalMs?fmtDur(d.totalMs):'—'}</div><div class="kfoot">${d.nTareas} ${d.nTareas===1?'tarea':'tareas'}</div></div>`);
- cards.push(`<div class="kpi"><div class="l">${KPI_IC.calendar}Promedio semanal</div><div class="n">${st.promSemanalMs==null?'—':fmtDur(st.promSemanalMs)}</div>${trendNeutral(d.curW,d.prevW)}${sparkline(d.spark)}</div>`);
+ const trN=trendNeutral(d.curW,d.prevW);
+ cards.push(`<div class="kpi"><div class="l">${KPI_IC.calendar}Promedio semanal</div><div class="n">${st.promSemanalMs==null?'—':fmtDur(st.promSemanalMs)}</div>${trN?`<div class="deltaRow">${trN}<span>vs. semana previa</span></div>`:''}${sparkline(d.spark)}</div>`);
  cards.push(`<div class="kpi"><div class="l">${KPI_IC.cli}Cliente con más carga</div><div class="n">${d.topCli?d.topCli.pct+'<span class="u">%</span>':'—'}</div><div class="kfoot">${d.topCli?esc(d.topCli.name):'sin datos'}</div></div>`);
  cards.push(`<div class="kpi"><div class="l">${KPI_IC.user}Responsable con más carga</div><div class="n">${d.topResp?d.topResp.pct+'<span class="u">%</span>':'—'}</div><div class="kfoot">${d.topResp?esc(d.topResp.name):'sin datos'}</div></div>`);
  document.getElementById('kpisPanelTele').innerHTML=cards.join('');
@@ -1626,7 +1633,7 @@ function renderAnalisis(){
    <summary class="lab">Tiempos por cliente · vía Jira <span class="tinfo" style="text-transform:none;font-weight:400">(SLA de Jira — no depende del filtro de cliente de arriba, sí respeta el rango de fechas de arriba)</span></summary>
    <div class="cmpTable cmpFrame">
     <div class="cmpRow cmpHead"><span>Cliente</span><span>Tickets</span><span>1ª respuesta</span><span>Espera cliente</span><span>Resolución</span></div>
-    ${cts.length?cts.map(r=>`<div class="cmpRow clickRow" data-cli="${esc(r.cli)}" onclick="goCliente(this.dataset.cli)" title="Ver tickets de ${esc(r.cli)}"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cli)};margin-right:6px"></span>${esc(r.cli)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${fmtDur(r.aInt*864e5)} <span class="tinfo">(${r.nInt})</span></span><span class="cmpn">${fmtDur(r.aCli*864e5)} <span class="tinfo">(${r.nCli})</span></span><span class="cmpn">${fmtDur(r.aTot*864e5)}</span></div>`).join(''):'<p class="tinfo">Sin datos.</p>'}
+    ${cts.length?cts.map(r=>`<div class="cmpRow clickRow" data-cli="${esc(r.cli)}" onclick="goCliente(this.dataset.cli)" title="Ver tickets de ${esc(r.cli)}"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cli)};margin-right:6px"></span>${esc(r.cli)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${fmtDur(r.aInt*864e5)}<span class="tinfo">de ${r.nInt}</span></span><span class="cmpn">${fmtDur(r.aCli*864e5)}<span class="tinfo">de ${r.nCli}</span></span><span class="cmpn">${fmtDur(r.aTot*864e5)}</span></div>`).join(''):'<p class="tinfo">Sin datos.</p>'}
    </div>
   </details>
   <details class="card" data-pc="quienresp"${pcOpen('quienresp')}>
