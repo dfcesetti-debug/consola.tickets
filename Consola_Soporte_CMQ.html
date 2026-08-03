@@ -115,8 +115,19 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.primary:hover{background:var(--accent2)}
 .btn.sm{padding:6px 10px;font-size:12px}
-.clientbar{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-bottom:12px}
+.clientbar{display:flex;flex-direction:column;padding-bottom:10px}
 .clientbar .lbl{font-size:11px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.05em;flex:none}
+.cbHead{display:flex;align-items:center;gap:10px}
+.cbToggle{display:inline-flex;align-items:center;gap:8px;padding:6px 11px;border:1px solid var(--edge);border-radius:10px;background:var(--panel);font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer;font-family:var(--sans);transition:border-color .2s var(--ease)}
+.cbToggle:hover{border-color:var(--accent)}
+.cbToggle b{font-weight:750}
+.cbToggle .cdot{width:9px;height:9px;border-radius:50%;flex:none}
+.cbToggle .arrow{font-size:9px;opacity:.6;transition:transform .2s var(--ease)}
+.msel:has(.mselPanel.on) .cbToggle .arrow{transform:rotate(180deg)}
+.cbHide{width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--edge);border-radius:10px;background:var(--panel);color:var(--mut2);font-size:10px;cursor:pointer;transition:border-color .2s var(--ease),color .2s var(--ease)}
+.cbHide:hover{border-color:var(--accent);color:var(--accent2)}
+.cbChips{display:flex;gap:8px;align-items:center;overflow-x:auto;overflow-y:hidden;padding:10px 0 2px;max-height:64px;opacity:1;transition:max-height .25s var(--ease),opacity .2s var(--ease),transform .25s var(--ease),padding .25s var(--ease)}
+.clientbar.cbHidden .cbChips{max-height:0;opacity:0;transform:translateY(-8px);padding:0;pointer-events:none}
 .cchip{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border:1.5px solid var(--edge);background:var(--panel);border-radius:11px;cursor:pointer;font-weight:700;font-size:13px;color:var(--mut);white-space:nowrap;transition:transform .15s var(--ease),border-color .2s var(--ease),background .2s var(--ease),color .2s var(--ease)}
 .cchip:hover{border-color:var(--accent);transform:translateY(-1px)}
 .cchip:active{transform:scale(.97)}
@@ -151,6 +162,15 @@ h2.vt{font-size:20px;font-weight:700;margin:2px 0}
 .kspark svg{display:block;width:100%;height:20px}
 .kpi.focal{background:linear-gradient(155deg,var(--accent),var(--accent2));border-color:transparent}
 .kpi.focal .l{color:rgba(255,255,255,.9)}.kpi.focal .n{color:#fff}.kpi.focal .n .u{color:rgba(255,255,255,.82)}.kpi.focal .kfoot{color:rgba(255,255,255,.88)}
+.kpi.click{cursor:pointer}
+.kpi.click:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.icRefresh{transition:transform .3s var(--ease);flex:none}
+#btnConnData:hover .icRefresh{transform:rotate(180deg)}
+#btnConnData .cmini{display:none}
+.kpi.focal .deltaRow{color:rgba(255,255,255,.85)}
+.kpi.focal .ktrend.good,.kpi.focal .ktrend.bad,.kpi.focal .ktrend.flat{color:#fff;background:rgba(255,255,255,.18)}
+.kpi.focal .kspark{border-top-color:rgba(255,255,255,.35)}
+.kpi.focal .kspark polyline{stroke:#fff}.kpi.focal .kspark circle{fill:#fff}
 .sk{background:linear-gradient(100deg,var(--edge2) 30%,var(--edge) 50%,var(--edge2) 70%);background-size:200% 100%;animation:shimmer 1.3s var(--ease) infinite;border-radius:7px}
 @keyframes shimmer{to{background-position:-200% 0}}
 .kpi.skwrap{pointer-events:none}.kpi.skwrap:hover{transform:none;box-shadow:none}
@@ -348,8 +368,8 @@ details.cm[open] summary::before{content:'▾ '}
 .cmpTable.cmpFrame .cmpRow>span:first-child{justify-self:start;text-align:left;display:flex;align-items:center;min-width:0}
 .cmpTable.cmpFrame .cmpRow:not(.cmpHead)>span:first-child{font-weight:750;font-size:14px;color:var(--ink)}
 .cmpTable.cmpFrame .cmpRow>span:first-child>*{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cmpTable.cmpFrame .cmpn{display:flex;flex-direction:column;align-items:flex-end;line-height:1.25;color:var(--ink)}
-.cmpTable.cmpFrame .cmpn .tinfo{font-family:var(--sans);font-size:9.5px;font-weight:700;color:var(--mut2);text-transform:uppercase;letter-spacing:.03em;margin-top:2px}
+.cmpTable.cmpFrame .cmpn{display:flex;flex-direction:column;align-items:flex-end;line-height:1.25;color:var(--ink);font-size:13.5px}
+.cmpTable.cmpFrame .cmpn .tinfo{font-family:var(--sans);font-size:10px;font-weight:700;color:var(--mut2);text-transform:uppercase;letter-spacing:.03em;margin-top:2px}
 .cmpTable.cmpFrame .cmpRow.clickRow{cursor:pointer}
 .cmpTable.cmpFrame .cmpRow.clickRow:hover{border-color:var(--hoverline);transform:translateY(-1px);box-shadow:0 6px 18px rgba(16,32,60,.08)}
 .cmpTable.cmpFrame .cmpRow.clickRow:hover>span:first-child{color:var(--accent2)}
@@ -388,8 +408,9 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 .teleRow .trRemove:hover{color:var(--danger);border-color:var(--danger)}
 .teleRow .trRemove:disabled{opacity:.35;cursor:not-allowed}
 .cfgTable{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:2px;min-width:520px}
-.cfgTable th{text-align:left;font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.04em;padding:4px 6px}
-.cfgTable td{padding:3px 6px;vertical-align:middle}
+.cfgTable th{text-align:left;font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.04em;padding:6px 8px 5px;border-bottom:1px solid var(--edge)}
+.cfgTable td{padding:7px 8px;vertical-align:middle;line-height:1.45;border-bottom:1px solid var(--edge2)}
+.cfgTable tbody tr:last-child td{border-bottom:none}
 .cfgTable input.finput{padding:6px 8px;font-size:12.5px}
 .histList{margin:6px 0;padding-left:0;list-style:none;font-size:12.5px}
 .histList li{padding:6px 0;border-bottom:1px dashed var(--edge2);color:var(--mut)}
@@ -445,11 +466,20 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
  .brand,.railfoot{display:none}.nav{flex-direction:row;gap:2px}.nav a{flex-direction:column;gap:2px;padding:7px 10px;font-size:10.5px;white-space:nowrap;flex:none}.nav a .cnt{display:none}
  .main{padding-bottom:calc(66px + env(safe-area-inset-bottom))}.bar{grid-template-columns:130px 1fr 84px}.bar.pct{grid-template-columns:130px 1fr 56px 46px 52px}.bar .bkpi{font-size:8px;padding:2px 5px}.bar.tkCard>summary{grid-template-columns:130px 1fr 84px}
  .clirow{grid-template-columns:20px 1fr;gap:8px}
- .clientbar{-webkit-overflow-scrolling:touch}
+ .cbChips{-webkit-overflow-scrolling:touch}
  .toprow{flex-wrap:wrap;gap:10px}
  .search{flex:1 1 100%;order:-1;max-width:none}
  .search .kbd{display:none}
  .topbar{padding:12px 14px 0}
+ #btnConnData .cfull{display:none}
+ #btnConnData .cmini{display:inline}
+ .seg{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+ .seg button{white-space:nowrap;flex:none}
+ .filtrow{overflow-x:visible}
+ .mselPanel{max-width:calc(100vw - 40px)}
+ .kpis{grid-template-columns:1fr 1fr;gap:10px}
+ .kpi{padding:13px 14px}
+ .kpi .n{font-size:23px}
 }
 </style>
 <script type="module">
@@ -547,13 +577,15 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 
   <section class="view" id="v-tickets">
    <div class="eyebrow">HISTORIAL</div>
-   <h2 class="vt">Tickets anteriores <span class="scopenote" id="scope3"></span></h2>
-   <p class="sub">Buscá arriba y filtrá abajo. Podés elegir varios tipos a la vez. Cada ticket muestra su cliente y podés reasignarlo.</p>
-
-   <div class="card" id="dataConnShortcut" style="margin-bottom:14px">
-    <div class="lab" style="margin-top:0">Conexión con Jira / Cargar datos</div>
-    <p class="tinfo" style="margin:0 0 10px">Se movió a Configuración para dejar más lugar a la lista de tickets.</p>
-    <button class="btn" onclick="navTo('config');setCfgView('datos')">Ir a Configuración →</button>
+   <div class="mtop" style="align-items:flex-start;gap:12px">
+    <div style="min-width:0">
+     <h2 class="vt">Tickets anteriores <span class="scopenote" id="scope3"></span></h2>
+     <p class="sub">Buscá arriba y filtrá abajo. Podés elegir varios tipos a la vez. Cada ticket muestra su cliente y podés reasignarlo.</p>
+    </div>
+    <button class="btn sm" id="btnConnData" onclick="navTo('config');setCfgView('datos')" title="Abre Configuración → Conexión de datos" style="flex:none;margin-top:4px">
+     <svg class="icRefresh" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"></path><path d="M20.5 3v3.5H17"></path></svg>
+     <span class="cfull">Conexión con Jira / Cargar datos</span><span class="cmini">Cargar datos</span>
+    </button>
    </div>
 
    <div id="respBanner"></div>
@@ -953,7 +985,9 @@ function analytics(arr){
  return {byType:by(i=>i.tipo),reporters:by(i=>i.informador),assignees:by(i=>i.asignado),status:by(i=>i.estado),
   responders:Object.entries(resp).sort((a,b)=>b[1]-a[1]),totalComments:Object.values(resp).reduce((a,b)=>a+b,0)};
 }
-function clientCounts(){ const m={}; DATA.forEach(i=>m[i._cli]=(m[i._cli]||0)+1); return m; }
+// Cuenta tickets por cliente. Las tareas de Telemática cuentan como tickets del cliente
+// que corresponda (v80) — coherente con v68, donde ya aparecen mezcladas en la pestaña Tickets.
+function clientCounts(){ const m={}; DATA.forEach(i=>m[i._cli]=(m[i._cli]||0)+1); TELE.forEach(t=>{const c=t.cliente||UNASSIGNED;m[c]=(m[c]||0)+1;}); return m; }
 
 let A={}, SC=[], FSET=[], curOrigen=new Set();
 function clearFilters(){ curTypes.clear(); curEstados.clear(); curAsig.clear(); curOrigen.clear(); respFilter=null; const qi=document.getElementById('q'); if(qi)qi.value=''; }
@@ -979,13 +1013,33 @@ function renderScopeNotes(){
  ['scope1','scope2','scope3'].forEach(id=>{const e=document.getElementById(id); if(!e)return; e.innerHTML=t; e.style.display=t?'inline-flex':'none';});
 }
 
+// Barra de clientes: el botón "Cliente · X" es un desplegable para elegir cliente (funciona
+// siempre, incluso con los chips escondidos), y el chevron de al lado esconde/muestra los
+// accesos rápidos hacia arriba. La selección queda siempre visible en el botón.
+let cbHidden=false; try{ cbHidden=localStorage.getItem('cmq_cbhide')==='1'; }catch(e){}
 function renderClientBar(){
  const cc=clientCounts(); const bar=document.getElementById('clientbar');
- let chips=`<span class="lbl">Cliente</span>`;
- chips+=`<div class="cchip ${scopeCli===''?'on':''}" data-c="">Todos <span class="cc">${DATA.length}</span></div>`;
+ bar.classList.toggle('cbHidden',cbHidden);
+ const total=DATA.length+TELE.length;
  const names=CLIENTS.map(c=>c.name).concat(cc[UNASSIGNED]?[UNASSIGNED]:[]);
+ let chips=`<div class="cchip ${scopeCli===''?'on':''}" data-c="">Todos <span class="cc">${total}</span></div>`;
  names.forEach(n=>{ const col=clientColor(n); chips+=`<div class="cchip ${scopeCli===n?'on':''}" data-c="${esc(n)}"><span class="cdot" style="background:${col}"></span>${esc(n)} <span class="cc">${cc[n]||0}</span></div>`; });
- bar.innerHTML=chips;
+ const selDot=scopeCli?`<span class="cdot" style="background:${clientColor(scopeCli)}"></span>`:'';
+ const items=`<div class="mselItem allOpt${scopeCli===''?' on':''}" data-c="">Todos <span class="c">${total}</span><span class="chk">✓</span></div>`+
+  names.map(n=>`<div class="mselItem${scopeCli===n?' on':''}" data-c="${esc(n)}"><span style="display:inline-flex;align-items:center;gap:7px;min-width:0"><span class="cdot" style="width:9px;height:9px;border-radius:50%;flex:none;background:${clientColor(n)}"></span><span style="overflow:hidden;text-overflow:ellipsis">${esc(n)}</span></span><span class="c">${cc[n]||0}</span><span class="chk">✓</span></div>`).join('');
+ bar.innerHTML=`<div class="cbHead">
+   <div class="msel">
+    <button type="button" class="cbToggle" id="cbToggle" aria-haspopup="listbox" title="Elegir cliente">
+     <span class="lbl">Cliente</span>${selDot}<b>${esc(scopeCli||'Todos')}</b><span class="arrow">▾</span>
+    </button>
+    <div class="mselPanel" id="cbPanel">${items}</div>
+   </div>
+   <button type="button" class="cbHide" id="cbHide" aria-expanded="${!cbHidden}" title="${cbHidden?'Mostrar':'Ocultar'} los accesos rápidos de cliente">${cbHidden?'▾':'▴'}</button>
+  </div>
+  <div class="cbChips">${chips}</div>`;
+ document.getElementById('cbToggle').onclick=(e)=>{ e.stopPropagation(); mselToggle('cbPanel'); };
+ document.getElementById('cbHide').onclick=()=>{ cbHidden=!cbHidden; try{localStorage.setItem('cmq_cbhide',cbHidden?'1':'0');}catch(e){} renderClientBar(); };
+ bar.querySelectorAll('#cbPanel .mselItem').forEach(it=>it.onclick=(e)=>{ e.stopPropagation(); scopeCli=it.dataset.c; clearFilters(); shown=PAGE; rebuildAll(); });
  bar.querySelectorAll('.cchip').forEach(c=>c.onclick=()=>{scopeCli=c.dataset.c;clearFilters();shown=PAGE;rebuildAll();});
 }
 
@@ -1002,10 +1056,16 @@ const KPI_IC={
 // (se excluye Telemática). Si un período no tiene datos suficientes, el valor cae a "—" y
 // la tendencia/sparkline no se muestran — nunca se inventa un número.
 const _wkKey=ts=>{const d=new Date(ts);const off=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-off);return d.getTime();};
+// Etiqueta del período de comparación según el rango elegido en "Tiempos de respuesta y
+// resolución" — el mismo selector alimenta las tarjetas KPI de arriba (v79): sin rango,
+// la lectura corporativa por defecto sigue siendo última semana vs. la anterior.
+const RANGE_PREV={'':'vs. semana previa','48h':'vs. 48h previas','7d':'vs. semana previa','14d':'vs. 2 semanas previas','30d':'vs. 30 días previos','q_d':'vs. trimestre previo','q_w':'vs. trimestre previo','y_w':'vs. año previo','y_m':'vs. año previo'};
 function panelJiraKpis(){
  const items=FSET.filter(i=>!i._tele);
  const DAY=864e5, now=Date.now();
- const curStart=now-7*DAY, prevStart=now-14*DAY;
+ const rs=rangeStart(panelRange);
+ const len=rs?(now-rs):7*DAY;
+ const curStart=rs||now-7*DAY, prevStart=curStart-len;
  const created=i=>i._createdTs||parseDate(i.creada);
  const resolved=i=>i._resolvedTs||null;
  const abiertos=items.filter(i=>!resolved(i));
@@ -1015,19 +1075,20 @@ function panelJiraKpis(){
  const WK=6, wStarts=[]; {const m=_wkKey(now); for(let i=WK-1;i>=0;i--)wStarts.push(m-i*7*DAY);}
  const sparkAvg=field=>wStarts.map(ws=>winAvg(ws,ws+7*DAY,field));
  const sparkSla=()=>wStarts.map(ws=>{const s=winSla(ws,ws+7*DAY);return s?s.pct:null;});
- return {abiertos:abiertos.length,nSin,
+ return {abiertos:abiertos.length,nSin,prevLbl:RANGE_PREV[panelRange]||'vs. período previo',
   intCur:winAvg(curStart,now,'intResp'),intPrev:winAvg(prevStart,curStart,'intResp'),intSpark:sparkAvg('intResp'),
   totCur:winAvg(curStart,now,'total'),totPrev:winAvg(prevStart,curStart,'total'),totSpark:sparkAvg('total'),
   sla:winSla(curStart,now),slaPrev:winSla(prevStart,curStart),slaSpark:sparkSla()};
 }
 // tendencia % (mode 'lower' = menos es mejor, ej. tiempos); 'higherPP' compara en puntos (SLA)
-function trendPill(cur,prev,mode){
+function trendPill(cur,prev,mode,lbl){
+ lbl=lbl||'vs. semana previa';
  if(cur==null||prev==null)return '';
- if(mode==='higherPP'){ const d=Math.round(cur-prev); if(d===0)return '<span class="ktrend flat" title="vs. semana previa">≈ igual</span>'; return `<span class="ktrend ${d>0?'good':'bad'}" title="vs. semana previa">${d>0?'▲':'▼'} ${Math.abs(d)} pts</span>`; }
+ if(mode==='higherPP'){ const d=Math.round(cur-prev); if(d===0)return `<span class="ktrend flat" title="${lbl}">≈ igual</span>`; return `<span class="ktrend ${d>0?'good':'bad'}" title="${lbl}">${d>0?'▲':'▼'} ${Math.abs(d)} pts</span>`; }
  if(prev===0)return ''; const dp=(cur-prev)/Math.abs(prev)*100, mag=Math.abs(Math.round(dp));
- if(mag<1)return '<span class="ktrend flat" title="vs. semana previa">≈ igual</span>';
+ if(mag<1)return `<span class="ktrend flat" title="${lbl}">≈ igual</span>`;
  const good = dp<0; // menos tiempo = mejor
- return `<span class="ktrend ${good?'good':'bad'}" title="vs. semana previa">${dp<0?'▼':'▲'} ${mag}%</span>`;
+ return `<span class="ktrend ${good?'good':'bad'}" title="${lbl}">${dp<0?'▼':'▲'} ${mag}%</span>`;
 }
 // tendencia sin connotación bueno/malo (carga de trabajo: más horas no es "peor")
 function trendNeutral(cur,prev){
@@ -1054,18 +1115,35 @@ function showKpiSkeleton(){
  const prev=box.querySelector('.kpi:first-child .n');
  const cur=prev?(parseInt(prev.textContent,10)||0):0;
  const sk='<div class="kpi skwrap"><div class="sk sk-l"></div><div class="sk sk-n"></div><div class="sk sk-f"></div></div>';
- box.innerHTML=`<div class="kpi focal"><div class="l">${KPI_IC.t}Tickets abiertos</div><div class="n">${cur}</div><div class="kfoot">cargando…</div></div>`+sk+sk+sk;
+ box.innerHTML=`<div class="kpi${panelKpiSel==='abiertos'?' focal':''}"><div class="l">${KPI_IC.t}Tickets abiertos</div><div class="n">${cur}</div><div class="kfoot">cargando…</div></div>`+sk+sk+sk;
 }
+// Tarjeta KPI seleccionada (estilo turquesa "focal"): clic la selecciona y, si tiene un
+// detalle correspondiente en "Tiempos de respuesta y resolución", lo abre y baja hasta él.
+let panelKpiSel='abiertos';
+window.selPanelKpi=(k)=>{
+ panelKpiSel=k; renderKPIs();
+ const detail={int:'int',tot:'tot'}[k];
+ if(detail){
+  tkpiOpen.add(detail); panelCardClosed.delete('tiempos'); renderAnalisis();
+  const el=document.querySelector('.tkpi details[data-k="'+detail+'"]');
+  if(el){ el.open=true; el.scrollIntoView({behavior:'smooth',block:'center'}); }
+ } else if(k==='sla'){
+  panelCardClosed.delete('tiempos'); renderAnalisis();
+  const el=document.querySelector('#analisis details.cfgSec');
+  if(el){ el.open=true; el.scrollIntoView({behavior:'smooth',block:'center'}); }
+ }
+};
 function renderKPIs(){
  const d=panelJiraKpis();
  const cards=[];
- const dr=t=>t?`<div class="deltaRow">${t}<span>vs. semana previa</span></div>`:'';
- cards.push(`<div class="kpi focal"><div class="l">${KPI_IC.t}Tickets abiertos</div><div class="n">${d.abiertos}</div><div class="kfoot">${d.nSin?d.nSin+' sin asignar':'todos asignados'}</div></div>`);
- cards.push(`<div class="kpi"><div class="l">${KPI_IC.clock}1ª respuesta</div><div class="n">${fmtDk(d.intCur)}</div>${dr(trendPill(d.intCur,d.intPrev,'lower'))}${sparkline(d.intSpark)}</div>`);
- cards.push(`<div class="kpi"><div class="l">${KPI_IC.check}Resolución</div><div class="n">${fmtDk(d.totCur)}</div>${dr(trendPill(d.totCur,d.totPrev,'lower'))}${sparkline(d.totSpark)}</div>`);
+ const dr=t=>t?`<div class="deltaRow">${t}<span>${d.prevLbl}</span></div>`:'';
+ const kAttr=k=>`class="kpi click${panelKpiSel===k?' focal':''}" data-kk="${k}" role="button" tabindex="0" aria-pressed="${panelKpiSel===k}" onclick="selPanelKpi('${k}')"`;
+ cards.push(`<div ${kAttr('abiertos')} title="Tickets sin resolver ahora"><div class="l">${KPI_IC.t}Tickets abiertos</div><div class="n">${d.abiertos}</div><div class="kfoot">${d.nSin?d.nSin+' sin asignar':'todos asignados'}</div></div>`);
+ cards.push(`<div ${kAttr('int')} title="Ver el detalle de 1ª respuesta abajo"><div class="l">${KPI_IC.clock}1ª respuesta</div><div class="n">${fmtDk(d.intCur)}</div>${dr(trendPill(d.intCur,d.intPrev,'lower',d.prevLbl))}${sparkline(d.intSpark)}</div>`);
+ cards.push(`<div ${kAttr('tot')} title="Ver el detalle de resolución abajo"><div class="l">${KPI_IC.check}Resolución</div><div class="n">${fmtDk(d.totCur)}</div>${dr(trendPill(d.totCur,d.totPrev,'lower',d.prevLbl))}${sparkline(d.totSpark)}</div>`);
  const slaVal=d.sla?`${d.sla.pct}<span class="u">%</span>`:'—';
  const slaFoot=d.sla?`${d.sla.y} de ${d.sla.n} en plazo`:'sin datos de SLA';
- cards.push(`<div class="kpi"><div class="l">${KPI_IC.shield}SLA cumplido</div><div class="n">${slaVal}</div>${d.sla&&d.slaPrev?dr(trendPill(d.sla.pct,d.slaPrev.pct,'higherPP')):''}<div class="kfoot">${slaFoot}</div></div>`);
+ cards.push(`<div ${kAttr('sla')} title="Ver el SLA acordado abajo"><div class="l">${KPI_IC.shield}SLA cumplido</div><div class="n">${slaVal}</div>${d.sla&&d.slaPrev?dr(trendPill(d.sla.pct,d.slaPrev.pct,'higherPP',d.prevLbl)):''}<div class="kfoot">${slaFoot}</div></div>`);
  document.getElementById('kpis').innerHTML=cards.join('');
 }
 const PANEL_TELE_DIMS={
@@ -1170,14 +1248,30 @@ function panelTeleKpis(list){
  const spark=ws.map(s=>{const v=weekTotal(s,s+7*DAY);return v||null;});
  return {totalMs, nTareas:w.length, curW:weekTotal(now-7*DAY,now), prevW:weekTotal(now-14*DAY,now-7*DAY), spark, topCli:top(byCli), topResp:top(byResp)};
 }
+// Tarjeta KPI seleccionada en Panel Telemática — mismo concepto que Panel Jira (v79):
+// clic la vuelve la tarjeta turquesa activa y abre/baja hasta la tarjeta de análisis
+// correspondiente, ajustando el selector de dimensión/métrica cuando aplica.
+let panelTeleKpiSel='total';
+window.selPanelTeleKpi=(k)=>{
+ panelTeleKpiSel=k;
+ if(k==='total'){ panelTeleMetric='asignado'; panelCardClosed.delete('teleTarea'); }
+ if(k==='semanal'){ panelTeleMetric='semanal'; panelCardClosed.delete('teleTarea'); }
+ if(k==='resp'){ panelTeleDim='responsable'; panelCardClosed.delete('teleTarea'); }
+ if(k==='cli'){ panelCardClosed.delete('teleCliSem'); }
+ renderPanelTele();
+ const target={total:'teleTarea',semanal:'teleTarea',resp:'teleTarea',cli:'teleCliSem'}[k];
+ const el=document.querySelector('#analisisPanelTele details[data-pc="'+target+'"]');
+ if(el){ el.open=true; el.scrollIntoView({behavior:'smooth',block:'start'}); }
+};
 function renderKPIsPanelTele(list,st){
  const d=panelTeleKpis(list);
  const cards=[];
- cards.push(`<div class="kpi focal"><div class="l">${KPI_IC.clock}Tiempo total</div><div class="n">${d.totalMs?fmtDur(d.totalMs):'—'}</div><div class="kfoot">${d.nTareas} ${d.nTareas===1?'tarea':'tareas'}</div></div>`);
+ const kAttr=k=>`class="kpi click${panelTeleKpiSel===k?' focal':''}" data-kk="${k}" role="button" tabindex="0" aria-pressed="${panelTeleKpiSel===k}" onclick="selPanelTeleKpi('${k}')"`;
+ cards.push(`<div ${kAttr('total')} title="Ver tiempos por tarea abajo"><div class="l">${KPI_IC.clock}Tiempo total</div><div class="n">${d.totalMs?fmtDur(d.totalMs):'—'}</div><div class="kfoot">${d.nTareas} ${d.nTareas===1?'tarea':'tareas'}</div></div>`);
  const trN=trendNeutral(d.curW,d.prevW);
- cards.push(`<div class="kpi"><div class="l">${KPI_IC.calendar}Promedio semanal</div><div class="n">${st.promSemanalMs==null?'—':fmtDur(st.promSemanalMs)}</div>${trN?`<div class="deltaRow">${trN}<span>vs. semana previa</span></div>`:''}${sparkline(d.spark)}</div>`);
- cards.push(`<div class="kpi"><div class="l">${KPI_IC.cli}Cliente con más carga</div><div class="n">${d.topCli?d.topCli.pct+'<span class="u">%</span>':'—'}</div><div class="kfoot">${d.topCli?esc(d.topCli.name):'sin datos'}</div></div>`);
- cards.push(`<div class="kpi"><div class="l">${KPI_IC.user}Responsable con más carga</div><div class="n">${d.topResp?d.topResp.pct+'<span class="u">%</span>':'—'}</div><div class="kfoot">${d.topResp?esc(d.topResp.name):'sin datos'}</div></div>`);
+ cards.push(`<div ${kAttr('semanal')} title="Ver promedio semanal por tarea abajo"><div class="l">${KPI_IC.calendar}Promedio semanal</div><div class="n">${st.promSemanalMs==null?'—':fmtDur(st.promSemanalMs)}</div>${trN?`<div class="deltaRow">${trN}<span>vs. semana previa</span></div>`:''}${sparkline(d.spark)}</div>`);
+ cards.push(`<div ${kAttr('cli')} title="Ver tiempo total por cliente abajo"><div class="l">${KPI_IC.cli}Cliente con más carga</div><div class="n">${d.topCli?d.topCli.pct+'<span class="u">%</span>':'—'}</div><div class="kfoot">${d.topCli?esc(d.topCli.name):'sin datos'}</div></div>`);
+ cards.push(`<div ${kAttr('resp')} title="Ver tiempos por responsable abajo"><div class="l">${KPI_IC.user}Responsable con más carga</div><div class="n">${d.topResp?d.topResp.pct+'<span class="u">%</span>':'—'}</div><div class="kfoot">${d.topResp?esc(d.topResp.name):'sin datos'}</div></div>`);
  document.getElementById('kpisPanelTele').innerHTML=cards.join('');
 }
 function renderPanelTele(){
@@ -1519,7 +1613,7 @@ function clientTimeStats(){
    aInt:avg(T.map(t=>t.intResp)), nInt:T.filter(t=>t.intResp!=null).length,
    aCli:avg(T.map(t=>t.cliResp)), nCli:T.filter(t=>t.cliResp!=null).length,
    aTot:avg(T.map(t=>t.total)) };
- });
+ }).sort((a,b)=>b.n-a.n);
 }
 let respView='all', panelRange='', tkpiOpen=new Set();
 // tarjetas principales del Panel: todas abiertas por defecto (nada cambia a simple vista); acá
@@ -1553,7 +1647,7 @@ function tkpiDetailHtml(TZ,field,hasSla){
 }
 window.goScopeTickets=()=>{ clearFilters(); navTo('tickets'); shown=PAGE; refresh(); };
 window.setRespView=v=>{ respView=v; renderAnalisis(); };
-window.setPanelRange=v=>{ panelRange=v; renderAnalisis(); };
+window.setPanelRange=v=>{ panelRange=v; renderKPIs(); renderAnalisis(); };
 /* SLA acordado con cada cliente — solo de referencia por ahora: la app no distingue
    la gravedad de cada ticket (Jira trae "prioridad" casi siempre en "Medium", sin
    variación real), así que estos umbrales todavía NO se aplican para marcar
