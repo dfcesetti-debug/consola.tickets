@@ -2,7 +2,7 @@
 
 **Para quién es este documento:** cualquier persona del equipo de soporte/telemática que va a usar la Consola día a día. Si buscás arquitectura técnica (Firebase, Cloudflare Worker, contrato de datos), eso está en `DOCUMENTACION_TECNICA.md`. Este documento es la guía práctica: cómo entrar, qué cargar primero y por qué, y cómo se usa cada sección.
 
-Fecha: 03/08/2026. Cubre hasta v90.
+Fecha: 03/08/2026. Cubre hasta v93.
 
 ---
 
@@ -11,7 +11,8 @@ Fecha: 03/08/2026. Cubre hasta v90.
 Entrá a `https://dfcesetti-debug.github.io/consola.tickets/Consola_Soporte_CMQ.html` con tu cuenta `@cesetti.com.ar`. No hace falta instalar nada.
 
 - Solo entran cuentas del dominio `@cesetti.com.ar` — cualquier otro correo queda rechazado.
-- Si te equivocás la contraseña, la Consola te avisa "Email o contraseña incorrectos." Si no tenés cuenta o la olvidaste, pedísela a quien administra el acceso — la Consola no tiene un flujo de "recuperar contraseña" propio.
+- **¿Primera vez, o te olvidaste la contraseña?** Escribí tu email en el campo de arriba y tocá **"Creá tu contraseña por email"** — te llega un correo con un link para definirla vos mismo. (Quien administra el acceso todavía tiene que haber creado tu cuenta antes con ese email; si el link no te llega, pedísela a esa persona.)
+- Si te equivocás la contraseña, la Consola te avisa "Email o contraseña incorrectos."
 - **La sesión se cierra sola a los 30 minutos sin actividad** (sin clics, sin escribir, sin tocar la pantalla) y te vuelve a pedir que inicies sesión, con el aviso "Tu sesión se cerró por 30 minutos de inactividad." Mientras estés usando la Consola normalmente, el conteo se reinicia solo y no pasa nada. Podés cerrar sesión vos mismo en cualquier momento desde el link **Cerrar sesión**, abajo del todo en el menú lateral.
 
 ---

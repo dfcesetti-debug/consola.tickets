@@ -84,6 +84,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .loginBrand span{font-size:11px;color:var(--mut)}
 .loginBox .btn.primary{width:100%;justify-content:center;margin-top:8px}
 .loginErr{color:var(--danger);min-height:16px;margin-top:10px;font-size:12.5px}
+.loginOk{color:var(--sig);min-height:16px;margin-top:10px;font-size:12.5px}
 .railfoot a{color:var(--railtx);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .railfoot a:hover{color:var(--railon)}
 .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 16px;border-bottom:1px solid var(--railborder);margin-bottom:12px;transition:border-color .25s var(--ease)}
@@ -540,7 +541,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
     NO lo reemplaza, solo reemplaza el guardado que antes iba a kb_state.json. */
  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
- import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+ import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
  const firebaseConfig = {
   apiKey: "AIzaSyB8hG8XJSfkCdN6HXMUAfrpz04lBlVnixI",
   authDomain: "tickets-be0af.firebaseapp.com",
@@ -555,7 +556,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
  const auth = getAuth(app);
  setPersistence(auth, browserLocalPersistence).catch(()=>{});
  window.__fb = { db, doc, getDoc, setDoc };
- window.__fbAuth = { auth, onAuthStateChanged, signInWithEmailAndPassword, signOut };
+ window.__fbAuth = { auth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail };
  window.dispatchEvent(new Event('fb-ready'));
 </script>
 </head>
@@ -572,7 +573,9 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
   <div class="fRow"><label class="lab" for="loginPass" style="margin-top:0">Contraseña</label><input class="finput" id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
   <button class="btn primary" id="btnLogin">Ingresar</button>
   <p class="loginErr" id="loginError"></p>
-  <p class="tinfo" style="margin:14px 0 0;text-align:center">¿Primera vez acá? <a id="btnManualUsuarios" style="color:var(--accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer">Descargá el manual de uso</a></p>
+  <p class="loginOk" id="loginPwMsg"></p>
+  <p class="tinfo" style="margin:6px 0 0;text-align:center">¿No tenés contraseña todavía o la olvidaste? <a id="btnCrearPass" style="color:var(--accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer">Creá tu contraseña por email</a></p>
+  <p class="tinfo" style="margin:10px 0 0;text-align:center">¿Primera vez acá? <a id="btnManualUsuarios" style="color:var(--accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer">Descargá el manual de uso</a></p>
  </div>
 </div>
 <div id="appRoot" style="display:none">
@@ -2736,7 +2739,8 @@ table.pfTable th{background:#eef2f8}
 <p>Entrá a la Consola con tu cuenta <b>@cesetti.com.ar</b>. No hace falta instalar nada.</p>
 <ul>
  <li>Solo entran cuentas del dominio <b>@cesetti.com.ar</b> — cualquier otro correo queda rechazado.</li>
- <li>Si te equivocás la contraseña, la Consola avisa "Email o contraseña incorrectos." Si no tenés cuenta, pedísela a quien administra el acceso.</li>
+ <li><b>¿Primera vez, o te olvidaste la contraseña?</b> Escribí tu email y tocá "Creá tu contraseña por email" — te llega un correo con un link para definirla vos mismo (tu cuenta ya tiene que existir, creada por quien administra el acceso).</li>
+ <li>Si te equivocás la contraseña, la Consola avisa "Email o contraseña incorrectos."</li>
  <li><b>La sesión se cierra sola a los 30 minutos sin actividad</b> (sin clics, sin escribir, sin tocar la pantalla) y vuelve a pedir inicio de sesión. Mientras la usás normalmente, el conteo se reinicia solo. Podés cerrar sesión vos mismo con el link <b>Cerrar sesión</b>, abajo del menú lateral.</li>
 </ul>
 
@@ -3893,7 +3897,7 @@ function doIdleLogout(){
 }
 async function initAuth(){
  await fbWait();
- const {auth,onAuthStateChanged,signInWithEmailAndPassword,signOut}=window.__fbAuth;
+ const {auth,onAuthStateChanged,signInWithEmailAndPassword,signOut,sendPasswordResetEmail}=window.__fbAuth;
  onAuthStateChanged(auth,user=>{
   if(user && isAllowedEmail(user.email) && sessionIdleExpired()){ doIdleLogout(); return; }
   if(user && isAllowedEmail(user.email)){ showApp(user.email); }
@@ -3916,6 +3920,26 @@ async function initAuth(){
  document.getElementById('loginPass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
  document.getElementById('loginEmail').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
  document.getElementById('btnLogout').onclick=(e)=>{ e.preventDefault(); signOut(auth); };
+ // Autoservicio de contraseña (opción 1 del pedido de acceso): en vez de que el admin invente y
+ // comparta una contraseña por cliente nuevo, crea la cuenta solo con el email en Firebase y la
+ // persona usa este link para definir su propia contraseña por correo — mismo mecanismo nativo de
+ // Firebase Auth que "olvidé mi contraseña", reutilizado también para el primer ingreso.
+ document.getElementById('btnCrearPass').onclick=async(e)=>{
+  e.preventDefault();
+  const email=(document.getElementById('loginEmail').value||'').trim();
+  const errEl=document.getElementById('loginError'), okEl=document.getElementById('loginPwMsg');
+  errEl.textContent=''; okEl.textContent='';
+  if(!isAllowedEmail(email)){ errEl.textContent='Escribí primero tu email @cesetti.com.ar arriba, y volvé a tocar el link.'; return; }
+  const link=document.getElementById('btnCrearPass'); const label=link.textContent; link.textContent='Enviando…';
+  try{
+   await sendPasswordResetEmail(auth,email);
+   okEl.textContent='Te enviamos un email a '+email+' con un link para crear tu contraseña. Revisá tu bandeja de entrada (y spam).';
+  }catch(err){
+   errEl.textContent = err && err.code==='auth/user-not-found'
+    ? 'No encontramos una cuenta con ese email. Pedile a quien administra el acceso que la cree primero.'
+    : 'No pudimos enviar el email. Probá de nuevo en un momento.';
+  }finally{ link.textContent=label; }
+ };
 }
 initAuth();
 </script>
