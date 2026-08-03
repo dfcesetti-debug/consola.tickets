@@ -39,7 +39,7 @@ Unifica en una sola vista por cliente lo que antes vivía separado: los tickets 
 
 ## Brand Commitments
 
-Nombre de marca: **"Televidentes"** (rebranding desde v48), producto interno de Cesetti. Identidad visual (paleta clara/oscura, tipografía Plus Jakarta Sans, densidad tipo dashboard) ya establecida en el código — la captura formal del sistema de diseño queda para `/impeccable document`, no para este archivo.
+Nombre de marca: **"Telemática"** (rebranding desde v96; antes "Televidentes", nombre usado desde v48), producto interno de Cesetti. Identidad visual (paleta clara/oscura, tipografía Plus Jakarta Sans, densidad tipo dashboard) ya establecida en el código — la captura formal del sistema de diseño vive en `DESIGN.md` (generado con `/impeccable document`, actualizado en la auditoría v96), no en este archivo.
 
 ## Evidence on Hand
 
@@ -55,4 +55,4 @@ No hay assets de marketing, testimonios ni casos de estudio — es una herramien
 
 ## Accessibility & Inclusion
 
-Estándar confirmado: **WCAG AA como piso permanente** (contraste mínimo 4.5:1, navegación completa por teclado con foco visible, labels de formulario asociados, targets táctiles ≥44×44px). Ya auditado y corregido una vez en v70; todo trabajo de diseño futuro debe mantenerlo, no solo lo ya corregido.
+Estándar confirmado: **WCAG AA como piso permanente** (contraste mínimo 4.5:1, navegación completa por teclado con foco visible, labels de formulario asociados, targets táctiles ≥44×44px). Auditado y corregido en v70 (color de texto terciario en la app) y otra vez en v96 (`/impeccable audit`: el mismo gris fuera de norma seguía viviendo en los documentos imprimibles — ficha técnica y manual de uso — que tienen su propio `<style>` aparte y no habían recibido el fix de v70). Todo trabajo de diseño futuro debe mantenerlo, no solo lo ya corregido.
