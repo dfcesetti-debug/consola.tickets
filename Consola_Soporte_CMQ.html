@@ -60,7 +60,15 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 #appRoot{display:flex;height:100vh;width:100%}
 ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--scrollthumb);border-radius:8px}
 
-.rail{width:210px;flex:none;background:linear-gradient(180deg,var(--railbg1),var(--railbg2));color:var(--railtx);display:flex;flex-direction:column;padding:16px 12px;height:100vh;overflow-y:auto;transition:background .25s var(--ease),color .25s var(--ease)}
+.rail{width:210px;flex:none;background:linear-gradient(180deg,var(--railbg1),var(--railbg2));color:var(--railtx);display:flex;flex-direction:column;padding:16px 12px;height:100vh;overflow-y:auto;overflow-x:hidden;transition:background .25s var(--ease),color .25s var(--ease),width .22s var(--ease),padding .22s var(--ease);position:relative}
+.rail.collapsed{width:66px;padding:16px 10px}
+.rail.collapsed .brand b,.rail.collapsed .brand span,.rail.collapsed .railfoot,.rail.collapsed .nav a .lbl,.rail.collapsed .nav a .cnt{display:none}
+.rail.collapsed .brand{justify-content:center;padding:6px 0 16px}
+.rail.collapsed .nav a{justify-content:center;padding:11px}
+.railToggle{position:absolute;top:14px;right:-11px;width:22px;height:22px;border-radius:50%;background:var(--panel);border:1.5px solid var(--edge);color:var(--ink);display:grid;place-items:center;cursor:pointer;z-index:5;transition:background .18s var(--ease),transform .22s var(--ease),border-color .18s var(--ease)}
+.railToggle:hover{border-color:var(--accent);color:var(--accent)}
+.railToggle svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transition:transform .22s var(--ease)}
+.rail.collapsed .railToggle svg{transform:rotate(180deg)}
 .loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
 .loginBox{width:100%;max-width:360px;background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.18)}
 .loginBrand{display:flex;align-items:center;gap:10px;margin-bottom:16px}
@@ -497,7 +505,10 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 
 @media(max-width:720px){
  .rail{position:fixed;bottom:0;top:auto;left:0;right:0;width:100%;height:auto;flex-direction:row;padding:6px;padding-bottom:max(6px,env(safe-area-inset-bottom));z-index:50;overflow-x:auto;-webkit-overflow-scrolling:touch}
+ .rail.collapsed{width:100%;padding:6px;padding-bottom:max(6px,env(safe-area-inset-bottom))}
+ .railToggle{display:none}
  .brand,.railfoot{display:none}.nav{flex-direction:row;gap:2px}.nav a{flex-direction:column;gap:2px;padding:7px 10px;font-size:10.5px;white-space:nowrap;flex:none}.nav a .cnt{display:none}
+ .rail.collapsed .nav a .lbl{display:block}
  .main{padding-bottom:calc(66px + env(safe-area-inset-bottom))}.bar{grid-template-columns:130px 1fr 84px}.bar.pct{grid-template-columns:130px 1fr 56px 46px 52px}.bar .bkpi{font-size:8px;padding:2px 5px}.bar.tkCard>summary{grid-template-columns:130px 1fr 84px}
  .clirow{grid-template-columns:20px 1fr;gap:8px}
  .cbChips{-webkit-overflow-scrolling:touch}
@@ -557,13 +568,14 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 <div id="appRoot" style="display:none">
 <aside class="rail">
  <div class="brand"><div class="dot"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="16.5" r="2.4" fill="var(--accent)"></circle><path d="M6.4 12.2a7 7 0 0 1 5.4 5.4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"></path><path d="M6.1 7.9a11.4 11.4 0 0 1 10 10" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" opacity=".6"></path></svg></div><div><b>Televidentes</b><br><span>Soporte · Base de conocimiento</span></div></div>
+ <button type="button" class="railToggle" id="railToggle" title="Ocultar/mostrar menú" aria-label="Ocultar o mostrar el menú lateral"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"></path></svg></button>
  <nav class="nav" id="nav">
-  <a data-v="panel" class="on"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg></span> Panel</a>
-  <a data-v="matriz"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="9" y1="10" x2="9" y2="20"></line></svg></span> Matriz N1 <span class="cnt" id="c-matriz">0</span></a>
-  <a data-v="tickets"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8Z"></path><line x1="10" y1="7" x2="10" y2="17" stroke-dasharray="2 2"></line></svg></span> Tickets <span class="cnt" id="c-tickets">0</span></a>
-  <a data-v="clientes"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"></circle><path d="M3.5 19c.6-3.2 2.9-5 5.5-5s4.9 1.8 5.5 5"></path><circle cx="17" cy="8.5" r="2.4"></circle><path d="M15.2 14.3c2.2.4 3.7 1.9 4.2 4.7"></path></svg></span> Clientes <span class="cnt" id="c-clientes">0</span></a>
-  <a data-v="telematica"><span class="ic"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2.2"></rect><line x1="7" y1="17.5" x2="17" y2="17.5"></line></svg></span> Telemática <span class="cnt" id="c-telematica">0</span></a>
-  <a data-v="config"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"></circle><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l1.9-1.5-2-3.4-2.3.9a7.6 7.6 0 0 0-2.6-1.5L14 2.4h-4l-.4 2.6a7.6 7.6 0 0 0-2.6 1.5l-2.3-.9-2 3.4L4.6 10.5a7.6 7.6 0 0 0 0 3L2.7 15l2 3.4 2.3-.9a7.6 7.6 0 0 0 2.6 1.5l.4 2.6h4l.4-2.6a7.6 7.6 0 0 0 2.6-1.5l2.3.9 2-3.4-1.9-1.5Z"></path></svg></span> Configuración</a>
+  <a data-v="panel" href="#panel" class="on" title="Panel"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg></span> <span class="lbl">Panel</span></a>
+  <a data-v="matriz" href="#matriz" title="Matriz N1"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="9" y1="10" x2="9" y2="20"></line></svg></span> <span class="lbl">Matriz N1</span> <span class="cnt" id="c-matriz">0</span></a>
+  <a data-v="tickets" href="#tickets" title="Tickets"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8Z"></path><line x1="10" y1="7" x2="10" y2="17" stroke-dasharray="2 2"></line></svg></span> <span class="lbl">Tickets</span> <span class="cnt" id="c-tickets">0</span></a>
+  <a data-v="clientes" href="#clientes" title="Clientes"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"></circle><path d="M3.5 19c.6-3.2 2.9-5 5.5-5s4.9 1.8 5.5 5"></path><circle cx="17" cy="8.5" r="2.4"></circle><path d="M15.2 14.3c2.2.4 3.7 1.9 4.2 4.7"></path></svg></span> <span class="lbl">Clientes</span> <span class="cnt" id="c-clientes">0</span></a>
+  <a data-v="telematica" href="#telematica" title="Telemática"><span class="ic"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2.2"></rect><line x1="7" y1="17.5" x2="17" y2="17.5"></line></svg></span> <span class="lbl">Telemática</span> <span class="cnt" id="c-telematica">0</span></a>
+  <a data-v="config" href="#config" title="Configuración"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"></circle><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l1.9-1.5-2-3.4-2.3.9a7.6 7.6 0 0 0-2.6-1.5L14 2.4h-4l-.4 2.6a7.6 7.6 0 0 0-2.6 1.5l-2.3-.9-2 3.4L4.6 10.5a7.6 7.6 0 0 0 0 3L2.7 15l2 3.4 2.3-.9a7.6 7.6 0 0 0 2.6 1.5l.4 2.6h4l.4-2.6a7.6 7.6 0 0 0 2.6-1.5l2.3.9 2-3.4-1.9-1.5Z"></path></svg></span> <span class="lbl">Configuración</span></a>
  </nav>
  <div class="railfoot">Información exclusiva de Telemática · Cesetti<br><a id="btnLogout">Cerrar sesión</a></div>
 </aside>
@@ -3480,6 +3492,7 @@ document.getElementById('btnCsv').onclick=()=>{ const h=['key','cliente','tipo',
  dl('tickets_cmq.csv','﻿'+rows.join('\n'),'text/csv'); };
 function dl(name,content,type){ const b=new Blob([content],{type}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u;a.download=name;a.click(); setTimeout(()=>URL.revokeObjectURL(u),1000); }
 
+const NAV_VIEWS=['panel','matriz','tickets','clientes','telematica','config'];
 function _navToImpl(v){ document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v)); document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v)); const cb=document.getElementById('clientbar'); if(cb)cb.style.display=(v==='panel'||v==='tickets')?'':'none'; const m=document.querySelector('.main'); if(m&&m.scrollTo)m.scrollTo({top:0,behavior:'smooth'}); }
 function curViewId(){ const el=document.querySelector('.view.on'); return el?el.id.replace('v-',''):null; }
 // historial del navegador: cada cambio de pestaña (directo o vía un drill-down que ya usa navTo)
@@ -3493,7 +3506,21 @@ window.addEventListener('popstate',(e)=>{
  const v=(e.state&&e.state.v)||(location.hash?location.hash.slice(1):'panel');
  if(document.startViewTransition){ document.startViewTransition(()=>_navToImpl(v)); } else { _navToImpl(v); }
 });
-document.getElementById('nav').addEventListener('click',e=>{const a=e.target.closest('a');if(a)navTo(a.dataset.v);});
+document.getElementById('nav').addEventListener('click',e=>{
+ const a=e.target.closest('a[data-v]'); if(!a) return;
+ if(e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey) return; // dejar que el navegador abra en pestaña nueva/ventana
+ e.preventDefault(); navTo(a.dataset.v);
+});
+let railCollapsed=false; try{ railCollapsed=localStorage.getItem('cmq_railcollapsed')==='1'; }catch(e){}
+function applyRailCollapsed(){
+ const rail=document.querySelector('.rail'), btn=document.getElementById('railToggle');
+ if(!rail||!btn) return;
+ rail.classList.toggle('collapsed',railCollapsed);
+ btn.setAttribute('aria-expanded',String(!railCollapsed));
+ btn.title=railCollapsed?'Mostrar menú':'Ocultar menú';
+}
+applyRailCollapsed();
+document.getElementById('railToggle').onclick=()=>{ railCollapsed=!railCollapsed; try{localStorage.setItem('cmq_railcollapsed',railCollapsed?'1':'0');}catch(e){} applyRailCollapsed(); };
 let deb; document.getElementById('q').addEventListener('input',()=>{ clearTimeout(deb); deb=setTimeout(()=>{ const cur=document.querySelector('.nav a.on').dataset.v; shown=PAGE; refresh(); if(cur!=='tickets'&&cur!=='matriz'&&qv())navTo('tickets'); },170); });
 document.getElementById('fSort').addEventListener('change',()=>{shown=PAGE;applyTickets();});
 document.getElementById('btnClearFilters').onclick=()=>{ clearFilters(); shown=PAGE; refresh(); };
@@ -3541,7 +3568,10 @@ function showApp(email){
  document.getElementById('loginScreen').style.display='none';
  document.getElementById('appRoot').style.display='';
  if(!appBooted){ appBooted=true; load(); DATA.forEach(prep); rebuildAll(); pullState();
-  const initV=curViewId()||'panel'; history.replaceState({v:initV},'','#'+initV);
+  const hashV=location.hash?location.hash.slice(1):'';
+  const initV=NAV_VIEWS.includes(hashV)?hashV:(curViewId()||'panel');
+  if(initV!==curViewId()) _navToImpl(initV);
+  history.replaceState({v:initV},'','#'+initV);
   autoFetchAbiertosOnLogin();
  }
 }
