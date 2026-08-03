@@ -1284,6 +1284,10 @@ function panelTeleBarsHtml(rows){
 // 4 filtros cruzados (mismo patrón msel de Tickets/Telemática) + rango de fecha + selector de qué
 // dimensión graficar. Clic en una barra alterna esa opción como filtro de su propia dimensión.
 let panelTreeCat=new Set(), panelTreeSub=new Set(), panelTreeCli=new Set(), panelTreeResp=new Set(), panelTreeRange='', panelTreeMselOpenKey='', panelTeleTreeDim='categoria';
+// Rango específico (Desde/Hasta, fechas exactas) — convive con el desplegable de rangos relativos
+// de arriba (Último mes, etc.) pero es excluyente con él: elegir uno limpia el otro, para no tener
+// dos definiciones de "rango" activas a la vez.
+let panelTreeDesde='', panelTreeHasta='';
 const PANEL_TREE_DIMS2={
  categoria:{label:'Categoría',get:t=>categoriaOf(t.tipo)},
  sub:{label:'Sub categoría',get:t=>t.tipo||'—'},
@@ -1293,8 +1297,17 @@ const PANEL_TREE_DIMS2={
 const PANEL_TREE_RANGE_OPTS=[['','Todos'],['dia','Último día'],['semana','Última semana'],['mes','Último mes'],['trimestre','Último trimestre'],['semestre','Último semestre'],['anio','Último año']];
 function panelTreeSets(){ return {categoria:panelTreeCat, sub:panelTreeSub, cliente:panelTreeCli, responsable:panelTreeResp}; }
 function panelTreeClear(){ panelTreeCat.clear(); panelTreeSub.clear(); panelTreeCli.clear(); panelTreeResp.clear(); }
-function panelTreeRangeStart(){
- if(!panelTreeRange) return null;
+function panelTreeRangeBounds(){
+ if(panelTreeDesde||panelTreeHasta){
+  // Date.parse de un string "YYYY-MM-DD" puro (sin hora) siempre lo interpreta en UTC, igual que
+  // parseDate() hace con t.fecha — hay que anclar los dos bordes con ese mismo criterio, si no,
+  // en huso horario negativo (ej. Argentina) el primer día del rango queda excluido por unas horas.
+  return {
+   start:panelTreeDesde?Date.parse(panelTreeDesde):null,
+   end:panelTreeHasta?Date.parse(panelTreeHasta+'T23:59:59Z'):null,
+  };
+ }
+ if(!panelTreeRange) return {start:null,end:null};
  const d=new Date();
  if(panelTreeRange==='dia') d.setDate(d.getDate()-1);
  else if(panelTreeRange==='semana') d.setDate(d.getDate()-7);
@@ -1302,12 +1315,12 @@ function panelTreeRangeStart(){
  else if(panelTreeRange==='trimestre') d.setMonth(d.getMonth()-3);
  else if(panelTreeRange==='semestre') d.setMonth(d.getMonth()-6);
  else if(panelTreeRange==='anio') d.setFullYear(d.getFullYear()-1);
- return d.getTime();
+ return {start:d.getTime(),end:null};
 }
 function panelTreeMatch(t,skip){
  const sets=panelTreeSets();
- const start=panelTreeRangeStart();
- if(start){ const ts=parseDate(t.fecha); if(!ts||ts<start) return false; }
+ const {start,end}=panelTreeRangeBounds();
+ if(start||end){ const ts=parseDate(t.fecha); if(!ts) return false; if(start&&ts<start) return false; if(end&&ts>end) return false; }
  return Object.keys(PANEL_TREE_DIMS2).every(k=>{
   if(skip===k) return true;
   const sel=sets[k]; if(sel.size===0) return true;
@@ -1320,8 +1333,10 @@ function panelTreeFacet(list,dim){
  return m;
 }
 window.setPanelTreeDim=(d)=>{ panelTeleTreeDim=d; renderPanelTele(); };
-window.setPanelTreeRange=(v)=>{ panelTreeRange=v; renderPanelTele(); };
-window.panelTreeClearBtn=()=>{ panelTreeClear(); panelTreeRange=''; renderPanelTele(); };
+window.setPanelTreeRange=(v)=>{ panelTreeRange=v; if(v){panelTreeDesde='';panelTreeHasta='';} renderPanelTele(); };
+window.setPanelTreeDesde=(v)=>{ panelTreeDesde=v; if(v)panelTreeRange=''; renderPanelTele(); };
+window.setPanelTreeHasta=(v)=>{ panelTreeHasta=v; if(v)panelTreeRange=''; renderPanelTele(); };
+window.panelTreeClearBtn=()=>{ panelTreeClear(); panelTreeRange=''; panelTreeDesde=''; panelTreeHasta=''; renderPanelTele(); };
 window.panelTreeBarClick=(val)=>{ const sel=panelTreeSets()[panelTeleTreeDim]; sel.has(val)?sel.delete(val):sel.add(val); renderPanelTele(); };
 function panelTreeChipsHtml(list){
  const sets=panelTreeSets();
@@ -1406,11 +1421,13 @@ function renderPanelTele(){
  const metric=PANEL_TELE_METRICS[panelTeleMetric]?panelTeleMetric:'asignado';
  const rows=st[PANEL_TELE_METRICS[metric].rowsKey[dim]]||[];
  const cliStats=teleClientStats(filtered);
- const anyPanelTreeFilter=panelTreeCat.size||panelTreeSub.size||panelTreeCli.size||panelTreeResp.size||panelTreeRange;
+ const anyPanelTreeFilter=panelTreeCat.size||panelTreeSub.size||panelTreeCli.size||panelTreeResp.size||panelTreeRange||panelTreeDesde||panelTreeHasta;
  box.innerHTML=`
   <div class="filtrow" style="align-items:center;flex-wrap:wrap;margin-bottom:14px">
    ${panelTreeChipsHtml(listScoped)}
    <select class="sel" onchange="setPanelTreeRange(this.value)">${PANEL_TREE_RANGE_OPTS.map(([v,l])=>`<option value="${v}" ${panelTreeRange===v?'selected':''}>${esc(l)}</option>`).join('')}</select>
+   <div style="display:flex;align-items:center;gap:6px"><span class="tinfo">Desde</span><input type="date" class="finput" style="max-width:150px" value="${esc(panelTreeDesde)}" max="${esc(panelTreeHasta||'')}" onchange="setPanelTreeDesde(this.value)"></div>
+   <div style="display:flex;align-items:center;gap:6px"><span class="tinfo">Hasta</span><input type="date" class="finput" style="max-width:150px" value="${esc(panelTreeHasta)}" min="${esc(panelTreeDesde||'')}" onchange="setPanelTreeHasta(this.value)"></div>
    <button class="btn sm" onclick="panelTreeClearBtn()" style="${anyPanelTreeFilter?'':'display:none'}">Limpiar filtros ✕</button>
   </div>
   <details class="card" data-pc="teleTarea"${panelCardClosed.has('teleTarea')?'':' open'}>
