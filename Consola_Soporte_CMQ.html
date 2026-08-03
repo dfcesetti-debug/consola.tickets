@@ -65,7 +65,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .rail.collapsed .brand b,.rail.collapsed .brand span,.rail.collapsed .railfoot,.rail.collapsed .nav a .lbl,.rail.collapsed .nav a .cnt{display:none}
 .rail.collapsed .brand{justify-content:center;padding:6px 0 16px}
 .rail.collapsed .nav a{justify-content:center;padding:11px}
-.railToggle{position:absolute;top:14px;right:-11px;width:22px;height:22px;border-radius:50%;background:var(--panel);border:1.5px solid var(--edge);color:var(--ink);display:grid;place-items:center;cursor:pointer;z-index:5;transition:background .18s var(--ease),transform .22s var(--ease),border-color .18s var(--ease)}
+.railToggle{position:absolute;top:14px;right:8px;width:24px;height:24px;border-radius:50%;background:var(--panel);border:1.5px solid var(--edge);color:var(--ink);display:grid;place-items:center;cursor:pointer;z-index:5;box-shadow:0 1px 4px rgba(0,0,0,.12);transition:background .18s var(--ease),transform .22s var(--ease),border-color .18s var(--ease)}
+.rail.collapsed .railToggle{right:50%;transform:translateX(50%)}
 .railToggle:hover{border-color:var(--accent);color:var(--accent)}
 .railToggle svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transition:transform .22s var(--ease)}
 .rail.collapsed .railToggle svg{transform:rotate(180deg)}
@@ -666,11 +667,12 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
    </div>
    <div id="clientesLista">
     <div class="kpis" id="kpisClientes"></div>
-    <div class="card"><div id="clientes"></div>
-     <div class="tools">
+    <div class="card">
+     <div class="tools" style="margin-top:0;margin-bottom:12px">
       <button class="btn" id="btnAddCli">+ Agregar cliente</button>
       <button class="btn primary" id="btnSaveCli">Guardar y re-etiquetar</button>
      </div>
+     <div id="clientes"></div>
     </div>
    </div>
    <div id="ejecFichas" style="display:none"></div>
@@ -733,6 +735,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
     <button id="btnCfgDatos" class="on" onclick="setCfgView('datos')">Conexión de datos</button>
     <button id="btnCfgApariencia" onclick="setCfgView('apariencia')">Apariencia</button>
     <button id="btnCfgPerfil" onclick="setCfgView('perfil')">Mi perfil</button>
+    <button id="btnCfgHistorial" onclick="setCfgView('historial')">Historial de cambios</button>
    </div>
 
    <div id="cfgDatos">
@@ -801,6 +804,17 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
      <span class="tinfo" id="perfSaved" style="margin-left:8px"></span>
     </div>
    </div>
+
+   <div id="cfgHistorial" style="display:none">
+    <p class="tinfo" style="margin:0 0 10px">Todos los cambios cargados en la Consola — fichas de clientes, tareas de Telemática y acciones de sistema (altas/bajas de clientes, vaciar/restablecer la base) — con quién los hizo y cuándo, para que cualquiera del equipo pueda auditarlos.</p>
+    <div class="filtrow" style="align-items:center;flex-wrap:wrap">
+     <div class="msel" id="mselHistTipo"><button type="button" class="mselBtn" id="mselHistTipoBtn">Tipo: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsHistTipo"></div></div>
+     <div class="msel" id="mselHistCli"><button type="button" class="mselBtn" id="mselHistCliBtn">Cliente: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsHistCli"></div></div>
+     <div class="msel" id="mselHistUser"><button type="button" class="mselBtn" id="mselHistUserBtn">Usuario: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsHistUser"></div></div>
+     <button class="btn sm" id="btnHistClearFilters" style="display:none">Limpiar filtros ✕</button>
+    </div>
+    <div class="card"><div class="lab" style="margin-top:0">Cambios registrados</div><div id="historialList"></div></div>
+   </div>
   </section>
 
  </div>
@@ -842,6 +856,7 @@ const EMPTY_ICONS={
  tickets:'<svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
  people:'<svg viewBox="0 0 24 24"><circle cx="8.2" cy="9" r="3.2"/><path d="M2.5 20c0-3.4 2.5-6 5.7-6s5.7 2.6 5.7 6"/><circle cx="17.3" cy="8.2" r="2.5"/><path d="M14.3 20c.2-2.6 1.9-4.7 4.1-5.3"/></svg>',
  phone:'<svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.3 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.9 21 3 13.1 3 3.9c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.3 1L6.6 10.8z"/></svg>',
+ clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>',
 };
 
 const DEFAULT_CLIENTS=[
@@ -857,7 +872,7 @@ function load(){ try{const s=localStorage.getItem(STORE); DATA=s?JSON.parse(s):A
  loadTele();
  loadImpl();
  try{OVERRIDES=JSON.parse(localStorage.getItem(OSTORE))||{};}catch(e){OVERRIDES={};}
- loadFichas(); loadProfiles(); }
+ loadFichas(); loadProfiles(); loadAudit(); }
 function persist(){ try{localStorage.setItem(STORE,JSON.stringify(DATA.map(({_blob,_cblob,_n,_d,_cli,...r})=>r)));}catch(e){} }
 function persistCli(){ try{localStorage.setItem(CSTORE,JSON.stringify(CLIENTS));localStorage.setItem(OSTORE,JSON.stringify(OVERRIDES));}catch(e){} }
 
@@ -905,6 +920,25 @@ const IMPLSTORE='kb_cmq_impl_v1';
 let IMPL={};
 function loadImpl(){ try{IMPL=JSON.parse(localStorage.getItem(IMPLSTORE))||{};}catch(e){IMPL={};} }
 function saveImpl(){ try{localStorage.setItem(IMPLSTORE,JSON.stringify(IMPL));}catch(e){} }
+// Historial de cambios global (v86): registra acciones a nivel sistema que no viven dentro de una
+// ficha o un ticket puntual (alta/baja de clientes, vaciar/restablecer la base) — para que cualquiera
+// de Configuración → Historial de cambios pueda ver qué se modificó, quién y cuándo, incluso después
+// de que el registro original (ej. un cliente eliminado) ya no exista. Se combina con los historiales
+// propios de fichas y tickets de Telemática al armar la vista unificada (ver allHistorialEntries()).
+const AUDITSTORE='kb_cmq_audit_v1';
+let AUDIT=[];
+function loadAudit(){ try{AUDIT=JSON.parse(localStorage.getItem(AUDITSTORE))||[];}catch(e){AUDIT=[];} }
+function saveAudit(){ try{localStorage.setItem(AUDITSTORE,JSON.stringify(AUDIT));}catch(e){} }
+function auditLog(area,resumen){
+ AUDIT.push({id:'g'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),ts:Date.now(),fecha:new Date().toLocaleString('es-AR'),usuario:sessionUserName()||'Sin identificar',area,resumen});
+ if(AUDIT.length>500) AUDIT=AUDIT.slice(-500);
+ saveAudit(); pushState();
+}
+// texto de confirmación único para todas las acciones de eliminar/borrar de la app (pedido explícito:
+// que la ventana emergente siempre pregunte "¿Estás seguro...?" antes de un borrado real e irreversible).
+function confirmDelete(detalle,extra){
+ return confirm('¿Estás seguro de que querés eliminar '+detalle+'?'+(extra?' '+extra:''));
+}
 function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 /* Clasifica la fecha de un ticket de Telemática por día de semana — entre semana, sábado
    o domingo (posible hora extra). Ya no se distingue horario laboral vs excedido de
@@ -1341,7 +1375,7 @@ function renderKPIsPanelTele(list,st){
  const d=panelTeleKpis(list);
  const cards=[];
  const kAttr=k=>`class="kpi click${panelTeleKpiSel===k?' focal':''}" data-kk="${k}" role="button" tabindex="0" aria-pressed="${panelTeleKpiSel===k}" onclick="selPanelTeleKpi('${k}')"`;
- cards.push(`<div ${kAttr('total')} title="Ver tiempos por tarea abajo"><div class="l">${KPI_IC.clock}Tiempo total</div><div class="n">${d.totalMs?fmtDur(d.totalMs):'—'}</div><div class="kfoot">${d.nTareas} ${d.nTareas===1?'tarea':'tareas'}</div></div>`);
+ cards.push(`<div ${kAttr('total')} title="Ver tiempos por tarea abajo"><div class="l">${KPI_IC.clock}Tiempo total</div><div class="n">${d.totalMs?fmtHoursTotal(d.totalMs):'—'}</div><div class="kfoot">${d.nTareas} ${d.nTareas===1?'tarea':'tareas'}</div></div>`);
  const trN=trendNeutral(d.curW,d.prevW);
  cards.push(`<div ${kAttr('semanal')} title="Ver promedio semanal por tarea abajo"><div class="l">${KPI_IC.calendar}Promedio semanal</div><div class="n">${st.promSemanalMs==null?'—':fmtDur(st.promSemanalMs)}</div>${trN?`<div class="deltaRow">${trN}<span>vs. semana previa</span></div>`:''}${sparkline(d.spark)}</div>`);
  cards.push(`<div ${kAttr('cli')} title="Ver tiempo total por cliente abajo"><div class="l">${KPI_IC.cli}Cliente con más carga</div><div class="n">${d.topCli?d.topCli.pct+'<span class="u">%</span>':'—'}</div><div class="kfoot">${d.topCli?esc(d.topCli.name):'sin datos'}</div></div>`);
@@ -1658,6 +1692,10 @@ const fmtD=x=>x==null?'—':x<1?(Math.round(x*24)+'<span class="u">h</span>'):(M
 function fmtDur(ms){ if(ms==null)return '—'; let s=Math.round(ms/1000); const neg=s<0; s=Math.abs(s);
  const d=Math.floor(s/86400); s-=d*86400; const h=Math.floor(s/3600); s-=h*3600; const m=Math.floor(s/60);
  const out= d?(d+'d '+h+'h') : h?(h+'h '+m+'m') : (m+'m'); return (neg?'-':'')+out; }
+// cantidad de horas totales en un solo número (ej. "36.5h") en vez del formato "1d 12h" de fmtDur —
+// para la tarjeta "Tiempo total" de Telemática, donde interesa el total de horas cargadas, no el
+// desglose en días. Redondea a 2 decimales (las cargas se hacen en pasos de 0.25h).
+function fmtHoursTotal(ms){ if(ms==null)return '—'; const h=Math.round(ms/3600000*100)/100; return (h%1===0?h.toFixed(0):String(h))+'h'; }
 function slaChip(lbl,sname){ if(!sname||sname.elapsed_ms==null)return ''; const br=sname.breached; return `<span class="tag" title="${esc(sname.name||lbl)}" style="${br?'background:var(--warnbg);color:var(--cli);font-weight:700':''}">${lbl}: ${fmtDur(sname.elapsed_ms)}${br?' ⚠':''}</span>`; }
 function slaLine(sla){ if(!sla)return ''; const c=[slaChip('1ª resp.',sla.first_response),slaChip('Espera cliente',sla.waiting_customer),slaChip('Resolución',sla.resolution)].filter(Boolean).join(''); return c?`<div class="tmeta" style="margin-top:2px">${c}</div>`:''; }
 /* Rango de fechas para "Tiempos de respuesta y resolución" en Panel — mismas opciones que
@@ -2057,7 +2095,7 @@ function migrateFicha(raw,name){
   nf.datos.ref_comercial=raw.ref_comercial||'';
   nf.datos.medios=raw.medios||[];
   nf.datos.notas=raw.notas||'';
-  if(nf.actualizado) nf.historial.push({fecha:nf.actualizado,usuario:'',resumen:'Ficha migrada al formato técnico histórico (v2).'});
+  if(nf.actualizado) nf.historial.push({fecha:nf.actualizado,ts:Date.parse(nf.actualizado)||0,usuario:'',resumen:'Ficha migrada al formato técnico histórico (v2).'});
  }
  return nf;
 }
@@ -2079,11 +2117,14 @@ window.setCfgView=v=>{
  document.getElementById('btnCfgDatos').classList.toggle('on',v==='datos');
  document.getElementById('btnCfgApariencia').classList.toggle('on',v==='apariencia');
  document.getElementById('btnCfgPerfil').classList.toggle('on',v==='perfil');
+ document.getElementById('btnCfgHistorial').classList.toggle('on',v==='historial');
  document.getElementById('cfgDatos').style.display=v==='datos'?'':'none';
  document.getElementById('cfgApariencia').style.display=v==='apariencia'?'':'none';
  document.getElementById('cfgPerfil').style.display=v==='perfil'?'':'none';
+ document.getElementById('cfgHistorial').style.display=v==='historial'?'':'none';
  if(v==='apariencia') renderApariencia();
  if(v==='perfil') renderPerfil();
+ if(v==='historial') renderHistorialCambios();
 };
 // borradores en memoria (no persistidos) para fichas nuevas todavía no guardadas — evita que cada re-render (ej. "+ Agregar fila") las reinicie en blanco, sin ensuciar FICHAS/Cartera/KPIs antes de Guardar
 let _newFichaDrafts={};
@@ -2178,6 +2219,7 @@ function renderImpl(){
  box.querySelectorAll('.implQuitar').forEach(b=>b.onclick=()=>{
   const c=b.dataset.cli;
   if(!confirm('¿Quitar a '+c+' del módulo de implementación? (No borra sus tareas de Telemática.)'))return;
+  auditLog('Implementación','"'+c+'" quitado del módulo de implementación');
   delete IMPL[c]; saveImpl(); pushState(); renderImpl();
  });
  box.querySelectorAll('.implInicio').forEach(inp=>inp.onchange=e=>{
@@ -2470,7 +2512,7 @@ function renderFichas(){
   btn.onclick=()=>{ const sec=btn.dataset.sec; const secDef=CONFIG_SECTIONS.find(s=>s.key===sec); const row={}; secDef.fields.forEach(x=>row[x.k]=''); cfg[sec].push(row); ejecOpenSections.add(sec); renderFichas(); };
  });
  box.querySelectorAll('.cfgDelRow').forEach(btn=>{
-  btn.onclick=()=>{ const sec=btn.dataset.sec, ri=+btn.dataset.ri; cfg[sec].splice(ri,1); ejecOpenSections.add(sec); renderFichas(); };
+  btn.onclick=()=>{ if(!confirmDelete('esta fila'))return; const sec=btn.dataset.sec, ri=+btn.dataset.ri; cfg[sec].splice(ri,1); ejecOpenSections.add(sec); renderFichas(); };
  });
  box.querySelectorAll('.cfgSec').forEach(det=>{
   det.addEventListener('toggle',()=>{ if(det.open)ejecOpenSections.add(det.dataset.sec); else ejecOpenSections.delete(det.dataset.sec); });
@@ -2482,7 +2524,7 @@ function renderFichas(){
   btn.onclick=()=>{ const sec=btn.dataset.sec; const secDef=REF_SECTIONS.find(s=>s.key===sec); const row={}; secDef.fields.forEach(x=>row[x.k]=''); d[sec].push(row); renderFichas(); };
  });
  box.querySelectorAll('.refDelRow').forEach(btn=>{
-  btn.onclick=()=>{ const sec=btn.dataset.sec, ri=+btn.dataset.ri; d[sec].splice(ri,1); renderFichas(); };
+  btn.onclick=()=>{ if(!confirmDelete('este referente'))return; const sec=btn.dataset.sec, ri=+btn.dataset.ri; d[sec].splice(ri,1); renderFichas(); };
  });
  // tarjetas desplegables de la ficha: recordar cuáles cerró el usuario entre re-renders
  box.querySelectorAll('details[data-fc]').forEach(det=>{
@@ -2514,7 +2556,7 @@ function renderFichas(){
   const path=gtPath(b.dataset.gdel); if(!path.length)return;
   const idx=path.pop(), parent=gtFind(gtRoot,path); if(!parent||!parent.k)return;
   const node=parent.k[idx];
-  if(!confirm('¿Eliminar el grupo "'+node.n+'"'+((node.k||[]).length?' y sus '+node.k.length+' subgrupos':'')+'?'))return;
+  if(!confirmDelete('el grupo "'+node.n+'"'+((node.k||[]).length?' y sus '+node.k.length+' subgrupos':'')))return;
   parent.k.splice(idx,1);
   gtreeLog(ejecCliente,'Grupo "'+node.n+'" eliminado'+((node.k||[]).length?' (con '+node.k.length+' subgrupos)':''));
   renderFichas();
@@ -2553,7 +2595,7 @@ function renderFichas(){
   const gtDetail=_gtreePending[ejecCliente]||[];
   if(gtDetail.length){ changes=changes.filter(c=>!c.includes('Árbol de grupos')); changes=changes.concat(gtDetail); }
   delete _gtreePending[ejecCliente];
-  f.historial.push({fecha:f.actualizado,usuario:usuario||'Sin identificar',resumen:changes.length?changes.join(' · '):'Sin cambios detectados'});
+  f.historial.push({fecha:f.actualizado,ts:Date.parse(f.actualizado)||Date.now(),usuario:usuario||'Sin identificar',resumen:changes.length?changes.join(' · '):'Sin cambios detectados'});
   FICHAS[ejecCliente]=f;
   delete _newFichaDrafts[ejecCliente];
   saveFichas(); pushState();
@@ -2561,7 +2603,8 @@ function renderFichas(){
   const note=document.getElementById('fichaSavedNote'); if(note){ note.textContent='✔ Guardado'; setTimeout(()=>{ if(note.isConnected) note.textContent=''; },2000); }
  };
  document.getElementById('btnEliminarFicha').onclick=()=>{
-  if(!confirm('¿Eliminar la ficha de '+ejecCliente+'?'))return;
+  if(!confirmDelete('la ficha de '+ejecCliente,'Se pierde toda la información y el historial cargados.'))return;
+  auditLog('Fichas','Ficha de "'+ejecCliente+'" eliminada');
   delete FICHAS[ejecCliente]; delete _newFichaDrafts[ejecCliente]; saveFichas(); pushState();
   ejecCliente='';
   renderEjecutivos();
@@ -2697,7 +2740,7 @@ function applyCarteraSuggestion(pais,logistica){
  f.datos.pais=pais||''; f.datos.tipo_logistica=logistica||'';
  SUGGEST_KEYS.forEach(k=>{ if((sug[k]||[]).length) f.configuracion[k]=sug[k].map(r=>({...r})); });
  f.actualizado=new Date().toISOString();
- f.historial.push({fecha:f.actualizado,usuario:getLastUser()||'Sin identificar',resumen:`Cliente creado a partir de la sugerencia de cartera (${[pais,logistica].filter(Boolean).join(' · ')||'sin filtro'})`});
+ f.historial.push({fecha:f.actualizado,ts:Date.parse(f.actualizado)||Date.now(),usuario:getLastUser()||'Sin identificar',resumen:`Cliente creado a partir de la sugerencia de cartera (${[pais,logistica].filter(Boolean).join(' · ')||'sin filtro'})`});
  FICHAS[name]=f;
  saveFichas(); pushState();
  retag();
@@ -3100,7 +3143,9 @@ function renderTelematica(){
   saveTele(); pushState(); renderTelematica(); refresh();
  });
  box.querySelectorAll('[data-tele-del]').forEach(b=>b.onclick=()=>{
-  if(!confirm('¿Eliminar este ticket de Referente Telemática?'))return;
+  const t=TELE.find(x=>x.id===b.dataset.teleDel); if(!t)return;
+  if(!confirmDelete('este ticket de Referente Telemática'))return;
+  auditLog('Telemática','Ticket eliminado: '+(t.cliente||'—')+' · '+(t.tipo||'—')+' · '+(t.fecha||'—'));
   TELE=TELE.filter(x=>x.id!==b.dataset.teleDel); saveTele(); pushState(); renderTelematica(); refresh();
  });
 }
@@ -3124,7 +3169,7 @@ document.getElementById('btnTeleGuardar').onclick=()=>{
  if(!nuevos.length){ alert('Completá al menos una tarea con Cliente.'); return; }
  nuevos.forEach(t=>{
   TELE.push({id:'t'+Date.now().toString(36)+Math.random().toString(36).slice(2,7), cliente:t.cliente, tipo:t.tipo, fecha, horas:t.horas, estado:t.estado, responsable:t.responsable, detalle:t.detalle, creado:new Date().toISOString(),
-   historial:[{fecha:new Date().toLocaleString('es-AR'),usuario:t.responsable||'Sin identificar',resumen:'Ticket creado'}]});
+   historial:[{fecha:new Date().toLocaleString('es-AR'),ts:Date.now(),usuario:t.responsable||'Sin identificar',resumen:'Ticket creado'}]});
  });
  saveTele(); pushState();
  document.getElementById('teleRows').innerHTML='';
@@ -3186,15 +3231,24 @@ document.getElementById('teleModalSave').onclick=()=>{
  setLastUser(usuario);
  const changes=diffTele(teleModalBefore,t);
  t.historial=t.historial||[];
- if(changes.length) t.historial.push({fecha:new Date().toLocaleString('es-AR'),usuario:usuario||'Sin identificar',resumen:changes.join(' · ')});
+ if(changes.length) t.historial.push({fecha:new Date().toLocaleString('es-AR'),ts:Date.now(),usuario:usuario||'Sin identificar',resumen:changes.join(' · ')});
  saveTele(); pushState();
  closeTeleModal();
  renderTelematica(); refresh();
 };
 document.getElementById('teleModalClose').onclick=closeTeleModal;
 document.getElementById('teleModal').addEventListener('click',e=>{ if(e.target.id==='teleModal') closeTeleModal(); });
-window.delCli=(idx)=>{ if(confirm('¿Quitar este cliente? Sus tickets quedarán sin asignar (salvo reasignación manual).')){ CLIENTS.splice(idx,1); renderClientes(); } };
-document.getElementById('btnAddCli').onclick=()=>{ CLIENTS.push({name:'Nuevo cliente',color:PALETTE[CLIENTS.length%PALETTE.length],prefix:'',keywords:[],origen:'jira'}); renderClientes(); };
+window.delCli=(idx)=>{
+ const c=CLIENTS[idx]; if(!c)return;
+ if(!confirmDelete('el cliente "'+c.name+'"','Sus tickets quedarán sin asignar (salvo reasignación manual).'))return;
+ auditLog('Clientes','Cliente eliminado: "'+c.name+'"');
+ CLIENTS.splice(idx,1); renderClientes();
+};
+document.getElementById('btnAddCli').onclick=()=>{
+ CLIENTS.push({name:'Nuevo cliente',color:PALETTE[CLIENTS.length%PALETTE.length],prefix:'',keywords:[],origen:'jira'});
+ auditLog('Clientes','Cliente agregado: "Nuevo cliente"');
+ renderClientes();
+};
 document.getElementById('btnSaveCli').onclick=()=>{ CLIENTS=CLIENTS.filter(c=>c.name.trim()); persistCli(); retag(); rebuildAll(); pushState(); log('✔ Clientes guardados y re-etiquetados (sincronizado con el servidor).'); };
 
 /* upload */
@@ -3248,11 +3302,69 @@ document.getElementById('btnSavePerfil').onclick=()=>{
  const s=document.getElementById('perfSaved'); s.textContent='✔ Guardado'; s.classList.remove('flashIn'); void s.offsetWidth; s.classList.add('flashIn');
  setTimeout(()=>{s.textContent=''; s.classList.remove('flashIn');},2000);
 };
+// Historial de cambios global (v86): combina el historial propio de cada ficha y cada ticket de
+// Telemática con el registro de acciones de sistema (AUDIT) en una sola lista cronológica, para que
+// cualquiera de Configuración → Historial de cambios vea qué se modificó, quién y cuándo.
+let histFilterTipo=new Set(), histFilterCli=new Set(), histFilterUser=new Set();
+function histClearFilters(){ histFilterTipo.clear(); histFilterCli.clear(); histFilterUser.clear(); }
+// las fichas guardan f.actualizado como ISO crudo (new Date().toISOString()), mientras que AUDIT y
+// los tickets de Telemática ya guardan la fecha formateada en es-AR — se pareja acá solo para esta
+// vista combinada, sin tocar el dato original que sigue usando el resto de la app.
+function histFmtFecha(fecha){
+ if(!fecha) return '—';
+ if(/^\d{4}-\d{2}-\d{2}T/.test(fecha)){ const d=new Date(fecha); if(!isNaN(d)) return d.toLocaleString('es-AR'); }
+ return fecha;
+}
+function allHistorialEntries(){
+ const out=[];
+ AUDIT.forEach(a=>out.push({ts:a.ts||0,fecha:histFmtFecha(a.fecha),usuario:a.usuario||'Sin identificar',tipo:'Sistema',cliente:'',resumen:(a.area?('['+a.area+'] '):'')+a.resumen}));
+ Object.keys(FICHAS).forEach(cli=>{ (FICHAS[cli].historial||[]).forEach(h=>out.push({ts:h.ts||0,fecha:histFmtFecha(h.fecha),usuario:h.usuario||'Sin identificar',tipo:'Ficha',cliente:cli,resumen:h.resumen})); });
+ TELE.forEach(t=>{ (t.historial||[]).forEach(h=>out.push({ts:h.ts||0,fecha:histFmtFecha(h.fecha),usuario:h.usuario||'Sin identificar',tipo:'Telemática',cliente:t.cliente||'—',resumen:h.resumen})); });
+ return out;
+}
+function histMatch(e,skip){
+ return (skip==='tipo'||!histFilterTipo.size||histFilterTipo.has(e.tipo))
+   &&(skip==='cliente'||!histFilterCli.size||histFilterCli.has(e.cliente||'—'))
+   &&(skip==='usuario'||!histFilterUser.size||histFilterUser.has(e.usuario));
+}
+function histFiltered(){ return allHistorialEntries().filter(e=>histMatch(e,null)); }
+function histFacetCounts(dim,skip){
+ const counts={}; allHistorialEntries().forEach(e=>{ if(histMatch(e,skip)){ const v=(dim==='tipo'?e.tipo:dim==='cliente'?(e.cliente||'—'):e.usuario)||'—'; counts[v]=(counts[v]||0)+1; } }); return counts;
+}
+function histChipRow(elId,btnId,label,dim,sel,skip){
+ const counts=histFacetCounts(dim,skip); const vals=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);
+ const total=Object.values(counts).reduce((a,b)=>a+b,0);
+ const box=document.getElementById(elId); const btn=document.getElementById(btnId); if(!box||!btn)return;
+ box.innerHTML=`<div class="mselItem allOpt${sel.size===0?' on':''}" data-v="">Todos <span class="c">${total}</span><span class="chk">✓</span></div>`+
+  vals.map(v=>`<div class="mselItem${sel.has(v)?' on':''}" data-v="${esc(v)}">${esc(v)} <span class="c">${counts[v]}</span><span class="chk">✓</span></div>`).join('');
+ box.querySelectorAll('.mselItem').forEach(it=>it.onclick=(e)=>{ e.stopPropagation();
+  const v=it.dataset.v; if(v===''){sel.clear();} else { sel.has(v)?sel.delete(v):sel.add(v); } renderHistorialCambios();
+ });
+ btn.innerHTML=(sel.size?(label+': '+[...sel].slice(0,2).map(esc).join(', ')+(sel.size>2?(' +'+(sel.size-2)):'')):(label+': Todos'))+' <span class="arrow">▾</span>';
+}
+function renderHistorialCambios(){
+ const box=document.getElementById('historialList'); if(!box)return;
+ histChipRow('chipsHistTipo','mselHistTipoBtn','Tipo','tipo',histFilterTipo,'tipo');
+ histChipRow('chipsHistCli','mselHistCliBtn','Cliente','cliente',histFilterCli,'cliente');
+ histChipRow('chipsHistUser','mselHistUserBtn','Usuario','usuario',histFilterUser,'usuario');
+ const clearBtn=document.getElementById('btnHistClearFilters');
+ if(clearBtn) clearBtn.style.display=(histFilterTipo.size||histFilterCli.size||histFilterUser.size)?'':'none';
+ const sorted=histFiltered().sort((a,b)=>(b.ts||0)-(a.ts||0));
+ box.innerHTML=sorted.length?sorted.map(e=>`<div class="tk">
+   <div class="hd"><div><span class="kk">${esc(e.tipo)}</span>${e.cliente?`<div class="tt">${esc(e.cliente)}</div>`:''}</div><span class="tag">${esc(e.usuario)}</span></div>
+   <div class="tinfo"><b>Fecha:</b> ${esc(e.fecha||'—')}</div>
+   <div class="desc">${esc(e.resumen)}</div>
+  </div>`).join(''):`<div class="empty"><div class="big">${EMPTY_ICONS.clock}</div><p class="t">Todavía no hay cambios registrados</p><p class="s tinfo">Acá vas a ver las ediciones de fichas, tareas de Telemática y acciones de sistema a medida que se carguen.</p></div>`;
+}
+document.getElementById('mselHistTipoBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsHistTipo'); };
+document.getElementById('mselHistCliBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsHistCli'); };
+document.getElementById('mselHistUserBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsHistUser'); };
+document.getElementById('btnHistClearFilters').onclick=()=>{ histClearFilters(); renderHistorialCambios(); };
 async function pushState(){
  try{
   await fbWait();
   const {db,doc,setDoc}=window.__fb;
-  await setDoc(doc(db,'kb_state','main'),{overrides:OVERRIDES,clients:CLIENTS,fichas:FICHAS,tele:TELE,impl:IMPL,apiCfg:loadApiCfg(),perfiles:PROFILES,actualizado:new Date().toISOString()});
+  await setDoc(doc(db,'kb_state','main'),{overrides:OVERRIDES,clients:CLIENTS,fichas:FICHAS,tele:TELE,impl:IMPL,audit:AUDIT,apiCfg:loadApiCfg(),perfiles:PROFILES,actualizado:new Date().toISOString()});
  }catch(e){ console.error('Firebase (guardar):',e); }
 }
 async function pullState(){
@@ -3269,6 +3381,7 @@ async function pullState(){
   if(j&&Array.isArray(j.tele)){TELE=j.tele.map(migrateTeleItem);saveTele();renderTelematica();}
   if(j&&j.perfiles&&typeof j.perfiles==='object'){PROFILES=j.perfiles;saveProfiles();if(cfgView==='perfil')renderPerfil();}
   if(j&&j.impl&&typeof j.impl==='object'){IMPL=j.impl;saveImpl();if(ejecView==='impl')renderImpl();}
+  if(j&&Array.isArray(j.audit)){AUDIT=j.audit;saveAudit();if(cfgView==='historial')renderHistorialCambios();}
   if(j&&j.apiCfg&&typeof j.apiCfg==='object'&&j.apiCfg.url&&!loadApiCfg().url&&!apiCfgTouched){
    saveApiCfg(j.apiCfg);
    const eu=document.getElementById('apiUrl');
@@ -3531,9 +3644,9 @@ document.getElementById('railToggle').onclick=()=>{ railCollapsed=!railCollapsed
 let deb; document.getElementById('q').addEventListener('input',()=>{ clearTimeout(deb); deb=setTimeout(()=>{ const cur=document.querySelector('.nav a.on').dataset.v; shown=PAGE; refresh(); if(cur!=='tickets'&&cur!=='matriz'&&qv())navTo('tickets'); },170); });
 document.getElementById('fSort').addEventListener('change',()=>{shown=PAGE;applyTickets();});
 document.getElementById('btnClearFilters').onclick=()=>{ clearFilters(); shown=PAGE; refresh(); };
-document.getElementById('btnClearData').onclick=()=>{ if(confirm('¿Vaciar toda la base? Vas a empezar de cero (después traé datos de la API o subí un archivo).')){ DATA=[]; persist(); clearFilters(); scopeCli=''; rebuildAll(); log('Base vaciada.','w'); } };
+document.getElementById('btnClearData').onclick=()=>{ if(confirmDelete('toda la base de tickets','Vas a empezar de cero (después traé datos de la API o subí un archivo).')){ DATA=[]; persist(); clearFilters(); scopeCli=''; rebuildAll(); auditLog('Sistema','Base de tickets vaciada.'); log('Base vaciada.','w'); } };
 document.addEventListener('keydown',e=>{ if(e.key==='/'&&document.activeElement.tagName!=='INPUT'&&document.activeElement.tagName!=='SELECT'&&document.activeElement.tagName!=='TEXTAREA'){e.preventDefault();document.getElementById('q').focus();} });
-document.getElementById('btnReset').onclick=()=>{ if(confirm('¿Restablecer a la base original? Se pierden las cargas y reasignaciones de este navegador (los clientes configurados se mantienen).')){ localStorage.removeItem(STORE); OVERRIDES={}; persistCli(); DATA=APP.seed.slice(); DATA.forEach(prep); persist(); scopeCli=''; rebuildAll(); log('↺ Base restablecida.','w'); } };
+document.getElementById('btnReset').onclick=()=>{ if(confirm('¿Restablecer a la base original? Se pierden las cargas y reasignaciones de este navegador (los clientes configurados se mantienen).')){ localStorage.removeItem(STORE); OVERRIDES={}; persistCli(); DATA=APP.seed.slice(); DATA.forEach(prep); persist(); scopeCli=''; rebuildAll(); auditLog('Sistema','Base restablecida al estado original.'); log('↺ Base restablecida.','w'); } };
 
 /* modo claro/oscuro — sigue la preferencia del sistema por defecto; el botón fuerza una elección manual que se guarda en este navegador */
 const THEME_KEY='kb_cmq_theme_v1';
