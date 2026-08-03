@@ -994,9 +994,9 @@ function weeklyAvgFromItems(items){
  const semanas=new Set(items.map(t=>isoWeekKey(t.fecha)).filter(Boolean)).size||1;
  return totalMs/semanas;
 }
-function teleClientStats(){
+function teleClientStats(list){
  const byCli={};
- TELE.forEach(t=>{ (byCli[t.cliente]=byCli[t.cliente]||[]).push(t); });
+ (list||TELE).forEach(t=>{ (byCli[t.cliente]=byCli[t.cliente]||[]).push(t); });
  return Object.entries(byCli).map(([cli,items])=>{
   const nResueltos=items.filter(t=>t.estado==='Resuelto').length;
   const asignados=items.map(t=>({...t,_a:tiempoAsignadoMs(t)})).filter(t=>t._a!=null);
@@ -1395,13 +1395,24 @@ function renderKPIsPanelTele(list,st){
 function renderPanelTele(){
  const box=document.getElementById('analisisPanelTele'); if(!box)return;
  const listScoped=scopeCli?TELE.filter(t=>t.cliente===scopeCli):TELE;
- const st=teleStats(listScoped);
- renderKPIsPanelTele(listScoped,st);
+ // Los filtros de Categoría/Sub categoría/Cliente/Responsable/Rango (antes solo dentro de la
+ // última tarjeta) ahora se arman una sola vez, arriba de todo, y se aplican a TODA la vista
+ // (KPIs + las 3 tarjetas) — "filtered" es lo que ve cada una, en vez de que cada tarjeta arme
+ // su propio recorte por separado.
+ const filtered=listScoped.filter(t=>panelTreeMatch(t,null));
+ const st=teleStats(filtered);
+ renderKPIsPanelTele(filtered,st);
  const dim=PANEL_TELE_DIMS[panelTeleDim]?panelTeleDim:'categoria';
  const metric=PANEL_TELE_METRICS[panelTeleMetric]?panelTeleMetric:'asignado';
  const rows=st[PANEL_TELE_METRICS[metric].rowsKey[dim]]||[];
- const cliStats=teleClientStats();
+ const cliStats=teleClientStats(filtered);
+ const anyPanelTreeFilter=panelTreeCat.size||panelTreeSub.size||panelTreeCli.size||panelTreeResp.size||panelTreeRange;
  box.innerHTML=`
+  <div class="filtrow" style="align-items:center;flex-wrap:wrap;margin-bottom:14px">
+   ${panelTreeChipsHtml(listScoped)}
+   <select class="sel" onchange="setPanelTreeRange(this.value)">${PANEL_TREE_RANGE_OPTS.map(([v,l])=>`<option value="${v}" ${panelTreeRange===v?'selected':''}>${esc(l)}</option>`).join('')}</select>
+   <button class="btn sm" onclick="panelTreeClearBtn()" style="${anyPanelTreeFilter?'':'display:none'}">Limpiar filtros ✕</button>
+  </div>
   <details class="card" data-pc="teleTarea"${panelCardClosed.has('teleTarea')?'':' open'}>
    <summary class="lab">Tiempos por tarea, responsable y cliente${scopeCli?' · '+esc(scopeCli):''}</summary>
    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:6px 0 10px">
@@ -1411,22 +1422,17 @@ function renderPanelTele(){
    ${panelTeleBarsHtml(rows)}
   </details>
   <details class="card" data-pc="teleCliSem"${panelCardClosed.has('teleCliSem')?'':' open'}>
-   <summary class="lab">Tiempo total por cliente en la semana <span class="tinfo" style="text-transform:none;font-weight:400">(no depende del filtro de cliente de arriba — es para comparar entre todos)</span></summary>
+   <summary class="lab">Tiempo total por cliente en la semana</summary>
    <div class="cmpTable cmpFrame">
     <div class="cmpRow cmpHead"><span>Cliente</span><span>Tareas</span><span>Tiempo total</span><span>%</span><span>Promedio semanal</span></div>
-    ${cliStats.length?(()=>{const cliTotalMs=cliStats.reduce((s,r)=>s+(r.totalAsignadoMs||0),0)||1; return cliStats.map(r=>`<div class="cmpRow clickRow" data-cli="${esc(r.cliente)}" onclick="goTeleCliente(this.dataset.cli)" title="Ver tareas de ${esc(r.cliente)} en Telemática"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cliente)};margin-right:6px"></span>${esc(r.cliente)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${r.totalAsignadoMs==null?'—':fmtDur(r.totalAsignadoMs)}</span><span class="cmpn">${r.totalAsignadoMs==null?'—':Math.round(r.totalAsignadoMs/cliTotalMs*100)+'%'}</span><span class="cmpn">${r.promSemanalMs==null?'—':fmtDur(r.promSemanalMs)}</span></div>`).join('');})():'<p class="tinfo">Todavía no hay tareas cargadas en Telemática.</p>'}
+    ${cliStats.length?(()=>{const cliTotalMs=cliStats.reduce((s,r)=>s+(r.totalAsignadoMs||0),0)||1; return cliStats.map(r=>`<div class="cmpRow clickRow" data-cli="${esc(r.cliente)}" onclick="goTeleCliente(this.dataset.cli)" title="Ver tareas de ${esc(r.cliente)} en Telemática"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cliente)};margin-right:6px"></span>${esc(r.cliente)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${r.totalAsignadoMs==null?'—':fmtDur(r.totalAsignadoMs)}</span><span class="cmpn">${r.totalAsignadoMs==null?'—':Math.round(r.totalAsignadoMs/cliTotalMs*100)+'%'}</span><span class="cmpn">${r.promSemanalMs==null?'—':fmtDur(r.promSemanalMs)}</span></div>`).join('');})():'<p class="tinfo">Sin datos para estos filtros.</p>'}
    </div>
   </details>
   <details class="card" data-pc="teleArbol"${panelCardClosed.has('teleArbol')?'':' open'}>
    <summary class="lab">Tiempos por categoría, sub categoría, responsable y cliente${scopeCli?' · '+esc(scopeCli):''}</summary>
-   <div class="filtrow" onclick="event.stopPropagation()" style="align-items:center;flex-wrap:wrap">
-    ${panelTreeChipsHtml(listScoped)}
-    <select class="sel" onchange="setPanelTreeRange(this.value)">${PANEL_TREE_RANGE_OPTS.map(([v,l])=>`<option value="${v}" ${panelTreeRange===v?'selected':''}>${esc(l)}</option>`).join('')}</select>
-    <button class="btn sm" onclick="panelTreeClearBtn()">Limpiar filtros ✕</button>
-   </div>
    <div class="seg" onclick="event.stopPropagation()" style="margin:10px 0">${Object.entries(PANEL_TREE_DIMS2).map(([k,d])=>`<button class="${panelTeleTreeDim===k?'on':''}" onclick="setPanelTreeDim('${k}')">${esc(d.label)}</button>`).join('')}</div>
-   <p class="tinfo" style="margin:0 0 6px">Clic en una barra para usarla como filtro (se puede combinar con los de arriba).</p>
-   ${panelTreeBarsHtml(listScoped)}
+   <p class="tinfo" style="margin:0 0 6px">Clic en una barra para usarla como filtro (se combina con los de arriba de todo).</p>
+   ${panelTreeBarsHtml(filtered)}
   </details>`;
  box.querySelectorAll(':scope > [data-pc]').forEach(d=>{
   d.addEventListener('toggle',()=>{ const k=d.dataset.pc; if(d.open)panelCardClosed.delete(k); else panelCardClosed.add(k); });
