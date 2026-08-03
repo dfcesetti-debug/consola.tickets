@@ -403,6 +403,10 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 .tag.fijo{background:var(--sigbg);color:var(--sig)}
 .seg button.on.yes{background:var(--sig)}
 .seg button.on.no{background:var(--cli)}
+.cfgCheckDev{width:30px;height:30px;border-radius:8px;border:1px solid var(--edge);background:var(--panel);cursor:pointer;font-size:15px;font-weight:800;line-height:1;display:inline-flex;align-items:center;justify-content:center;transition:background .15s var(--ease),border-color .15s var(--ease),color .15s var(--ease)}
+.cfgCheckDev.on{background:var(--sigbg);border-color:var(--sig);color:var(--sig)}
+.cfgCheckDev.off{background:var(--dangerbg);border-color:var(--danger);color:var(--danger)}
+.cfgCheckDev:hover{filter:brightness(1.08)}
 .execFichaCard{border:1px solid var(--edge);border-radius:12px;padding:12px 14px;margin:10px 0;background:var(--panel);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
 .execFichaCard:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(16,32,60,.1)}
 .efHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
@@ -2008,56 +2012,60 @@ const SURFSIGHT_AI12_FIELDS=[
  {k:'pin_incorrecto',l:'Código PIN incorrecto',type:'toggle'}
 ];
 const GO_FOCUS_PLUS_FIELDS=[
- {k:'grabar_audio_tono',l:'Grabar audio — Tono',type:'toggle'},
- {k:'grabar_audio_voz',l:'Grabar audio — Alerta de voz',type:'toggle'},
+ {k:'grabar_audio',l:'Grabar audio',type:'toggle'},
  {k:'idioma',l:'Idioma de capacitación en cabina',type:'select',options:['Español (España)','Español (Latinoamérica)','Inglés','Portugués'],def:'Español (España)'},
  {k:'sexo_voz',l:'Sexo de la voz',type:'select',options:['Neutro','Femenino','Masculino'],def:'Neutro'},
  {k:'camara_conductor',l:'Cámara orientada hacia el conductor',type:'toggle'},
- {k:'ajustar_cabina_tono',l:'Se recomienda ajustar la cabina — Tono',type:'toggle'},
- {k:'ajustar_cabina_voz',l:'Se recomienda ajustar la cabina — Alerta de voz',type:'toggle'},
- {k:'telefono_tono',l:'Uso del teléfono celular — Tono',type:'toggle'},
- {k:'telefono_voz',l:'Uso del teléfono celular — Alerta de voz',type:'toggle'},
+ {k:'ajustar_cabina',l:'Se recomienda ajustar la cabina',type:'toggle'},
+ {k:'telefono',l:'Uso del teléfono celular',type:'toggle'},
  {k:'telefono_severidad',l:'Uso del teléfono celular — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Alta'},
- {k:'cubierta_tono',l:'Cubierta retirada — Tono',type:'toggle'},
- {k:'cubierta_voz',l:'Cubierta retirada — Alerta de voz',type:'toggle'},
- {k:'desmontada_tono',l:'Cámara para vehículo desmontada — Tono',type:'toggle'},
- {k:'desmontada_voz',l:'Cámara para vehículo desmontada — Alerta de voz',type:'toggle'},
- {k:'boton_camara_tono',l:'Botón de cámara para vehículo presionado — Tono',type:'toggle'},
- {k:'boton_camara_voz',l:'Botón de cámara para vehículo presionado — Alerta de voz',type:'toggle'},
- {k:'ojos_abajo_tono',l:'Distracción: ojos hacia abajo — Tono',type:'toggle'},
- {k:'ojos_abajo_voz',l:'Distracción: ojos hacia abajo — Alerta de voz',type:'toggle'},
+ {k:'cubierta',l:'Cubierta retirada',type:'toggle'},
+ {k:'desmontada',l:'Cámara para vehículo desmontada',type:'toggle'},
+ {k:'boton_camara',l:'Botón de cámara para vehículo presionado',type:'toggle'},
+ {k:'ojos_abajo',l:'Distracción: ojos hacia abajo',type:'toggle'},
  {k:'ojos_abajo_severidad',l:'Distracción: ojos hacia abajo — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Alta'},
- {k:'giro_cabeza_tono',l:'Distracción: giro de cabeza — Tono',type:'toggle'},
- {k:'giro_cabeza_voz',l:'Distracción: giro de cabeza — Alerta de voz',type:'toggle'},
+ {k:'giro_cabeza',l:'Distracción: giro de cabeza',type:'toggle'},
  {k:'giro_cabeza_severidad',l:'Distracción: giro de cabeza — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Alta'},
- {k:'frotarse_ojos_tono',l:'Conductor frotándose los ojos — Tono',type:'toggle'},
- {k:'frotarse_ojos_voz',l:'Conductor frotándose los ojos — Alerta de voz',type:'toggle'},
- {k:'bostezando_tono',l:'Conductor bostezando — Tono',type:'toggle'},
- {k:'bostezando_voz',l:'Conductor bostezando — Alerta de voz',type:'toggle'},
- {k:'cinturon_tono',l:'Conductor sin cinturón de seguridad — Tono',type:'toggle'},
- {k:'cinturon_voz',l:'Conductor sin cinturón de seguridad — Alerta de voz',type:'toggle'},
- {k:'fumando_tono',l:'Fumando — Tono',type:'toggle'},
- {k:'fumando_voz',l:'Fumando — Alerta de voz',type:'toggle'},
- {k:'lente_tono',l:'Obstrucción del lente — Tono',type:'toggle'},
- {k:'lente_voz',l:'Obstrucción del lente — Alerta de voz',type:'toggle'},
- {k:'salida_carril_tono',l:'Advertencia de salida del carril — Tono',type:'toggle'},
- {k:'salida_carril_voz',l:'Advertencia de salida del carril — Alerta de voz',type:'toggle'},
- {k:'parada_ignorada_tono',l:'Señal de parada ignorada — Tono',type:'toggle'},
- {k:'parada_ignorada_voz',l:'Señal de parada ignorada — Alerta de voz',type:'toggle'},
+ {k:'frotarse_ojos',l:'Conductor frotándose los ojos',type:'toggle'},
+ {k:'bostezando',l:'Conductor bostezando',type:'toggle'},
+ {k:'cinturon',l:'Conductor sin cinturón de seguridad',type:'toggle'},
+ {k:'fumando',l:'Fumando',type:'toggle'},
+ {k:'lente',l:'Obstrucción del lente',type:'toggle'},
+ {k:'salida_carril',l:'Advertencia de salida del carril',type:'toggle'},
+ {k:'parada_ignorada',l:'Señal de parada ignorada',type:'toggle'},
  {k:'parada_ignorada_severidad',l:'Señal de parada ignorada — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Baja'},
- {k:'distancia_tono',l:'Conducción sin dejar la distancia de seguridad — Tono',type:'toggle'},
- {k:'distancia_voz',l:'Conducción sin dejar la distancia de seguridad — Alerta de voz',type:'toggle'},
+ {k:'distancia',l:'Conducción sin dejar la distancia de seguridad',type:'toggle'},
  {k:'distancia_severidad',l:'Conducción sin dejar la distancia de seguridad — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Media'},
- {k:'comida_tono',l:'Alimentos o bebidas — Tono',type:'toggle'},
- {k:'comida_voz',l:'Alimentos o bebidas — Alerta de voz',type:'toggle'},
- {k:'conduccion_defensiva_tono',l:'Conducción defensiva — Tono',type:'toggle'},
- {k:'conduccion_defensiva_voz',l:'Conducción defensiva — Alerta de voz',type:'toggle'},
+ {k:'comida',l:'Alimentos o bebidas',type:'toggle'},
+ {k:'conduccion_defensiva',l:'Conducción defensiva',type:'toggle'},
  {k:'conduccion_defensiva_severidad',l:'Conducción defensiva — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Alta'},
- {k:'riesgo_colision_tono',l:'Advertencia de riesgo de colisión — Tono',type:'toggle'},
- {k:'riesgo_colision_voz',l:'Advertencia de riesgo de colisión — Alerta de voz',type:'toggle'},
+ {k:'riesgo_colision',l:'Advertencia de riesgo de colisión',type:'toggle'},
  {k:'riesgo_colision_severidad',l:'Advertencia de riesgo de colisión — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Alta'},
- {k:'doble_linea_tono',l:'Infracción por doble línea continua — Tono',type:'toggle'},
- {k:'doble_linea_voz',l:'Infracción por doble línea continua — Alerta de voz',type:'toggle'}
+ {k:'doble_linea',l:'Infracción por doble línea continua',type:'toggle'}
+];
+// v94: "Tono" y "Alerta de voz" eran el mismo comando con dos checks separados — se fusionan
+// en uno solo (migrateFicha) la primera vez que se abre una ficha vieja. [nueva clave, tono viejo, voz vieja]
+const GOFOCUS_TONO_VOZ_MERGE=[
+ ['grabar_audio','grabar_audio_tono','grabar_audio_voz'],
+ ['ajustar_cabina','ajustar_cabina_tono','ajustar_cabina_voz'],
+ ['telefono','telefono_tono','telefono_voz'],
+ ['cubierta','cubierta_tono','cubierta_voz'],
+ ['desmontada','desmontada_tono','desmontada_voz'],
+ ['boton_camara','boton_camara_tono','boton_camara_voz'],
+ ['ojos_abajo','ojos_abajo_tono','ojos_abajo_voz'],
+ ['giro_cabeza','giro_cabeza_tono','giro_cabeza_voz'],
+ ['frotarse_ojos','frotarse_ojos_tono','frotarse_ojos_voz'],
+ ['bostezando','bostezando_tono','bostezando_voz'],
+ ['cinturon','cinturon_tono','cinturon_voz'],
+ ['fumando','fumando_tono','fumando_voz'],
+ ['lente','lente_tono','lente_voz'],
+ ['salida_carril','salida_carril_tono','salida_carril_voz'],
+ ['parada_ignorada','parada_ignorada_tono','parada_ignorada_voz'],
+ ['distancia','distancia_tono','distancia_voz'],
+ ['comida','comida_tono','comida_voz'],
+ ['conduccion_defensiva','conduccion_defensiva_tono','conduccion_defensiva_voz'],
+ ['riesgo_colision','riesgo_colision_tono','riesgo_colision_voz'],
+ ['doble_linea','doble_linea_tono','doble_linea_voz']
 ];
 const DEVICE_SPECS=[
  {key:'go_focus_plus',label:'GO Focus Plus',fields:GO_FOCUS_PLUS_FIELDS},
@@ -2106,6 +2114,15 @@ function migrateFicha(raw,name){
   f.configuracion=f.configuracion||{};
   CONFIG_SECTIONS.forEach(s=>{ f.configuracion[s.key]=f.configuracion[s.key]||[]; });
   DEVICE_SPECS.forEach(s=>{ f.configuracion[s.key]=f.configuracion[s.key]||{activo:false}; });
+  // v94: fusiona los checks viejos de "Tono"/"Alerta de voz" de GO Focus Plus en uno solo por comando (una sola vez)
+  if(!f.gofocus_migrado&&f.configuracion.go_focus_plus){
+   const gp=f.configuracion.go_focus_plus;
+   GOFOCUS_TONO_VOZ_MERGE.forEach(([nuevo,tono,voz])=>{
+    if(gp[tono]==='Activado'||gp[voz]==='Activado') gp[nuevo]='Activado';
+    else if(gp[tono]==='Desactivado'||gp[voz]==='Desactivado') gp[nuevo]='Desactivado';
+   });
+   f.gofocus_migrado=true;
+  }
   f.historial=f.historial||[];
   f.cliente=f.cliente||name;
   if(!f.grupos_arbol||!f.grupos_arbol.n) f.grupos_arbol=defaultGruposArbol(name);
@@ -2141,6 +2158,11 @@ function loadFichas(){
 }
 function saveFichas(){ try{localStorage.setItem(FICHASTORE,JSON.stringify(FICHAS));}catch(e){} }
 function ejecutivosSugeridos(){ const s=new Set(); Object.values(FICHAS).forEach(f=>{ if(f.datos.ref_comercial)s.add(f.datos.ref_comercial); }); return [...s].sort(); }
+// tipos de logística: la lista curada de base + cualquier tipo nuevo que se haya cargado a mano en alguna ficha (vía el botón ＋)
+function logisticaSugeridas(){
+ const extra=[...new Set(Object.values(FICHAS).map(f=>f.datos.tipo_logistica).filter(Boolean))].filter(x=>!LOGISTICA_SUGERENCIAS.includes(x)).sort();
+ return [...LOGISTICA_SUGERENCIAS,...extra];
+}
 function esJira(nombre){
  if(CLIENTS.some(c=>c.name===nombre&&c.prefix)) return true;
  const f=FICHAS[nombre]; return !!(f&&(f.datos.medios||[]).includes('Jira'));
@@ -2310,11 +2332,19 @@ function cfgFieldInput(cls,sec,ri,field,val){
  }
  return `<input class="finput ${cls}" data-sec="${sec}" data-ri="${ri}" data-k="${field.k}" value="${esc(val||'')}">`;
 }
+function cfgCopySelHtml(sec){
+ const opts=Object.keys(FICHAS).filter(k=>k!==ejecCliente&&((FICHAS[k].configuracion||{})[sec]||[]).length).map(k=>`<option value="${esc(k)}">${esc(k)}</option>`).join('');
+ if(!opts) return '';
+ return `<select class="sel cfgCopySel" data-sec="${sec}" style="margin-bottom:8px;max-width:260px">
+  <option value="">Copiar de otro cliente…</option>${opts}
+ </select>`;
+}
 function cfgSectionHtml(sec,rows){
  const openAttr=ejecOpenSections.has(sec.key)?' open':'';
  return `<details class="cfgSec" data-sec="${sec.key}"${openAttr}>
   <summary>${esc(sec.label)} <span class="tinfo">(${rows.length})</span></summary>
   <div class="cfgTableWrap">
+   ${cfgCopySelHtml(sec.key)}
    ${rows.length?`<table class="cfgTable"><thead><tr>${sec.fields.map(x=>`<th>${esc(x.l)}</th>`).join('')}<th></th></tr></thead><tbody>
     ${rows.map((r,ri)=>`<tr>${sec.fields.map(x=>`<td>${cfgFieldInput('cfgInput',sec.key,ri,x,r[x.k])}</td>`).join('')}<td><button class="btn sm cfgDelRow" data-sec="${sec.key}" data-ri="${ri}" title="Quitar fila">✕</button></td></tr>`).join('')}
    </tbody></table>`:'<p class="tinfo">Sin registros todavía.</p>'}
@@ -2329,12 +2359,17 @@ function cfgDeviceFieldInput(dev,field,val){
   return `<select class="finput cfgDeviceInput" data-dev="${dev}" data-k="${field.k}">${opts.join('')}</select>`;
  }
  if(field.type==='toggle'){
-  return `<div class="seg cfgToggleDev" data-dev="${dev}" data-k="${field.k}">
-   <button type="button" data-v="Activado" class="${val==='Activado'?'on yes':''}">Activado</button>
-   <button type="button" data-v="Desactivado" class="${val==='Desactivado'?'on no':''}">Desactivado</button>
-  </div>`;
+  const on=val==='Activado';
+  return `<button type="button" class="cfgCheckDev ${on?'on':'off'}" data-dev="${dev}" data-k="${field.k}" title="${on?'Activado — click para desactivar':'Desactivado — click para activar'}">${on?'✓':'✕'}</button>`;
  }
  return `<input type="text" class="finput cfgDeviceInput" data-dev="${dev}" data-k="${field.k}" value="${esc(val!=null&&val!==''?val:(field.def||''))}">`;
+}
+function deviceCopySelHtml(spec){
+ const opts=Object.keys(FICHAS).filter(k=>k!==ejecCliente&&(((FICHAS[k].configuracion||{})[spec]||{}).activo===true)).map(k=>`<option value="${esc(k)}">${esc(k)}</option>`).join('');
+ if(!opts) return '';
+ return `<select class="sel cfgCopySelDev" data-dev="${spec}" style="margin-bottom:8px;max-width:260px">
+  <option value="">Copiar de otro cliente…</option>${opts}
+ </select>`;
 }
 function deviceSpecHtml(spec,obj){
  obj=obj||{activo:false};
@@ -2343,6 +2378,7 @@ function deviceSpecHtml(spec,obj){
  return `<details class="cfgSec" data-sec="${spec.key}"${openAttr}>
   <summary>${esc(spec.label)} <span class="tinfo">(${active?'Activado':'Desactivado'})</span></summary>
   <div class="cfgTableWrap">
+   ${deviceCopySelHtml(spec.key)}
    <div class="seg cfgDeviceToggle" data-dev="${spec.key}">
     <button type="button" data-v="1" class="${active?'on yes':''}">Activado</button>
     <button type="button" data-v="0" class="${!active?'on no':''}">Desactivado</button>
@@ -2461,8 +2497,11 @@ function renderFichas(){
    </div>
 
    <div class="fRow" style="max-width:320px"><div class="lab">Tipo de logística</div>
-    <input class="finput" id="fLogistica" list="dlLogistica" value="${esc(d.tipo_logistica)}" placeholder="Ej: Distribución">
-    <datalist id="dlLogistica">${LOGISTICA_SUGERENCIAS.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+    <div style="display:flex;gap:6px;align-items:center">
+     <input class="finput" id="fLogistica" list="dlLogistica" value="${esc(d.tipo_logistica)}" placeholder="Ej: Distribución">
+     <button type="button" class="btn sm" id="btnAddLogistica" title="Agregar un tipo de logística nuevo" style="flex:none;padding:8px 10px">＋</button>
+    </div>
+    <datalist id="dlLogistica">${logisticaSugeridas().map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
    </div>
   </details>
 
@@ -2500,6 +2539,11 @@ function renderFichas(){
  document.getElementById('ejecSelCliente').onchange=e=>{ ejecCliente=e.target.value; renderFichas(); };
  document.getElementById('fPais').oninput=e=>d.pais=e.target.value;
  document.getElementById('fLogistica').oninput=e=>d.tipo_logistica=e.target.value;
+ document.getElementById('btnAddLogistica').onclick=()=>{
+  const name=(prompt('Nombre del nuevo tipo de logística:')||'').trim(); if(!name)return;
+  d.tipo_logistica=name;
+  renderFichas();
+ };
  document.getElementById('fUbicacion').oninput=e=>d.ubicacion=e.target.value;
  document.getElementById('fRefComercial').oninput=e=>d.ref_comercial=e.target.value;
  document.getElementById('fNotas').oninput=e=>d.notas=e.target.value;
@@ -2534,11 +2578,14 @@ function renderFichas(){
    renderFichas();
   };
  });
- box.querySelectorAll('.cfgToggleDev button').forEach(btn=>{
+ box.querySelectorAll('.cfgCheckDev').forEach(btn=>{
   btn.onclick=()=>{
-   const wrap=btn.parentElement, dev=wrap.dataset.dev, k=wrap.dataset.k, v=btn.dataset.v;
-   cfg[dev][k]=v;
-   wrap.querySelectorAll('button').forEach(b=>b.className=(b.dataset.v===v?('on '+(v==='Activado'?'yes':'no')):''));
+   const dev=btn.dataset.dev, k=btn.dataset.k;
+   const nowOn=cfg[dev][k]!=='Activado';
+   cfg[dev][k]=nowOn?'Activado':'Desactivado';
+   btn.classList.toggle('on',nowOn); btn.classList.toggle('off',!nowOn);
+   btn.textContent=nowOn?'✓':'✕';
+   btn.title=nowOn?'Activado — click para desactivar':'Desactivado — click para activar';
   };
  });
  box.querySelectorAll('.cfgDeviceInput').forEach(inp=>{
@@ -2546,6 +2593,28 @@ function renderFichas(){
  });
  box.querySelectorAll('.cfgAddRow').forEach(btn=>{
   btn.onclick=()=>{ const sec=btn.dataset.sec; const secDef=CONFIG_SECTIONS.find(s=>s.key===sec); const row={}; secDef.fields.forEach(x=>row[x.k]=''); cfg[sec].push(row); ejecOpenSections.add(sec); renderFichas(); };
+ });
+ box.querySelectorAll('.cfgCopySel').forEach(sel=>{
+  sel.onchange=e=>{
+   const from=e.target.value; if(!from){ return; }
+   const sec=e.target.dataset.sec, secDef=CONFIG_SECTIONS.find(s=>s.key===sec);
+   const src=(FICHAS[from].configuracion||{})[sec]||[]; if(!src.length){ e.target.value=''; return; }
+   if(!confirm('¿Copiar "'+(secDef?secDef.label:sec)+'" de '+from+' a '+ejecCliente+'? Esto reemplaza las filas actuales de esta sección.')){ e.target.value=''; return; }
+   cfg[sec]=JSON.parse(JSON.stringify(src));
+   ejecOpenSections.add(sec);
+   renderFichas();
+  };
+ });
+ box.querySelectorAll('.cfgCopySelDev').forEach(sel=>{
+  sel.onchange=e=>{
+   const from=e.target.value; if(!from){ return; }
+   const dev=e.target.dataset.dev, spec=DEVICE_SPECS.find(s=>s.key===dev);
+   const src=(FICHAS[from].configuracion||{})[dev]; if(!src||src.activo!==true){ e.target.value=''; return; }
+   if(!confirm('¿Copiar "'+(spec?spec.label:dev)+'" de '+from+' a '+ejecCliente+'? Esto reemplaza la configuración actual de esta sección.')){ e.target.value=''; return; }
+   cfg[dev]=JSON.parse(JSON.stringify(src));
+   ejecOpenSections.add(dev);
+   renderFichas();
+  };
  });
  box.querySelectorAll('.cfgDelRow').forEach(btn=>{
   btn.onclick=()=>{ if(!confirmDelete('esta fila'))return; const sec=btn.dataset.sec, ri=+btn.dataset.ri; cfg[sec].splice(ri,1); ejecOpenSections.add(sec); renderFichas(); };
@@ -2660,8 +2729,19 @@ function fichaBodyHtml(f){
  const dgoSec=CONFIG_SECTIONS.find(s=>s.key==='dispositivos_go');
  const dgoHtml=`<h3>${esc(dgoSec.label)}</h3>${rowsTable(f.configuracion.dispositivos_go||[],dgoSec.fields)}`;
  const activeDevices=DEVICE_SPECS.filter(spec=>(f.configuracion[spec.key]||{}).activo);
+ const deviceDetailHtml=spec=>{
+  const obj=f.configuracion[spec.key]||{};
+  const rows=spec.fields.map(x=>{
+   if(x.type==='toggle'){
+    const on=obj[x.k]==='Activado';
+    return `<tr><td>${esc(x.l)}</td><td style="text-align:center;font-weight:700;color:${on?'#16b364':'#c0392b'}">${on?'✓':'✕'}</td></tr>`;
+   }
+   return `<tr><td>${esc(x.l)}</td><td>${esc(obj[x.k]||x.def||'—')}</td></tr>`;
+  }).join('');
+  return `<h3>${esc(spec.label)}</h3><table class="pfTable"><tbody>${rows}</tbody></table>`;
+ };
  const devHtml=`<h3>Tipo de cámara</h3>${activeDevices.length
-  ?`<p style="font-size:13px;font-weight:700;margin:0 0 2px">${activeDevices.map(s=>esc(s.label)).join(' + ')}</p><p class="pfEmpty">Para el detalle de la configuración de alertas, ver la configuración en la web del dispositivo.</p>`
+  ?`<p style="font-size:13px;font-weight:700;margin:0 0 10px">${activeDevices.map(s=>esc(s.label)).join(' + ')}</p>${activeDevices.map(deviceDetailHtml).join('')}`
   :'<p class="pfEmpty">Sin cámara configurada.</p>'}`;
  const cfgHtml=dgoHtml+devHtml+CONFIG_SECTIONS.filter(s=>s.key!=='dispositivos_go').map(s=>`<h3>${esc(s.label)}</h3>${rowsTable(f.configuracion[s.key]||[],s.fields)}`).join('');
  const hist=(f.historial||[]).slice().reverse();

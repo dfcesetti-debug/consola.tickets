@@ -2,7 +2,7 @@
 
 **Para quién es este documento:** cualquier persona del equipo de soporte/telemática que va a usar la Consola día a día. Si buscás arquitectura técnica (Firebase, Cloudflare Worker, contrato de datos), eso está en `DOCUMENTACION_TECNICA.md`. Este documento es la guía práctica: cómo entrar, qué cargar primero y por qué, y cómo se usa cada sección.
 
-Fecha: 03/08/2026. Cubre hasta v93.
+Fecha: 03/08/2026. Cubre hasta v94.
 
 ---
 
