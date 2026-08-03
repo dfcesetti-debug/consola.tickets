@@ -3718,15 +3718,26 @@ function showApp(email){
   autoFetchAbiertosOnLogin();
  }
 }
+const PENDING_LOGIN_MSG_KEY='cmq_pending_login_msg';
+let pendingLoginMsg='';
+try{ pendingLoginMsg=sessionStorage.getItem(PENDING_LOGIN_MSG_KEY)||''; sessionStorage.removeItem(PENDING_LOGIN_MSG_KEY); }catch(e){}
 function showLogin(msg){
+ // Si ya hubo una sesión con datos cargados (tickets, clientes, fichas, historial), esconder el
+ // appRoot con display:none NO alcanza como cierre real: los datos siguen enteros en memoria y en
+ // el DOM, y cualquiera con DevTools puede simplemente volver a mostrarlo sin loguearse. Por eso,
+ // en ese caso, se recarga la página entera (limpia TODO el estado de JS) en vez de solo ocultarla;
+ // el mensaje (ej. "sesión cerrada por inactividad") se guarda en sessionStorage para mostrarlo
+ // después del reload, ya que las variables en memoria no sobreviven.
+ if(appBooted){
+  try{sessionStorage.setItem(PENDING_LOGIN_MSG_KEY,msg||'');}catch(e){}
+  document.getElementById('appRoot').style.display='none';
+  location.reload();
+  return;
+ }
  hideBootLoading();
  document.getElementById('appRoot').style.display='none';
  document.getElementById('loginScreen').style.display='flex';
  document.getElementById('loginError').textContent=msg||'';
- // se limpia acá (no en el click de "Cerrar sesión") para no pisarse con el propio evento de
- // clic: ese mismo clic burbujea hasta el listener de actividad de más abajo y, si limpiáramos
- // la marca antes, quedaría reescrita al toque por esa burbuja — showLogin() corre después,
- // ya asentado el cierre de sesión real (via onAuthStateChanged), así que es el lugar seguro.
  try{localStorage.removeItem(ACTIVITY_KEY);}catch(e){}
 }
 ['click','keydown','input','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{ if(appBooted) touchActivity(); },{passive:true}));
@@ -3742,7 +3753,7 @@ async function initAuth(){
   if(user && isAllowedEmail(user.email)){ showApp(user.email); }
   else if(user){ signOut(auth); showLogin('Ese usuario no tiene acceso a esta consola.'); }
   else if(idleTimedOut){ idleTimedOut=false; showLogin('Tu sesión se cerró por 30 minutos de inactividad. Iniciá sesión de nuevo.'); }
-  else{ showLogin(); }
+  else{ showLogin(pendingLoginMsg); pendingLoginMsg=''; }
  });
  const doLogin=async()=>{
   const email=(document.getElementById('loginEmail').value||'').trim();
