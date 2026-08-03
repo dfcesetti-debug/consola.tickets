@@ -412,9 +412,9 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 .cfgCheckDev.on{background:var(--sigbg);border-color:var(--sig);color:var(--sig)}
 .cfgCheckDev.off{background:var(--dangerbg);border-color:var(--danger);color:var(--danger)}
 .cfgCheckDev:hover{filter:brightness(1.08)}
-.cfgPair2{display:flex;gap:12px;justify-content:flex-end}
-.cfgPair2Item{display:flex;flex-direction:column;align-items:center;gap:4px}
-.cfgPair2Lab{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--mut2)}
+.cfgCheckCol{display:grid;grid-template-columns:repeat(2,60px);gap:10px;justify-content:end}
+.cfgCheckColItem{display:flex;flex-direction:column;align-items:center;gap:4px}
+.cfgCheckColLab{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--mut2)}
 .execFichaCard{border:1px solid var(--edge);border-radius:12px;padding:12px 14px;margin:10px 0;background:var(--panel);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
 .execFichaCard:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(16,32,60,.1)}
 .efHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
@@ -2361,13 +2361,13 @@ function cfgDeviceFieldInput(dev,field,val,obj){
  }
  if(field.type==='toggle'){
   const on=val==='Activado';
-  return `<button type="button" class="cfgCheckDev ${on?'on':'off'}" data-dev="${dev}" data-k="${field.k}" title="${on?'Activado — click para desactivar':'Desactivado — click para activar'}">${on?'✓':'✕'}</button>`;
+  return `<div class="cfgCheckCol"><div class="cfgCheckColItem" style="grid-column:2"><button type="button" class="cfgCheckDev ${on?'on':'off'}" data-dev="${dev}" data-k="${field.k}" title="${on?'Activado — click para desactivar':'Desactivado — click para activar'}">${on?'✓':'✕'}</button></div></div>`;
  }
  if(field.type==='toggle2'){
   obj=obj||{};
-  return `<div class="cfgPair2">${field.pairKeys.map((k,i)=>{
+  return `<div class="cfgCheckCol">${field.pairKeys.map((k,i)=>{
    const on=obj[k]==='Activado', lab=field.pairLabels[i];
-   return `<div class="cfgPair2Item"><span class="cfgPair2Lab">${esc(lab)}</span><button type="button" class="cfgCheckDev ${on?'on':'off'}" data-dev="${dev}" data-k="${k}" title="${lab}: ${on?'Activado — click para desactivar':'Desactivado — click para activar'}">${on?'✓':'✕'}</button></div>`;
+   return `<div class="cfgCheckColItem"><span class="cfgCheckColLab">${esc(lab)}</span><button type="button" class="cfgCheckDev ${on?'on':'off'}" data-dev="${dev}" data-k="${k}" title="${lab}: ${on?'Activado — click para desactivar':'Desactivado — click para activar'}">${on?'✓':'✕'}</button></div>`;
   }).join('')}</div>`;
  }
  return `<input type="text" class="finput cfgDeviceInput" data-dev="${dev}" data-k="${field.k}" value="${esc(val!=null&&val!==''?val:(field.def||''))}">`;
