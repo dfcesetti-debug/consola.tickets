@@ -335,6 +335,19 @@ details.cm[open] summary::before{content:'▾ '}
 .cmpRow .mcellClick:hover{background:var(--accdim)}
 .cmpRow .mcellClick:hover .mv{color:var(--accent)}
 @media(max-width:640px){.cmpRow{grid-template-columns:1.1fr .6fr 1fr 1fr 1fr;font-size:11.5px;gap:6px}}
+/* v77 · tabla de comparación por cliente encuadrada (Tiempos por cliente — Jira y Telemática):
+   marco propio, header con fondo, filas con hairline, numéricas alineadas a la derecha */
+.cmpTable.cmpFrame{gap:0;margin-top:10px;border:1px solid var(--edge);border-radius:12px;overflow:hidden;background:var(--panel)}
+.cmpTable.cmpFrame .cmpRow{padding:11px 14px;border-radius:0;border-bottom:1px solid var(--edge2)}
+.cmpTable.cmpFrame .cmpRow:last-child{border-bottom:none}
+.cmpTable.cmpFrame .cmpRow.cmpHead{background:var(--bg2);border-bottom:1px solid var(--edge)}
+.cmpTable.cmpFrame .cmpRow>span{justify-self:end;text-align:right}
+.cmpTable.cmpFrame .cmpRow>span:first-child{justify-self:start;text-align:left;display:flex;align-items:center;min-width:0}
+.cmpTable.cmpFrame .cmpRow>span:first-child>*{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmpTable.cmpFrame .cmpn{color:var(--ink)}
+.cmpTable.cmpFrame .cmpn .tinfo{margin-left:4px;font-family:var(--mono);font-size:10.5px;color:var(--mut2)}
+.cmpTable.cmpFrame .cmpRow:not(.cmpHead):nth-child(even){background:var(--edge2)}
+.cmpTable.cmpFrame .cmpRow:not(.cmpHead):hover{background:var(--bg2)}
 @media(max-width:640px){.finput{font-size:16px}}
 
 .finput{width:100%;padding:8px 10px;border:1px solid var(--edge);border-radius:9px;font-size:13px;font-family:var(--sans);background:var(--panel);color:var(--ink);transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
@@ -465,7 +478,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
  <div class="loginBox">
   <div class="loginBrand"><div class="dot"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="16.5" r="2.4" fill="var(--accent)"></circle><path d="M6.4 12.2a7 7 0 0 1 5.4 5.4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"></path><path d="M6.1 7.9a11.4 11.4 0 0 1 10 10" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" opacity=".6"></path></svg></div><div><b>Televidentes</b><span>Soporte · Base de conocimiento</span></div></div>
   <div class="loginTag">Acceso seguro</div>
-  <p class="tinfo" style="margin:0 0 16px">Acceso exclusivo para el equipo Cesetti. Solo cuentas <b>@cesetti.com.ar</b>.</p>
+  <p class="tinfo" style="margin:0 0 16px">Acceso exclusivo para el equipo Cesetti.</p>
   <div class="fRow"><label class="lab" for="loginEmail" style="margin-top:0">Email</label><input class="finput" id="loginEmail" type="email" placeholder="nombre@cesetti.com.ar" autocomplete="username"></div>
   <div class="fRow"><label class="lab" for="loginPass" style="margin-top:0">Contraseña</label><input class="finput" id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
   <button class="btn primary" id="btnLogin">Ingresar</button>
@@ -1180,7 +1193,7 @@ function renderPanelTele(){
   </details>
   <details class="card" data-pc="teleCliSem"${panelCardClosed.has('teleCliSem')?'':' open'}>
    <summary class="lab">Tiempo total por cliente en la semana <span class="tinfo" style="text-transform:none;font-weight:400">(no depende del filtro de cliente de arriba — es para comparar entre todos)</span></summary>
-   <div class="cmpTable">
+   <div class="cmpTable cmpFrame">
     <div class="cmpRow cmpHead"><span>Cliente</span><span>Tareas</span><span>Tiempo total</span><span>%</span><span>Promedio semanal</span></div>
     ${cliStats.length?(()=>{const cliTotalMs=cliStats.reduce((s,r)=>s+(r.totalAsignadoMs||0),0)||1; return cliStats.map(r=>`<div class="cmpRow clickRow" data-cli="${esc(r.cliente)}" onclick="goTeleCliente(this.dataset.cli)" title="Ver tareas de ${esc(r.cliente)} en Telemática"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cliente)};margin-right:6px"></span>${esc(r.cliente)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${r.totalAsignadoMs==null?'—':fmtDur(r.totalAsignadoMs)}</span><span class="cmpn">${r.totalAsignadoMs==null?'—':Math.round(r.totalAsignadoMs/cliTotalMs*100)+'%'}</span><span class="cmpn">${r.promSemanalMs==null?'—':fmtDur(r.promSemanalMs)}</span></div>`).join('');})():'<p class="tinfo">Todavía no hay tareas cargadas en Telemática.</p>'}
    </div>
@@ -1611,7 +1624,7 @@ function renderAnalisis(){
   </details>
   <details class="card" data-pc="clijira"${pcOpen('clijira')}>
    <summary class="lab">Tiempos por cliente · vía Jira <span class="tinfo" style="text-transform:none;font-weight:400">(SLA de Jira — no depende del filtro de cliente de arriba, sí respeta el rango de fechas de arriba)</span></summary>
-   <div class="cmpTable">
+   <div class="cmpTable cmpFrame">
     <div class="cmpRow cmpHead"><span>Cliente</span><span>Tickets</span><span>1ª respuesta</span><span>Espera cliente</span><span>Resolución</span></div>
     ${cts.length?cts.map(r=>`<div class="cmpRow clickRow" data-cli="${esc(r.cli)}" onclick="goCliente(this.dataset.cli)" title="Ver tickets de ${esc(r.cli)}"><span><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clientColor(r.cli)};margin-right:6px"></span>${esc(r.cli)}</span><span class="cmpn">${r.n}</span><span class="cmpn">${fmtDur(r.aInt*864e5)} <span class="tinfo">(${r.nInt})</span></span><span class="cmpn">${fmtDur(r.aCli*864e5)} <span class="tinfo">(${r.nCli})</span></span><span class="cmpn">${fmtDur(r.aTot*864e5)}</span></div>`).join(''):'<p class="tinfo">Sin datos.</p>'}
    </div>
@@ -1622,7 +1635,7 @@ function renderAnalisis(){
    <p class="tinfo" style="margin:6px 0 4px">Hacé clic en una persona para ver en el historial los tickets que respondió.</p>
    ${resp.length?resp.map(r=>{const w=Math.max(3,Math.round(r[1]/mx3*100));const cls=TEAM.has(r[0])?'int':'cli';return `<div class="bar ${cls} rbar" data-n="${esc(r[0])}" onclick="goResponder(this.dataset.n)" title="Ver tickets respondidos por ${esc(r[0])}"><span class="bn">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${r[1]}</span></div>`;}).join(''):'<p class="tinfo">Sin datos.</p>'}</details>
   <details class="card" data-pc="clitotal"${pcOpen('clitotal')}><summary class="lab">Tickets por cliente (toda la base)</summary>${cliBarRows(true)}</details>
-  <details class="card" data-pc="tipo"${pcOpen('tipo')}><summary class="lab">Tickets por tipo de desagío${scopeCli?' · '+esc(scopeCli):''}</summary>${bt.length?barRows(bt,mx1,'','goTipo',i=>i.tipo):'<p class="tinfo">Sin datos.</p>'}</details>
+  <details class="card" data-pc="tipo"${pcOpen('tipo')}><summary class="lab">Tickets por tipo de solicitud${scopeCli?' · '+esc(scopeCli):''}</summary>${bt.length?barRows(bt,mx1,'','goTipo',i=>i.tipo):'<p class="tinfo">Sin datos.</p>'}</details>
   <details class="card" data-pc="informador"${pcOpen('informador')}><summary class="lab">Clientes que más cargaron tickets</summary>${rep.length?barRows(rep,mx2,'','goInformador',i=>i.informador):'<p class="tinfo">Sin datos.</p>'}</details>
   <details class="card" data-pc="asignado"${pcOpen('asignado')}><summary class="lab">Responsables asignados</summary>${asg.length?barRows(asg,mx4,'','goAsignado',i=>i.asignado):'<p class="tinfo">Sin datos.</p>'}</details>`;
  box.querySelectorAll('.tkpi .tkCard').forEach(d=>{
@@ -2842,7 +2855,7 @@ function apiTicket(r){
  const updated=r.fecha_actualizacion||r.updated||r.fechaActualizacion||'';
  const cts=tsOf(created), rts=tsOf(resolved), uts=tsOf(updated);
  const coms=(r.comentarios||r.comments||[]).map(c=>{const ct=tsOf(c.fecha||c.date||c.created||'');return {author:c.autor||c.author||c.nombre||c.usuario||'',date:ct?fmtDisp(ct):(c.fecha||c.date||''),text:c.texto||c.text||c.body||c.cuerpo||'',_ts:ct||0};});
- // Request Type (tipo de desagío) — priorizar sobre el tipo de incidencia genérico "[System] Service request"
+ // Request Type (tipo de solicitud) — priorizar sobre el tipo de incidencia genérico "[System] Service request"
  const asName=x=>(x&&typeof x==='object')?(x.name||(x.requestType&&x.requestType.name)||x.value||''):(x||'');
  let tipo=asName(r.request_type||r.requestType||r['Request Type']||r.tipo_solicitud||r.tipo_de_solicitud||r.customer_request_type||r.customerRequestType||r.tipo_de_pedido||'');
  if(!tipo){ const it=asName(r.tipo||r.issuetype||r.tipo_incidencia||r.tipo_de_incidencia||''); if(it&&!/^\s*\[system\]/i.test(it)) tipo=it; }
