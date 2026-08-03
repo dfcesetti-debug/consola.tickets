@@ -715,6 +715,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
    </div>
    <div class="filtrow" style="align-items:center;flex-wrap:wrap">
     <div class="msel" id="mselTeleCli"><button type="button" class="mselBtn" id="mselTeleCliBtn">Cliente: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsTeleCli"></div></div>
+    <div class="msel" id="mselTeleCat"><button type="button" class="mselBtn" id="mselTeleCatBtn">Categoría: Todas <span class="arrow">▾</span></button><div class="mselPanel" id="chipsTeleCat"></div></div>
     <div class="msel" id="mselTeleTipo"><button type="button" class="mselBtn" id="mselTeleTipoBtn">Tipo: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsTeleTipo"></div></div>
     <div class="msel" id="mselTeleResp"><button type="button" class="mselBtn" id="mselTeleRespBtn">Responsable: Todos <span class="arrow">▾</span></button><div class="mselPanel" id="chipsTeleResp"></div></div>
     <button class="btn sm" id="btnTeleClearFilters" style="display:none">Limpiar filtros ✕</button>
@@ -2875,7 +2876,7 @@ function teleRowHtml(key){
   <select class="finput trSubtipo">${teleSubOptionsHtml(firstCat)}</select>
   <input type="number" class="finput trHoras" min="0" step="0.25" placeholder="Ej: 1.5">
   <select class="finput trEstado"><option>Pendiente</option><option>En curso</option><option>Resuelto</option></select>
-  <input class="finput trResp" list="dlUsuariosTele" placeholder="Responsable">
+  <input class="finput trResp" list="dlUsuariosTele" placeholder="Responsable" value="${esc(sessionUserName())}">
   <input class="finput trDetalle" placeholder="Detalle (opcional)">
   <button type="button" class="trRemove" onclick="removeTeleRow(this)" title="Quitar esta tarea">✕</button>
  </div>`;
@@ -2919,21 +2920,25 @@ function renderTeleForm(){
  const feEl=document.getElementById('teleFecha'); if(feEl && !feEl.value) feEl.value=todayStr();
  if(!wrap.children.length) addTeleRow();
 }
-let teleFilterCli=new Set(), teleFilterResp=new Set(), teleFilterTipo=new Set();
-function teleClearFilters(){ teleFilterCli.clear(); teleFilterResp.clear(); teleFilterTipo.clear(); }
+let teleFilterCli=new Set(), teleFilterResp=new Set(), teleFilterTipo=new Set(), teleFilterCat=new Set();
+function teleClearFilters(){ teleFilterCli.clear(); teleFilterResp.clear(); teleFilterTipo.clear(); teleFilterCat.clear(); }
+// 'categoria' no es un campo guardado en la tarea (se guarda el sub-tipo, ej. "Soporte - Instalaciones");
+// se deriva agrupando por TELE_TIPO_GROUPS vía categoriaOf(), tanto para filtrar como para contar.
+function teleDimValue(t,dim){ return dim==='categoria'?categoriaOf(t.tipo):(t[dim]); }
 // igual que matchDims/facet() en Tickets: al contar las opciones de UNA dimensión, se aplican los
 // filtros de las OTRAS dimensiones (skip omite la propia) — así el número junto a cada opción refleja
 // cuántos tickets van a quedar realmente si la elegís, no el total global sin cruzar.
 function teleMatchDims(t,skip){
  return (skip==='cliente'||!teleFilterCli.size||teleFilterCli.has(t.cliente))
    &&(skip==='responsable'||!teleFilterResp.size||teleFilterResp.has(t.responsable))
-   &&(skip==='tipo'||!teleFilterTipo.size||teleFilterTipo.has(t.tipo));
+   &&(skip==='tipo'||!teleFilterTipo.size||teleFilterTipo.has(t.tipo))
+   &&(skip==='categoria'||!teleFilterCat.size||teleFilterCat.has(categoriaOf(t.tipo)));
 }
 function teleFiltered(){
  return TELE.filter(t=>teleMatchDims(t,null));
 }
 function teleFacetCounts(dim,skip){
- const counts={}; TELE.forEach(t=>{ if(teleMatchDims(t,skip)){ const v=t[dim]||'—'; counts[v]=(counts[v]||0)+1; } }); return counts;
+ const counts={}; TELE.forEach(t=>{ if(teleMatchDims(t,skip)){ const v=teleDimValue(t,dim)||'—'; counts[v]=(counts[v]||0)+1; } }); return counts;
 }
 function teleChipRow(elId,btnId,label,dim,sel,skip){
  const counts=teleFacetCounts(dim,skip); const vals=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);
@@ -2948,10 +2953,11 @@ function teleChipRow(elId,btnId,label,dim,sel,skip){
 }
 function buildTeleFilters(){
  teleChipRow('chipsTeleCli','mselTeleCliBtn','Cliente','cliente',teleFilterCli,'cliente');
+ teleChipRow('chipsTeleCat','mselTeleCatBtn','Categoría','categoria',teleFilterCat,'categoria');
  teleChipRow('chipsTeleTipo','mselTeleTipoBtn','Tipo','tipo',teleFilterTipo,'tipo');
  teleChipRow('chipsTeleResp','mselTeleRespBtn','Responsable','responsable',teleFilterResp,'responsable');
  const clearBtn=document.getElementById('btnTeleClearFilters');
- if(clearBtn) clearBtn.style.display=(teleFilterCli.size||teleFilterResp.size||teleFilterTipo.size)?'':'none';
+ if(clearBtn) clearBtn.style.display=(teleFilterCli.size||teleFilterResp.size||teleFilterTipo.size||teleFilterCat.size)?'':'none';
 }
 function teleStats(list){
  list=list||TELE;
@@ -3341,6 +3347,7 @@ document.getElementById('mselFOrigenBtn').onclick=(e)=>{ e.stopPropagation(); ms
 document.getElementById('mselTeleCliBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsTeleCli'); };
 document.getElementById('mselTeleRespBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsTeleResp'); };
 document.getElementById('mselTeleTipoBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsTeleTipo'); };
+document.getElementById('mselTeleCatBtn').onclick=(e)=>{ e.stopPropagation(); mselToggle('chipsTeleCat'); };
 document.getElementById('btnTeleClearFilters').onclick=()=>{ teleClearFilters(); renderTelematica(); };
 document.addEventListener('click',(e)=>{ if(!e.target.closest('.msel')){ document.querySelectorAll('.mselPanel').forEach(p=>p.classList.remove('on')); panelTreeMselOpenKey=''; } });
 
