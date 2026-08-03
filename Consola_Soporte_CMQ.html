@@ -142,7 +142,9 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .flashIn{display:inline-block;color:var(--sig)!important;animation:flashIn .35s var(--ease)}
 h2.vt{font-size:20px;font-weight:700;margin:2px 0}
 .sub{color:var(--mut);font-size:13px;margin:0 0 18px}
-.scopenote{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--accent2);background:var(--accdim);border:1px solid var(--accborder);border-radius:20px;padding:3px 12px;font-weight:650;margin-left:8px}
+.scopenote{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--accent2);background:var(--accdim);border:1px solid var(--accborder);border-radius:20px;padding:3px 12px;font-weight:650;margin-left:8px;flex-wrap:wrap}
+.snx{border:none;background:transparent;color:inherit;opacity:.6;cursor:pointer;font-size:10px;padding:1px 3px;margin-left:1px;border-radius:6px;line-height:1}
+.snx:hover{opacity:1;background:rgba(0,0,0,.08)}
 
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:8px 0 22px}
 .kpi{background:var(--panel);border:1px solid var(--edge);border-radius:var(--r);padding:15px 17px;position:relative;overflow:hidden;display:flex;flex-direction:column;transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
@@ -364,11 +366,11 @@ details.cm[open] summary::before{content:'▾ '}
 .cmpTable.cmpFrame .cmpRow{padding:13px 16px;border-radius:12px;transition:border-color .15s var(--ease),transform .15s var(--ease),box-shadow .15s var(--ease)}
 .cmpTable.cmpFrame .cmpRow:not(.cmpHead){background:var(--panel);border:1px solid var(--edge)}
 .cmpTable.cmpFrame .cmpRow.cmpHead{padding:0 16px 2px}
-.cmpTable.cmpFrame .cmpRow>span{justify-self:end;text-align:right}
+.cmpTable.cmpFrame .cmpRow>span{justify-self:center;text-align:center}
 .cmpTable.cmpFrame .cmpRow>span:first-child{justify-self:start;text-align:left;display:flex;align-items:center;min-width:0}
 .cmpTable.cmpFrame .cmpRow:not(.cmpHead)>span:first-child{font-weight:750;font-size:14px;color:var(--ink)}
 .cmpTable.cmpFrame .cmpRow>span:first-child>*{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cmpTable.cmpFrame .cmpn{display:flex;flex-direction:column;align-items:flex-end;line-height:1.25;color:var(--ink);font-size:13.5px}
+.cmpTable.cmpFrame .cmpn{display:flex;flex-direction:column;align-items:center;line-height:1.25;color:var(--ink);font-size:13.5px}
 .cmpTable.cmpFrame .cmpn .tinfo{font-family:var(--sans);font-size:10px;font-weight:700;color:var(--mut2);text-transform:uppercase;letter-spacing:.03em;margin-top:2px}
 .cmpTable.cmpFrame .cmpRow.clickRow{cursor:pointer}
 .cmpTable.cmpFrame .cmpRow.clickRow:hover{border-color:var(--hoverline);transform:translateY(-1px);box-shadow:0 6px 18px rgba(16,32,60,.08)}
@@ -423,6 +425,14 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 .gtActs button.gtDel:hover{color:var(--danger)}
 .gtRow{display:flex;align-items:center}
 @media(pointer:coarse){.gtActs{opacity:1}}
+/* Módulo Implementación: fila de tarea del desarrollo del cliente */
+.implRow{display:grid;grid-template-columns:92px 1fr 52px 150px auto;gap:10px;align-items:center;padding:7px 8px;border-bottom:1px solid var(--edge2);font-size:12.5px;border-radius:8px;cursor:pointer;transition:background .15s var(--ease)}
+.implRow:hover{background:var(--bg2)}
+.implRow .ifecha{font-family:var(--mono);font-size:11.5px;color:var(--mut)}
+.implRow .itipo{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.implRow .ihs{font-family:var(--mono);font-weight:700;color:var(--accent2);text-align:right}
+.implRow .iresp{color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:720px){.implRow{grid-template-columns:80px 1fr 44px;grid-auto-rows:auto}.implRow .iresp,.implRow .tag{grid-column:2/-1}}
 .teleRowsHead,.teleRow{display:grid;grid-template-columns:150px 130px 170px 80px 110px 150px 1fr 30px;gap:8px;align-items:center;min-width:950px}
 .teleRowsHead{font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.04em;padding:0 0 8px;border-bottom:1px solid var(--edge)}
 .teleRow{padding:8px 0;border-bottom:1px solid var(--edge2)}
@@ -640,6 +650,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
     <button id="btnCliLista" class="on" onclick="setEjecView('lista')">Lista</button>
     <button id="btnEjecFichas" onclick="setEjecView('fichas')">Fichas</button>
     <button id="btnEjecCartera" onclick="setEjecView('cartera')">Cartera por ejecutivo</button>
+    <button id="btnEjecImpl" onclick="setEjecView('impl')">Implementación</button>
    </div>
    <div id="clientesLista">
     <div class="kpis" id="kpisClientes"></div>
@@ -652,6 +663,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
    </div>
    <div id="ejecFichas" style="display:none"></div>
    <div id="ejecCartera" style="display:none"></div>
+   <div id="ejecImpl" style="display:none"></div>
   </section>
 
   <section class="view" id="v-telematica">
@@ -830,6 +842,7 @@ function load(){ try{const s=localStorage.getItem(STORE); DATA=s?JSON.parse(s):A
  try{const c=localStorage.getItem(CSTORE); CLIENTS=c?JSON.parse(c):DEFAULT_CLIENTS.map(x=>({...x}));}catch(e){CLIENTS=DEFAULT_CLIENTS.map(x=>({...x}));}
  CLIENTS.forEach(c=>{ if(!c.origen) c.origen='jira'; });
  loadTele();
+ loadImpl();
  try{OVERRIDES=JSON.parse(localStorage.getItem(OSTORE))||{};}catch(e){OVERRIDES={};}
  loadFichas(); loadProfiles(); }
 function persist(){ try{localStorage.setItem(STORE,JSON.stringify(DATA.map(({_blob,_cblob,_n,_d,_cli,...r})=>r)));}catch(e){} }
@@ -872,6 +885,13 @@ function migrateTeleItem(raw){
 }
 function loadTele(){ try{TELE=(JSON.parse(localStorage.getItem(TELESTORE))||[]).map(migrateTeleItem);}catch(e){TELE=[];} }
 function saveTele(){ try{localStorage.setItem(TELESTORE,JSON.stringify(TELE));}catch(e){} }
+// Proceso de implementación (v82): estado por cliente del módulo Clientes → Implementación.
+// {[cliente]:{agregado:bool, inicio:'YYYY-MM-DD', cierre:'YYYY-MM-DD', notas:''}} — los clientes
+// en estado Demo entran solos por su ficha; "agregado" marca los sumados a mano como nuevos.
+const IMPLSTORE='kb_cmq_impl_v1';
+let IMPL={};
+function loadImpl(){ try{IMPL=JSON.parse(localStorage.getItem(IMPLSTORE))||{};}catch(e){IMPL={};} }
+function saveImpl(){ try{localStorage.setItem(IMPLSTORE,JSON.stringify(IMPL));}catch(e){} }
 function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 /* Clasifica la fecha de un ticket de Telemática por día de semana — entre semana, sábado
    o domingo (posible hora extra). Ya no se distingue horario laboral vs excedido de
@@ -1030,12 +1050,29 @@ function updateCounts(){ document.getElementById('c-tickets').textContent=filter
 function animate(el){ if(!el)return; el.classList.remove('up'); void el.offsetWidth; el.classList.add('up'); }
 function renderScopeNotes(){
  const parts=[];
- if(scopeCli) parts.push('<span class="cdot" style="width:8px;height:8px;border-radius:50%;background:'+clientColor(scopeCli)+'"></span> '+esc(scopeCli));
- if(curAsig.size) parts.push('Responsable: '+[...curAsig].map(esc).join(', '));
- if(respFilter&&respFilter.mode==='author') parts.push('Respondió: '+esc(respFilter.value));
+ const x=w=>`<button type="button" class="snx" onclick="event.stopPropagation();clearScopePart('${w}')" title="Quitar este filtro" aria-label="Quitar este filtro">✕</button>`;
+ if(scopeCli) parts.push('<span class="cdot" style="width:8px;height:8px;border-radius:50%;background:'+clientColor(scopeCli)+'"></span> '+esc(scopeCli)+x('cli'));
+ if(curTypes.size) parts.push('Tipo: '+[...curTypes].map(esc).join(', ')+x('tipo'));
+ if(curEstados.size) parts.push('Estado: '+[...curEstados].map(esc).join(', ')+x('estado'));
+ if(curAsig.size) parts.push('Responsable: '+[...curAsig].map(esc).join(', ')+x('asig'));
+ if(curOrigen.size) parts.push('Origen: '+[...curOrigen].map(v=>v==='telematica'?'Telemática':'Jira').join(', ')+x('origen'));
+ if(respFilter&&respFilter.mode==='author') parts.push('Respondió: '+esc(respFilter.value)+x('resp'));
+ if(qv()) parts.push('Búsqueda: "'+esc(qv())+'"'+x('q'));
  const t=parts.join(' &nbsp;·&nbsp; ');
  ['scope1','scope2','scope3'].forEach(id=>{const e=document.getElementById(id); if(!e)return; e.innerHTML=t; e.style.display=t?'inline-flex':'none';});
 }
+// Quita un filtro activo directamente desde la etiqueta del Panel/Matriz/Tickets (v82) —
+// antes había que ir hasta el filtro original para desarmarlo.
+window.clearScopePart=(w)=>{
+ if(w==='cli'){ scopeCli=''; shown=PAGE; rebuildAll(); return; }
+ if(w==='tipo') curTypes.clear();
+ if(w==='estado') curEstados.clear();
+ if(w==='asig') curAsig.clear();
+ if(w==='origen') curOrigen.clear();
+ if(w==='resp') respFilter=null;
+ if(w==='q'){ const qi=document.getElementById('q'); if(qi)qi.value=''; }
+ shown=PAGE; refresh();
+};
 
 // Barra de clientes: el botón "Cliente · X" es un desplegable para elegir cliente (funciona
 // siempre, incluso con los chips escondidos), y el chevron de al lado esconde/muestra los
@@ -2020,17 +2057,128 @@ window.setCfgView=v=>{
 };
 // borradores en memoria (no persistidos) para fichas nuevas todavía no guardadas — evita que cada re-render (ej. "+ Agregar fila") las reinicie en blanco, sin ensuciar FICHAS/Cartera/KPIs antes de Guardar
 let _newFichaDrafts={};
+// ——— Proceso de implementación (v82) ———
+// Agrupa a todos los clientes en Demo (por su ficha) + los agregados a mano como nuevos.
+// Por cliente: el desarrollo son las tareas cargadas en Telemática, y se contabilizan
+// tareas / reuniones / reportes solicitados para poder medir el tiempo de cierre.
+function implClients(){
+ const s=new Set();
+ Object.keys(FICHAS).forEach(k=>{ const f=FICHAS[k]; if(f&&f.datos&&f.datos.estado==='Demo') s.add(k); });
+ Object.keys(IMPL).forEach(k=>{ if(IMPL[k]&&IMPL[k].agregado) s.add(k); });
+ return [...s].sort((a,b)=>a.localeCompare(b));
+}
+function implStats(cli){
+ const tareas=TELE.filter(t=>t.cliente===cli).slice().sort((a,b)=>(parseDate(a.fecha)||0)-(parseDate(b.fecha)||0));
+ const reuniones=tareas.filter(t=>/reuni|seguimiento/i.test(t.tipo||'')).length;
+ const reportes=tareas.filter(t=>categoriaOf(t.tipo)==='Reportes').length;
+ const horasMs=tareas.map(t=>tiempoAsignadoMs(t)).filter(x=>x!=null).reduce((s,x)=>s+x,0);
+ const st=IMPL[cli]||{};
+ const fechas=tareas.map(t=>parseDate(t.fecha)).filter(Boolean);
+ const inicio=st.inicio?tsOf(st.inicio):(fechas.length?fechas[0]:null);
+ const cierre=st.cierre?tsOf(st.cierre):null;
+ const dias=inicio?Math.max(0,Math.round(((cierre||Date.now())-inicio)/864e5)):null;
+ return {tareas,reuniones,reportes,horasMs,inicio,cierre,dias,st};
+}
+function renderImpl(){
+ const box=document.getElementById('ejecImpl'); if(!box)return;
+ const list=implClients();
+ const disponibles=CLIENTS.map(c=>c.name).filter(n=>!list.includes(n));
+ const totFin=list.filter(c=>(IMPL[c]||{}).cierre).length;
+ const totTareas=list.reduce((s,c)=>s+TELE.filter(t=>t.cliente===c).length,0);
+ const kpis=`<div class="kpis" style="margin-top:0">
+  <div class="kpi"><div class="l">${KPI_IC.cli}En implementación</div><div class="n">${list.length-totFin}</div><div class="kfoot">clientes en curso</div></div>
+  <div class="kpi"><div class="l">${KPI_IC.check}Finalizadas</div><div class="n">${totFin}</div><div class="kfoot">implementaciones cerradas</div></div>
+  <div class="kpi"><div class="l">${KPI_IC.t}Tareas cargadas</div><div class="n">${totTareas}</div><div class="kfoot">en todos estos clientes</div></div>
+ </div>`;
+ const cards=list.map(cli=>{
+  const s=implStats(cli);
+  const fin=!!s.cierre;
+  const manual=!!(IMPL[cli]&&IMPL[cli].agregado);
+  const fmtD10=ts=>ts?new Date(ts).toISOString().slice(0,10):'';
+  const rows=s.tareas.length?s.tareas.map(t=>`<div class="implRow" data-tele-view="${esc(t.id)}" title="Abrir esta tarea"><span class="ifecha">${esc(t.fecha||'—')}</span><span class="itipo">${esc(t.tipo||'—')}</span><span class="ihs">${t.horas?esc(String(t.horas))+'h':'—'}</span><span class="iresp">${esc(t.responsable||'—')}</span><span class="tag ${t.estado==='Resuelto'?'':'st'}">${esc(t.estado||'—')}</span></div>`).join('')
+   :'<p class="tinfo" style="margin:6px 0 0">Todavía no hay tareas cargadas en Telemática para este cliente — cada tarea que cargues va a aparecer acá como parte de su desarrollo.</p>';
+  return `<details class="card" data-ic="${esc(cli)}"${implCardClosed.has(cli)?'':' open'}>
+   <summary class="lab" style="margin-top:0;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+    <span class="cdot" style="width:10px;height:10px;border-radius:50%;background:${clientColor(cli)}"></span>${esc(cli)}
+    <span class="tag ${fin?'':'st'}" style="text-transform:none">${fin?'Implementación finalizada':'En implementación'}</span>
+    ${manual?'<span class="tinfo" style="text-transform:none;font-weight:400">agregado a mano</span>':'<span class="tinfo" style="text-transform:none;font-weight:400">por ficha en Demo</span>'}
+   </summary>
+   <div class="tkpi" style="margin:10px 0 4px">
+    <div class="box"><div class="n">${s.tareas.length}</div><div class="l">Tareas solicitadas</div></div>
+    <div class="box"><div class="n">${s.reuniones}</div><div class="l">Reuniones</div></div>
+    <div class="box"><div class="n">${s.reportes}</div><div class="l">Reportes</div></div>
+    <div class="box"><div class="n">${s.horasMs?fmtDur(s.horasMs):'—'}</div><div class="l">Tiempo dedicado</div></div>
+    <div class="box ${fin?'int':'cli'}"><div class="n">${s.dias==null?'—':s.dias+'<span class="u">d</span>'}</div><div class="l">${fin?'Duró la implementación':'Días desde el inicio'}</div></div>
+   </div>
+   <div class="filtrow" style="align-items:flex-end;flex-wrap:wrap;gap:12px" onclick="event.stopPropagation()">
+    <div class="fRow" style="margin:0"><div class="lab" style="margin-top:0">Inicio</div><input type="date" class="finput implInicio" data-cli="${esc(cli)}" value="${fmtD10(s.st.inicio?tsOf(s.st.inicio):s.inicio)}" style="max-width:160px"></div>
+    ${fin?`<div class="fRow" style="margin:0"><div class="lab" style="margin-top:0">Cierre</div><input type="date" class="finput implCierre" data-cli="${esc(cli)}" value="${fmtD10(s.cierre)}" style="max-width:160px"></div>
+      <button class="btn sm implReopen" data-cli="${esc(cli)}">Reabrir</button>`
+     :`<button class="btn primary sm implFin" data-cli="${esc(cli)}">Marcar implementación finalizada</button>`}
+    ${manual?`<button class="btn sm implQuitar" data-cli="${esc(cli)}">Quitar del módulo</button>`:''}
+   </div>
+   <div class="lab" style="margin-top:14px">Desarrollo del cliente — tareas cargadas en Telemática</div>
+   ${rows}
+  </details>`;
+ }).join('');
+ box.innerHTML=`
+  <div class="card">
+   <div class="lab" style="margin-top:0">Proceso de implementación</div>
+   <p class="tinfo" style="margin:4px 0 10px">Acá se agrupan todos los clientes en <b>Demo</b> (por su ficha) y los que agregues como nuevos. El desarrollo de cada cliente se arma solo con las tareas que cargás en Telemática, y se contabilizan tareas, reuniones y reportes solicitados para medir el tiempo hasta el cierre de la implementación.</p>
+   <div class="filtrow" style="align-items:center">
+    <select class="sel" id="selImplAdd"><option value="">Agregar cliente nuevo al módulo…</option>${disponibles.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('')}</select>
+   </div>
+  </div>
+  ${kpis}
+  ${list.length?cards:'<div class="card"><p class="tinfo">No hay clientes en implementación: no hay fichas en estado Demo y no agregaste ninguno a mano todavía.</p></div>'}`;
+ const selAdd=document.getElementById('selImplAdd');
+ if(selAdd) selAdd.onchange=e=>{
+  const n=e.target.value; if(!n)return;
+  IMPL[n]=IMPL[n]||{}; IMPL[n].agregado=true;
+  saveImpl(); pushState(); renderImpl();
+ };
+ box.querySelectorAll('.implFin').forEach(b=>b.onclick=()=>{
+  const c=b.dataset.cli; IMPL[c]=IMPL[c]||{}; IMPL[c].cierre=new Date().toISOString().slice(0,10);
+  saveImpl(); pushState(); renderImpl();
+ });
+ box.querySelectorAll('.implReopen').forEach(b=>b.onclick=()=>{
+  const c=b.dataset.cli; if(IMPL[c])delete IMPL[c].cierre;
+  saveImpl(); pushState(); renderImpl();
+ });
+ box.querySelectorAll('.implQuitar').forEach(b=>b.onclick=()=>{
+  const c=b.dataset.cli;
+  if(!confirm('¿Quitar a '+c+' del módulo de implementación? (No borra sus tareas de Telemática.)'))return;
+  delete IMPL[c]; saveImpl(); pushState(); renderImpl();
+ });
+ box.querySelectorAll('.implInicio').forEach(inp=>inp.onchange=e=>{
+  const c=inp.dataset.cli; IMPL[c]=IMPL[c]||{}; IMPL[c].inicio=e.target.value;
+  saveImpl(); pushState(); renderImpl();
+ });
+ box.querySelectorAll('.implCierre').forEach(inp=>inp.onchange=e=>{
+  const c=inp.dataset.cli; IMPL[c]=IMPL[c]||{}; IMPL[c].cierre=e.target.value;
+  saveImpl(); pushState(); renderImpl();
+ });
+ box.querySelectorAll('.implRow[data-tele-view]').forEach(r=>r.onclick=()=>{
+  const t=TELE.find(x=>x.id===r.dataset.teleView); if(t)openTeleModal(r.dataset.teleView);
+ });
+ box.querySelectorAll('details[data-ic]').forEach(det=>{
+  det.addEventListener('toggle',()=>{ const k=det.dataset.ic; if(det.open)implCardClosed.delete(k); else implCardClosed.add(k); });
+ });
+}
+let implCardClosed=new Set();
 window.setEjecView=v=>{
  ejecView=v;
  document.getElementById('btnCliLista').classList.toggle('on',v==='lista');
  document.getElementById('btnEjecFichas').classList.toggle('on',v==='fichas');
  document.getElementById('btnEjecCartera').classList.toggle('on',v==='cartera');
+ document.getElementById('btnEjecImpl').classList.toggle('on',v==='impl');
  document.getElementById('clientesLista').style.display=v==='lista'?'block':'none';
  document.getElementById('ejecFichas').style.display=v==='fichas'?'block':'none';
  document.getElementById('ejecCartera').style.display=v==='cartera'?'block':'none';
- if(v==='fichas')renderFichas(); else if(v==='cartera')renderCartera(); else renderClientes();
+ document.getElementById('ejecImpl').style.display=v==='impl'?'block':'none';
+ if(v==='fichas')renderFichas(); else if(v==='cartera')renderCartera(); else if(v==='impl')renderImpl(); else renderClientes();
 };
-function renderEjecutivos(){ if(ejecView==='fichas')renderFichas(); else if(ejecView==='cartera')renderCartera(); renderClientes(); }
+function renderEjecutivos(){ if(ejecView==='fichas')renderFichas(); else if(ejecView==='cartera')renderCartera(); else if(ejecView==='impl')renderImpl(); renderClientes(); }
 
 function cfgFieldInput(cls,sec,ri,field,val){
  if(field.type==='select'){
@@ -3054,7 +3202,7 @@ async function pushState(){
  try{
   await fbWait();
   const {db,doc,setDoc}=window.__fb;
-  await setDoc(doc(db,'kb_state','main'),{overrides:OVERRIDES,clients:CLIENTS,fichas:FICHAS,tele:TELE,apiCfg:loadApiCfg(),perfiles:PROFILES,actualizado:new Date().toISOString()});
+  await setDoc(doc(db,'kb_state','main'),{overrides:OVERRIDES,clients:CLIENTS,fichas:FICHAS,tele:TELE,impl:IMPL,apiCfg:loadApiCfg(),perfiles:PROFILES,actualizado:new Date().toISOString()});
  }catch(e){ console.error('Firebase (guardar):',e); }
 }
 async function pullState(){
@@ -3070,6 +3218,7 @@ async function pullState(){
   if(j&&j.fichas&&typeof j.fichas==='object'){FICHAS={};Object.keys(j.fichas).forEach(k=>{FICHAS[k]=migrateFicha(j.fichas[k],k);});saveFichas();renderEjecutivos();}
   if(j&&Array.isArray(j.tele)){TELE=j.tele.map(migrateTeleItem);saveTele();renderTelematica();}
   if(j&&j.perfiles&&typeof j.perfiles==='object'){PROFILES=j.perfiles;saveProfiles();if(cfgView==='perfil')renderPerfil();}
+  if(j&&j.impl&&typeof j.impl==='object'){IMPL=j.impl;saveImpl();if(ejecView==='impl')renderImpl();}
   if(j&&j.apiCfg&&typeof j.apiCfg==='object'&&j.apiCfg.url&&!loadApiCfg().url&&!apiCfgTouched){
    saveApiCfg(j.apiCfg);
    const eu=document.getElementById('apiUrl');
