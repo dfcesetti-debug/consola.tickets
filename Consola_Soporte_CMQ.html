@@ -399,6 +399,30 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 .cfgSec summary::before{content:'▸ ';color:var(--mut2)}
 .cfgSec[open] summary::before{content:'▾ '}
 .cfgTableWrap{overflow-x:auto}
+/* Árbol de grupos (estructura Geotab): raíz a la izquierda, la jerarquía crece hacia la
+   derecha con conectores — mismo dibujo que el panel de grupos de Geotab. */
+.gtree{overflow-x:auto;padding:6px 2px 2px}
+.gtUl{list-style:none;margin:0;padding:0 0 0 30px;position:relative}
+.gtree>.gtUl{padding-left:0}
+.gtUl .gtUl::before{content:'';position:absolute;left:12px;top:-6px;bottom:16px;width:2px;background:var(--edge);border-radius:2px}
+.gtLi{position:relative;margin:7px 0}
+.gtUl .gtUl>.gtLi::before{content:'';position:absolute;left:-18px;top:16px;width:16px;height:2px;background:var(--edge)}
+.gtNode{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border:1px solid var(--edge);border-radius:10px;background:var(--panel);font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
+.gtNode:hover{border-color:var(--accent)}
+.gtNode .gtDot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+.gtNode.gtRoot{background:var(--solid);color:var(--onsolid);border-color:var(--solid)}
+.gtNode.gtRoot .gtDot{background:var(--accent)}
+.gtNode.gtCli{background:var(--accdim);border-color:var(--accborder);color:var(--accent2);font-weight:750}
+.gtNode .gtTg{border:none;background:transparent;color:inherit;opacity:.65;cursor:pointer;font-size:9px;padding:2px 3px;line-height:1}
+.gtNode .gtTg:hover{opacity:1}
+.gtNode .gtCnt{font-family:var(--mono);font-size:10px;opacity:.6}
+.gtActs{display:inline-flex;gap:2px;margin-left:4px;opacity:0;transition:opacity .15s var(--ease)}
+.gtLi:hover>.gtRow .gtActs,.gtNode:focus-within .gtActs{opacity:1}
+.gtActs button{border:none;background:transparent;color:var(--mut2);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:6px;line-height:1}
+.gtActs button:hover{background:var(--edge2);color:var(--accent2)}
+.gtActs button.gtDel:hover{color:var(--danger)}
+.gtRow{display:flex;align-items:center}
+@media(pointer:coarse){.gtActs{opacity:1}}
 .teleRowsHead,.teleRow{display:grid;grid-template-columns:150px 130px 170px 80px 110px 150px 1fr 30px;gap:8px;align-items:center;min-width:950px}
 .teleRowsHead{font-size:10.5px;font-weight:800;color:var(--mut2);text-transform:uppercase;letter-spacing:.04em;padding:0 0 8px;border-bottom:1px solid var(--edge)}
 .teleRow{padding:8px 0;border-bottom:1px solid var(--edge2)}
@@ -1766,6 +1790,7 @@ function diffFicha(before,after){
  }
  if(JSON.stringify(d0.referentes_cliente||[])!==JSON.stringify(d1.referentes_cliente||[])) changes.push(`Referente(s) del cliente modificados (${(d1.referentes_cliente||[]).length})`);
  if(JSON.stringify(d0.referentes_telematica||[])!==JSON.stringify(d1.referentes_telematica||[])) changes.push(`Referente(s) de telemática modificados (${(d1.referentes_telematica||[]).length})`);
+ if(JSON.stringify(before.grupos_arbol||null)!==JSON.stringify(after.grupos_arbol||null)) changes.push('Árbol de grupos (Geotab) modificado');
  CONFIG_SECTIONS.forEach(sec=>{
   const r0=(before.configuracion||{})[sec.key]||[], r1=(after.configuracion||{})[sec.key]||[];
   if(JSON.stringify(r0)!==JSON.stringify(r1)){
@@ -1909,6 +1934,16 @@ const REF_SECTIONS=[
  {key:'referentes_cliente',label:'Referente(s) del cliente',fields:[{k:'nombre',l:'Nombre'},{k:'cargo',l:'Cargo'},{k:'telefono',l:'Teléfono'},{k:'email',l:'Email'}]},
  {key:'referentes_telematica',label:'Referente(s) de telemática',fields:[{k:'nombre',l:'Nombre'},{k:'contacto',l:'Contacto (tel/email)'}]}
 ];
+// Estructura de grupos por defecto — replica el armado estándar del sistema Geotab:
+// Grupo Empresa → cliente → Vehículos (Livianos/Pesados/Personal), Conductores y
+// Unidades de negocio. Cada nodo: {n:nombre, k:[hijos]}.
+function defaultGruposArbol(cliente){
+ return {n:'Grupo Empresa',k:[{n:cliente||'Cliente',k:[
+  {n:'Vehículos',k:[{n:'Livianos',k:[]},{n:'Pesados',k:[]},{n:'Personal',k:[]}]},
+  {n:'Conductores',k:[]},
+  {n:'Unidades de negocio',k:[]}
+ ]}]};
+}
 function emptyFicha(name){
  return {
   schema:'cstt.ficha.v1', cliente:name, actualizado:'',
@@ -1916,6 +1951,7 @@ function emptyFicha(name){
    referentes_cliente:[{nombre:'',cargo:'',telefono:'',email:''}],
    referentes_telematica:[{nombre:'',contacto:''}],
    ref_comercial:'',medios:[],notas:''},
+  grupos_arbol:defaultGruposArbol(name),
   configuracion:{
    dispositivos_go:GO_TIPOS_VEHICULO.slice(0,3).map(tv=>({tipo_vehiculo:tv,avisos_audio:'',recordatorio_id_conductor:'',exceso_velocidad:'',inicia_pitido_kmh:'',detiene_pitido_kmh:''})),
    aux_m:[],reportes:[],reuniones:[],grupos:[],autorizaciones:[],reglas:[],zonas:[],tipos_zona:[],
@@ -1939,6 +1975,7 @@ function migrateFicha(raw,name){
   DEVICE_SPECS.forEach(s=>{ f.configuracion[s.key]=f.configuracion[s.key]||{activo:false}; });
   f.historial=f.historial||[];
   f.cliente=f.cliente||name;
+  if(!f.grupos_arbol||!f.grupos_arbol.n) f.grupos_arbol=defaultGruposArbol(name);
   return f;
  }
  const nf=emptyFicha(name);
@@ -2072,6 +2109,41 @@ function refSectionHtml(sec,rows){
  </div>`;
 }
 
+// ——— Árbol de grupos (estructura Geotab) ———
+// Estado de UI del árbol: qué nodos están colapsados (clave cliente|path) y qué tarjetas de
+// la ficha cerró el usuario — ambos sobreviven a los re-renders de renderFichas.
+let fichaCardClosed=new Set(), gtCollapsed=new Set();
+function gtFind(root,pathArr){ let n=root; for(const i of pathArr){ if(!n||!n.k)return null; n=n.k[i]; } return n; }
+function gtreeHtml(node,path,cliente){
+ const pkey=cliente+'|'+path.join('.');
+ const isRoot=path.length===0, isCli=path.length===1;
+ const kids=node.k||[], collapsed=gtCollapsed.has(pkey);
+ const tg=kids.length?`<button type="button" class="gtTg" data-gtg="${path.join('.')}" title="${collapsed?'Expandir':'Colapsar'}">${collapsed?'▸':'▾'}</button>`:'';
+ const acts=`<span class="gtActs"><button type="button" data-gadd="${path.join('.')}" title="Agregar subgrupo">＋</button><button type="button" data-gren="${path.join('.')}" title="Renombrar">✎</button>${isRoot?'':`<button type="button" class="gtDel" data-gdel="${path.join('.')}" title="Eliminar este grupo">✕</button>`}</span>`;
+ return `<li class="gtLi"><div class="gtRow"><span class="gtNode${isRoot?' gtRoot':''}${isCli?' gtCli':''}" tabindex="0">${tg}<span class="gtDot"></span>${esc(node.n)}${kids.length?`<span class="gtCnt">${kids.length}</span>`:''}</span>${acts}</div>${kids.length&&!collapsed?`<ul class="gtUl">${kids.map((ch,i)=>gtreeHtml(ch,path.concat(i),cliente)).join('')}</ul>`:''}</li>`;
+}
+// Documento standalone del árbol (ver aparte / imprimir) — colores fijos de modo claro
+// para que salga bien impreso, sin depender de los tokens de la app.
+function gtreeDocHtml(f){
+ const line=(node,depth,isLast)=>{
+  const kids=node.k||[];
+  return `<li style="position:relative;margin:7px 0;${depth?'':'list-style:none'}"><span style="display:inline-block;padding:6px 12px;border:1px solid ${depth===0?'#0b1220':'#dbe3ee'};border-radius:10px;background:${depth===0?'#0b1220':depth===1?'#e2f5fa':'#fff'};color:${depth===0?'#fff':depth===1?'#087f96':'#0b1220'};font-weight:${depth<=1?'700':'600'};font-size:13px">${esc(node.n)}</span>${kids.length?`<ul style="list-style:none;margin:0;padding:0 0 0 34px;border-left:2px solid #dbe3ee;margin-left:14px">${kids.map((ch,i)=>line(ch,depth+1,i===kids.length-1)).join('')}</ul>`:''}</li>`;
+ };
+ return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Grupos — ${esc(f.cliente||'')}</title></head>
+ <body style="font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#0b1220;padding:30px;max-width:900px;margin:0 auto">
+  <h1 style="font-size:20px;margin:0 0 2px">Estructura de grupos (Geotab) — ${esc(f.cliente||'')}</h1>
+  <p style="color:#5c6b82;font-size:12.5px;margin:0 0 18px">Generado desde la Consola de Soporte · ${esc(new Date().toLocaleDateString('es-AR'))} — reutilizable como plantilla para clientes similares.</p>
+  <ul style="list-style:none;margin:0;padding:0">${line(f.grupos_arbol,0,true)}</ul>
+  <button onclick="window.print()" style="margin-top:22px;padding:9px 16px;border:1px solid #dbe3ee;border-radius:9px;background:#0aa2c0;color:#fff;font-weight:700;cursor:pointer" class="pfNoPrint">Imprimir / PDF</button>
+  <style>@media print{.pfNoPrint{display:none}}</style>
+ </body></html>`;
+}
+function downloadGtreeJson(f){
+ const blob=new Blob([JSON.stringify(f.grupos_arbol,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a'); a.href=url; a.download=`grupos_${String(f.cliente||'cliente').replace(/[^a-z0-9]+/gi,'_')}.json`;
+ document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),500);
+}
 function renderFichas(){
  const box=document.getElementById('ejecFichas');
  if(!CLIENTS.length){ box.innerHTML='<div class="card"><p class="tinfo">Configurá al menos un cliente en la pestaña Clientes antes de cargar fichas.</p></div>'; return; }
@@ -2097,25 +2169,19 @@ function renderFichas(){
     <button class="btn sm" id="btnPrintFicha">&#128438; Imprimir / PDF</button>
    </div>
   </div>
-  <div class="card">
-   <div class="lab" style="margin-top:0">Estado del cliente</div>
-   <div class="seg" id="segEstado">
+  <details class="card" data-fc="datos"${fichaCardClosed.has('datos')?'':' open'}>
+   <summary class="lab" style="margin-top:0">Estado y datos del cliente</summary>
+   <div class="seg" id="segEstado" style="margin-top:10px">
     <button data-v="Demo" class="${d.estado==='Demo'?'on demo':''}">Demo</button>
     <button data-v="Cliente fijo" class="${d.estado==='Cliente fijo'?'on fijo':''}">Cliente fijo</button>
    </div>
 
-   <div class="grid2" style="margin-top:14px;grid-template-columns:1fr 1fr 1fr">
-    <div class="fRow"><div class="lab" style="margin-top:0">País</div>
-     <input class="finput" id="fPais" list="dlPais" value="${esc(d.pais)}" placeholder="Ej: Argentina">
-     <datalist id="dlPais">${PAIS_SUGERENCIAS.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
-    </div>
-    <div class="fRow"><div class="lab" style="margin-top:0">Tipo de logística</div>
-     <input class="finput" id="fLogistica" list="dlLogistica" value="${esc(d.tipo_logistica)}" placeholder="Ej: Distribución">
-     <datalist id="dlLogistica">${LOGISTICA_SUGERENCIAS.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
-    </div>
-    <div class="fRow"><div class="lab" style="margin-top:0">Ubicación</div>
-     <input class="finput" id="fUbicacion" value="${esc(d.ubicacion)}" placeholder="Ciudad / provincia">
-    </div>
+   <div class="fRow" style="max-width:320px"><div class="lab">País</div>
+    <input class="finput" id="fPais" list="dlPais" value="${esc(d.pais)}" placeholder="Ej: Argentina">
+    <datalist id="dlPais">${PAIS_SUGERENCIAS.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+   </div>
+   <div class="fRow" style="max-width:320px"><div class="lab">Ubicación</div>
+    <input class="finput" id="fUbicacion" value="${esc(d.ubicacion)}" placeholder="Ciudad / provincia">
    </div>
 
    ${refSectionHtml(REF_SECTIONS[0],d.referentes_cliente)}
@@ -2133,20 +2199,36 @@ function renderFichas(){
    <div class="fRow"><div class="lab">Notas / observaciones</div>
     <textarea class="ftextarea" id="fNotas" placeholder="Observaciones libres…">${esc(d.notas)}</textarea>
    </div>
-  </div>
 
-  <div class="card">
-   <div class="lab" style="margin-top:0">Configuración técnica</div>
-   <p class="tinfo" style="margin:0 0 6px">Toda la configuración realizada para este cliente. Agregá o quitá filas por sección.</p>
+   <div class="fRow" style="max-width:320px"><div class="lab">Tipo de logística</div>
+    <input class="finput" id="fLogistica" list="dlLogistica" value="${esc(d.tipo_logistica)}" placeholder="Ej: Distribución">
+    <datalist id="dlLogistica">${LOGISTICA_SUGERENCIAS.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+   </div>
+  </details>
+
+  <details class="card" data-fc="grupos"${fichaCardClosed.has('grupos')?'':' open'}>
+   <summary class="lab" style="margin-top:0">Grupos · estructura Geotab</summary>
+   <p class="tinfo" style="margin:6px 0 4px">El armado de grupos que se replica en Geotab: Grupo Empresa → cliente → Vehículos (Livianos / Pesados / Personal), Conductores y Unidades de negocio. Agregá subgrupos con ＋, renombrá con ✎. Se guarda con la ficha.</p>
+   <div class="tools" style="margin:8px 0 4px" onclick="event.stopPropagation()">
+    <button class="btn sm" id="btnGtreeVer">Ver / imprimir aparte</button>
+    <button class="btn sm" id="btnGtreeJson">&#8675; Descargar árbol (JSON)</button>
+    <select class="sel" id="selGtreeCopy"><option value="">Copiar árbol de otro cliente…</option>${Object.keys(FICHAS).filter(k=>k!==ejecCliente&&FICHAS[k].grupos_arbol).map(k=>`<option value="${esc(k)}">${esc(k)}</option>`).join('')}</select>
+   </div>
+   <div class="gtree" id="gtreeBox"><ul class="gtUl">${gtreeHtml(f.grupos_arbol,[],ejecCliente)}</ul></div>
+  </details>
+
+  <details class="card" data-fc="config"${fichaCardClosed.has('config')?'':' open'}>
+   <summary class="lab" style="margin-top:0">Configuración técnica</summary>
+   <p class="tinfo" style="margin:6px 0 6px">Toda la configuración realizada para este cliente. Agregá o quitá filas por sección.</p>
    ${cfgSectionHtml(CONFIG_SECTIONS.find(s=>s.key==='dispositivos_go'),cfg.dispositivos_go)}
    ${DEVICE_SPECS.map(spec=>deviceSpecHtml(spec,cfg[spec.key])).join('')}
    ${CONFIG_SECTIONS.filter(s=>s.key!=='dispositivos_go').map(sec=>cfgSectionHtml(sec,cfg[sec.key])).join('')}
-  </div>
+  </details>
 
-  <div class="card">
-   <div class="lab" style="margin-top:0">Historial de cambios</div>
+  <details class="card" data-fc="hist"${fichaCardClosed.has('hist')?'':' open'}>
+   <summary class="lab" style="margin-top:0">Historial de cambios</summary>
    ${hist.length?`<ul class="histList">${hist.map(h=>`<li><span class="hd">${esc(h.fecha||'')}</span> <b>${esc(h.usuario||'Sin identificar')}</b> — ${esc(h.resumen||'Ficha actualizada')}</li>`).join('')}</ul>`:'<p class="tinfo">Sin cambios registrados todavía.</p>'}
-  </div>
+  </details>
 
   <div class="card">
    <div class="tools">
@@ -2220,6 +2302,55 @@ function renderFichas(){
  box.querySelectorAll('.refDelRow').forEach(btn=>{
   btn.onclick=()=>{ const sec=btn.dataset.sec, ri=+btn.dataset.ri; d[sec].splice(ri,1); renderFichas(); };
  });
+ // tarjetas desplegables de la ficha: recordar cuáles cerró el usuario entre re-renders
+ box.querySelectorAll('details[data-fc]').forEach(det=>{
+  det.addEventListener('toggle',()=>{ const k=det.dataset.fc; if(det.open)fichaCardClosed.delete(k); else fichaCardClosed.add(k); });
+ });
+ // árbol de grupos: colapsar/expandir, agregar, renombrar, eliminar
+ const gtRoot=f.grupos_arbol;
+ const gtPath=s=>s===''?[]:s.split('.').map(Number);
+ box.querySelectorAll('[data-gtg]').forEach(b=>b.onclick=(e)=>{ e.stopPropagation();
+  const key=ejecCliente+'|'+b.dataset.gtg;
+  gtCollapsed.has(key)?gtCollapsed.delete(key):gtCollapsed.add(key);
+  renderFichas();
+ });
+ box.querySelectorAll('[data-gadd]').forEach(b=>b.onclick=(e)=>{ e.stopPropagation();
+  const node=gtFind(gtRoot,gtPath(b.dataset.gadd)); if(!node)return;
+  const name=(prompt('Nombre del nuevo subgrupo:')||'').trim(); if(!name)return;
+  node.k=node.k||[]; node.k.push({n:name,k:[]});
+  gtCollapsed.delete(ejecCliente+'|'+b.dataset.gadd);
+  renderFichas();
+ });
+ box.querySelectorAll('[data-gren]').forEach(b=>b.onclick=(e)=>{ e.stopPropagation();
+  const node=gtFind(gtRoot,gtPath(b.dataset.gren)); if(!node)return;
+  const name=(prompt('Nuevo nombre:',node.n)||'').trim(); if(!name)return;
+  node.n=name; renderFichas();
+ });
+ box.querySelectorAll('[data-gdel]').forEach(b=>b.onclick=(e)=>{ e.stopPropagation();
+  const path=gtPath(b.dataset.gdel); if(!path.length)return;
+  const idx=path.pop(), parent=gtFind(gtRoot,path); if(!parent||!parent.k)return;
+  const node=parent.k[idx];
+  if(!confirm('¿Eliminar el grupo "'+node.n+'"'+((node.k||[]).length?' y sus '+node.k.length+' subgrupos':'')+'?'))return;
+  parent.k.splice(idx,1); renderFichas();
+ });
+ const bGtVer=document.getElementById('btnGtreeVer');
+ if(bGtVer) bGtVer.onclick=()=>{
+  const w=window.open('','_blank');
+  if(!w){ alert('El navegador bloqueó la ventana. Habilitá pop-ups para este sitio e intentá de nuevo.'); return; }
+  w.document.write(gtreeDocHtml(f)); w.document.close();
+ };
+ const bGtJson=document.getElementById('btnGtreeJson');
+ if(bGtJson) bGtJson.onclick=()=>downloadGtreeJson(f);
+ const selGtCopy=document.getElementById('selGtreeCopy');
+ if(selGtCopy) selGtCopy.onchange=e=>{
+  const from=e.target.value; if(!from)return;
+  const src=FICHAS[from]&&FICHAS[from].grupos_arbol; if(!src){ e.target.value=''; return; }
+  if(!confirm('¿Reemplazar el árbol de '+ejecCliente+' por una copia del de '+from+'? El nodo del cliente se renombra automáticamente.')){ e.target.value=''; return; }
+  const copy=JSON.parse(JSON.stringify(src));
+  // el 2° nivel es el nombre del cliente de origen — se renombra al cliente actual
+  if(copy.k&&copy.k.length&&copy.k[0]&&copy.k[0].n===from) copy.k[0].n=ejecCliente;
+  f.grupos_arbol=copy; renderFichas();
+ };
  document.getElementById('btnExportJson').onclick=()=>downloadFichaJson(f);
  document.getElementById('btnPrintFicha').onclick=()=>printFicha(f);
  document.getElementById('fUsuario').oninput=e=>setLastUser(e.target.value);
