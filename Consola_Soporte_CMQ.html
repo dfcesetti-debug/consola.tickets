@@ -77,14 +77,19 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .bootSpin .ring{position:absolute;inset:-6px;border-radius:50%;border:2.5px solid var(--accdim);border-top-color:var(--accent);animation:bootSpin .8s linear infinite}
 @keyframes bootSpin{to{transform:rotate(360deg)}}
 .loginBox{width:100%;max-width:360px;background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.18)}
-.loginBrand{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.loginBrand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:18px}
+.loginHelp{margin-top:20px;padding-top:16px;border-top:1px solid var(--edge);display:flex;flex-direction:column;gap:9px}
+.loginHelp .tinfo{margin:0;text-align:center}
 .loginBrand .dot{width:38px;height:38px;border-radius:11px;background:linear-gradient(160deg,#12283a,#0a1a29);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 0 1px rgba(10,162,192,.28),0 4px 10px rgba(8,32,48,.28);flex:none;display:grid;place-items:center}
 .loginBrand .dot svg{width:23px;height:23px;display:block}
 .loginBrand b{color:var(--ink);font-size:15px;line-height:1.2;display:block}
 .loginBrand span{font-size:11px;color:var(--mut)}
 .loginBox .btn.primary{width:100%;justify-content:center;margin-top:8px}
-.loginErr{color:var(--danger);min-height:16px;margin-top:10px;font-size:12.5px}
-.loginOk{color:var(--sig);min-height:16px;margin-top:10px;font-size:12.5px}
+.loginMsg{min-height:0;margin-top:0;font-size:12.5px}
+.loginMsg:empty{margin-top:0}
+.loginMsg:not(:empty){margin-top:10px}
+.loginMsg.err{color:var(--danger)}
+.loginMsg.ok{color:var(--sig)}
 .railfoot a{color:var(--railtx);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .railfoot a:hover{color:var(--railon)}
 .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 16px;border-bottom:1px solid var(--railborder);margin-bottom:12px;transition:border-color .25s var(--ease)}
@@ -214,7 +219,7 @@ label.lab{display:block}
 @media(max-width:820px){.grid2{grid-template-columns:1fr}}
 ul.clean{margin:5px 0;padding-left:18px}ul.clean li{margin:4px 0;line-height:1.42}
 ol.steps{margin:5px 0;padding-left:20px}ol.steps li{margin:5px 0;line-height:1.42}
-.tmpl{background:var(--sigbg);border:1px solid var(--accborder);border-left:4px solid var(--sig);border-radius:10px;padding:12px 14px;position:relative;font-style:italic;color:var(--sigink);line-height:1.5}
+.tmpl{background:var(--sigbg);border:1px solid var(--accborder);border-radius:10px;padding:12px 14px;position:relative;font-style:italic;color:var(--sigink);line-height:1.5}
 .tmpl .copy{position:absolute;top:9px;right:9px;background:var(--sig);color:#fff;border:none;border-radius:8px;padding:5px 11px;font-size:11.5px;cursor:pointer;font-style:normal;font-weight:600}
 .tmpl .copy:active{transform:scale(.94)}
 .assign{display:inline-flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--edge);border-radius:20px;padding:5px 12px;font-weight:600;font-size:12.5px}
@@ -309,7 +314,7 @@ details.cm[open] summary::before{content:'▾ '}
 .tkpi .box .n{font-family:var(--mono);font-size:23px;font-weight:800}
 .tkpi .box .n .u{font-size:12px;font-weight:600;color:var(--mut);margin-left:3px}
 .tkpi .box .l{font-size:11.5px;color:var(--mut);margin-top:2px}
-.tkpi .box.int{border-left:3px solid var(--sig)}.tkpi .box.cli{border-left:3px solid var(--cli)}.tkpi .box.tot{border-left:3px solid var(--accent)}
+.tkpi .box.int{border-left:2px solid var(--sig)}.tkpi .box.cli{border-left:2px solid var(--cli)}.tkpi .box.tot{border-left:2px solid var(--accent)}
 .tkpi .box.tkCard{cursor:pointer}
 .tkpi .box.tkCard summary{display:block;list-style:none;cursor:pointer;position:relative;padding-right:18px}
 .tkpi .box.tkCard summary::-webkit-details-marker{display:none}
@@ -570,21 +575,22 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 </div>
 <div id="loginScreen" class="loginScreen" style="display:none">
  <div class="loginBox">
-  <div class="loginBrand"><div class="dot"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="16.5" r="2.4" fill="var(--accent)"></circle><path d="M6.4 12.2a7 7 0 0 1 5.4 5.4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"></path><path d="M6.1 7.9a11.4 11.4 0 0 1 10 10" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" opacity=".6"></path></svg></div><div><b>Televidentes</b><span>Soporte · Base de conocimiento</span></div></div>
+  <div class="loginBrand"><div class="dot"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="16.5" r="2.4" fill="var(--accent)"></circle><path d="M6.4 12.2a7 7 0 0 1 5.4 5.4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"></path><path d="M6.1 7.9a11.4 11.4 0 0 1 10 10" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" opacity=".6"></path></svg></div><div><b>Telemática</b><span>Soporte · Base de conocimiento</span></div></div>
   <div class="loginTag">Acceso seguro</div>
   <p class="tinfo" style="margin:0 0 16px">Acceso exclusivo para el equipo Cesetti.</p>
   <div class="fRow"><label class="lab" for="loginEmail" style="margin-top:0">Email</label><input class="finput" id="loginEmail" type="email" placeholder="nombre@cesetti.com.ar" autocomplete="username"></div>
   <div class="fRow"><label class="lab" for="loginPass" style="margin-top:0">Contraseña</label><input class="finput" id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
   <button class="btn primary" id="btnLogin">Ingresar</button>
-  <p class="loginErr" id="loginError"></p>
-  <p class="loginOk" id="loginPwMsg"></p>
-  <p class="tinfo" style="margin:6px 0 0;text-align:center">¿No tenés contraseña todavía o la olvidaste? <a id="btnCrearPass" style="color:var(--accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer">Creá tu contraseña por email</a></p>
-  <p class="tinfo" style="margin:10px 0 0;text-align:center">¿Primera vez acá? <a id="btnManualUsuarios" style="color:var(--accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer">Descargá el manual de uso</a></p>
+  <p class="loginMsg" id="loginMsg"></p>
+  <div class="loginHelp">
+   <p class="tinfo">¿No tenés contraseña todavía o la olvidaste? <a id="btnCrearPass" style="color:var(--accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer">Creá tu contraseña por email</a></p>
+   <p class="tinfo">¿Primera vez acá? <a id="btnManualUsuarios" style="color:var(--accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer">Descargá el manual de uso</a></p>
+  </div>
  </div>
 </div>
 <div id="appRoot" style="display:none">
 <aside class="rail">
- <div class="brand"><div class="dot"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="16.5" r="2.4" fill="var(--accent)"></circle><path d="M6.4 12.2a7 7 0 0 1 5.4 5.4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"></path><path d="M6.1 7.9a11.4 11.4 0 0 1 10 10" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" opacity=".6"></path></svg></div><div><b>Televidentes</b><br><span>Soporte · Base de conocimiento</span></div></div>
+ <div class="brand"><div class="dot"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="16.5" r="2.4" fill="var(--accent)"></circle><path d="M6.4 12.2a7 7 0 0 1 5.4 5.4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"></path><path d="M6.1 7.9a11.4 11.4 0 0 1 10 10" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" opacity=".6"></path></svg></div><div><b>Telemática</b><br><span>Soporte · Base de conocimiento</span></div></div>
  <button type="button" class="railToggle" id="railToggle" title="Ocultar/mostrar menú" aria-label="Ocultar o mostrar el menú lateral"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"></path></svg></button>
  <nav class="nav" id="nav">
   <a data-v="panel" href="#panel" class="on" title="Panel"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg></span> <span class="lbl">Panel</span></a>
@@ -2777,9 +2783,9 @@ table.pfTable{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:6
 table.pfTable th,table.pfTable td{border:1px solid #dbe3ee;padding:5px 7px;text-align:left}
 table.pfTable th{background:#eef2f8}
 .pfGrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:13px;margin-bottom:4px}
-.pfEmpty{font-size:12px;color:#8593a8;font-style:italic;margin:0 0 6px}
+.pfEmpty{font-size:12px;color:#667490;font-style:italic;margin:0 0 6px}
 ul.pfHist,ul.pfRefs{font-size:12px;padding-left:18px}
-.pfMeta{font-size:11px;color:#8593a8;margin-bottom:16px}
+.pfMeta{font-size:11px;color:#667490;margin-bottom:16px}
 .pfBar{margin-bottom:16px}
 .pfBar button{background:#087f96;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer}
 @media print{ body{padding:0} .pfNoPrint{display:none} }
@@ -2802,7 +2808,7 @@ h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#087f96;bo
 p,li{font-size:13px}
 ol,ul{padding-left:20px}
 li{margin:4px 0}
-.pfMeta{font-size:11px;color:#8593a8;margin-bottom:16px}
+.pfMeta{font-size:11px;color:#667490;margin-bottom:16px}
 .pfBar{margin-bottom:16px}
 .pfBar button{background:#087f96;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer}
 .callout{background:#e2f5fa;border:1px solid #bfe6ee;border-radius:10px;padding:12px 14px;font-size:13px;margin:10px 0}
@@ -3004,8 +3010,8 @@ function renderCartera(){
   const sugSections=CONFIG_SECTIONS.filter(s=>SUGGEST_KEYS.includes(s.key));
   const sugCounts=sugSections.map(s=>`<span class="tag">${esc(s.label)}: ${(sug[s.key]||[]).length}</span>`).join(' ');
   const label=[carteraPais,carteraLogistica].filter(Boolean).join(' · ');
-  sugHtml=`<div class="card" style="border-left:3px solid var(--accent)">
-   <div class="mtop"><div class="mtitle">&#128161; Sugerencia para clientes nuevos · ${esc(label)}</div><span class="pill">${matches.length} cliente${matches.length===1?'':'s'} de referencia</span></div>
+  sugHtml=`<div class="card">
+   <div class="mtop"><div class="mtitle">Sugerencia para clientes nuevos · ${esc(label)}</div><span class="pill">${matches.length} cliente${matches.length===1?'':'s'} de referencia</span></div>
    <p class="tinfo" style="margin:4px 0 8px">Reglas, reportes, zonas, tipos de zona, alertas de velocidad del GO y conexiones de auxiliares (AUX-M) que ya usan los clientes con este país y/o tipo de logística — se pueden aplicar como punto de partida a un cliente nuevo.</p>
    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${sugCounts||'<span class="tinfo">Sin datos todavía para esta combinación.</span>'}</div>
    <button class="btn sm primary" id="btnAplicarSugerencia">+ Aplicar a un cliente nuevo</button>
@@ -3019,7 +3025,7 @@ function renderCartera(){
   ${sugHtml}
   <div class="card">
    ${sorted.length?sorted.map(f=>f.pendiente?`
-     <div class="execFichaCard" style="border-left:3px solid var(--cli)">
+     <div class="execFichaCard">
       <div class="efHead">
        <div class="efTitle">
         <span class="cdot" style="width:9px;height:9px;border-radius:50%;background:${clientColor(f.cliente)};display:inline-block"></span>
@@ -3969,7 +3975,7 @@ function showLogin(msg){
  hideBootLoading();
  document.getElementById('appRoot').style.display='none';
  document.getElementById('loginScreen').style.display='flex';
- document.getElementById('loginError').textContent=msg||'';
+ const bootMsgEl=document.getElementById('loginMsg'); bootMsgEl.className='loginMsg'+(msg?' err':''); bootMsgEl.textContent=msg||'';
  try{localStorage.removeItem(ACTIVITY_KEY);}catch(e){}
 }
 ['click','keydown','input','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{ if(appBooted) touchActivity(); },{passive:true}));
@@ -3990,12 +3996,12 @@ async function initAuth(){
  const doLogin=async()=>{
   const email=(document.getElementById('loginEmail').value||'').trim();
   const pass=document.getElementById('loginPass').value||'';
-  const err=document.getElementById('loginError'); err.textContent='';
-  if(!isAllowedEmail(email)){ err.textContent='Usá tu email @cesetti.com.ar.'; return; }
-  if(!pass){ err.textContent='Ingresá la contraseña.'; return; }
+  const err=document.getElementById('loginMsg'); err.className='loginMsg'; err.textContent='';
+  if(!isAllowedEmail(email)){ err.className='loginMsg err'; err.textContent='Usá tu email @cesetti.com.ar.'; return; }
+  if(!pass){ err.className='loginMsg err'; err.textContent='Ingresá la contraseña.'; return; }
   const btn=document.getElementById('btnLogin'); btn.disabled=true; const label=btn.textContent; btn.textContent='Ingresando…';
   try{ await signInWithEmailAndPassword(auth,email,pass); }
-  catch(e){ err.textContent='Email o contraseña incorrectos.'; }
+  catch(e){ err.className='loginMsg err'; err.textContent='Email o contraseña incorrectos.'; }
   finally{ btn.disabled=false; btn.textContent=label; }
  };
  document.getElementById('btnLogin').onclick=doLogin;
@@ -4009,15 +4015,15 @@ async function initAuth(){
  document.getElementById('btnCrearPass').onclick=async(e)=>{
   e.preventDefault();
   const email=(document.getElementById('loginEmail').value||'').trim();
-  const errEl=document.getElementById('loginError'), okEl=document.getElementById('loginPwMsg');
-  errEl.textContent=''; okEl.textContent='';
-  if(!isAllowedEmail(email)){ errEl.textContent='Escribí primero tu email @cesetti.com.ar arriba, y volvé a tocar el link.'; return; }
+  const msgEl=document.getElementById('loginMsg');
+  msgEl.className='loginMsg'; msgEl.textContent='';
+  if(!isAllowedEmail(email)){ msgEl.className='loginMsg err'; msgEl.textContent='Escribí primero tu email @cesetti.com.ar arriba, y volvé a tocar el link.'; return; }
   const link=document.getElementById('btnCrearPass'); const label=link.textContent; link.textContent='Enviando…';
   try{
    await sendPasswordResetEmail(auth,email);
-   okEl.textContent='Te enviamos un email a '+email+' con un link para crear tu contraseña. Revisá tu bandeja de entrada (y spam).';
+   msgEl.className='loginMsg ok'; msgEl.textContent='Te enviamos un email a '+email+' con un link para crear tu contraseña. Revisá tu bandeja de entrada (y spam).';
   }catch(err){
-   errEl.textContent = err && err.code==='auth/user-not-found'
+   msgEl.className='loginMsg err'; msgEl.textContent = err && err.code==='auth/user-not-found'
     ? 'No encontramos una cuenta con ese email. Pedile a quien administra el acceso que la cree primero.'
     : 'No pudimos enviar el email. Probá de nuevo en un momento.';
   }finally{ link.textContent=label; }

@@ -41,10 +41,17 @@ typography:
     fontSize: "10.5px"
     fontWeight: 800
     letterSpacing: "0.06em"
+  meta:
+    fontFamily: "'Plus Jakarta Sans', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+    fontSize: "11.5px–13px"
+    fontWeight: 400
+    lineHeight: 1.4
 rounded:
   xs: "6px"
   sm: "8px"
   md: "9px"
+  input: "10px"
+  chip-sm: "12px"
   button: "11px"
   card: "14px"
   modal: "16px"
@@ -141,6 +148,7 @@ Paleta mayormente neutra (grises azulados) con un único acento de señal (teal)
 - **Title** (750, 17px sans): títulos de sección dentro de un módulo (ej. `.mtitle` en Matriz N1).
 - **Body** (400, 14px sans, line-height 1.5): texto corrido y base de la app.
 - **Label** (800, 10.5px sans, uppercase, letter-spacing 0.06em): eyebrows de tarjeta (`.lab`), encabezados de tabla, labels de campo de formulario.
+- **Meta** (400, 11.5–13px sans): rango de texto secundario/de apoyo — celdas de tabla densa, `.tinfo`, unidades junto a un readout, chips pequeños, metadatos ("Actualizado: …"). No es un único valor fijo sino un rango angosto (11.5/12/12.5/13px) según cuán secundario es el dato dentro de su contexto inmediato — documentado así en vez de forzado a un solo tamaño, porque la densidad alta (ver Overview) necesita ese margen fino de escala en vez de saltos de 1-2px que se notarían como inconsistencia real.
 
 ### Named Rules
 **The Instrument Weight Rule.** Los pesos saltan directo de 400 (cuerpo) a 700–800 (títulos, labels, números) — no hay un escalón intermedio de 500/600 para jerarquía. La distinción se hace con tamaño y color, no con pesos intermedios.
@@ -168,7 +176,7 @@ Sistema plano por defecto: las tarjetas, KPIs y botones no tienen sombra en repo
 
 ## Shapes
 
-Escala de radios consistente, del elemento más chico al más grande: 6–9px (chips pequeños, pills de conteo), 11px (botones), 14px (`--r`, tarjetas y KPIs), 16px (login box, modales), y 20px — completamente redondeado — para chips, tags, pills y badges (cualquier elemento tipo "cápsula"). No hay esquinas cuadradas (0px) en ningún componente interactivo.
+Escala de radios consistente, del elemento más chico al más grande: 6–9px (chips pequeños, pills de conteo), 10px (inputs de texto, `.finput`/`.sel`), 11px (botones), 12px (chips/tags de tamaño mediano, tarjetas de detalle KPI), 14px (`--r`, tarjetas y KPIs), 16px (login box, modales), y 20px — completamente redondeado — para chips, tags, pills y badges (cualquier elemento tipo "cápsula"). No hay esquinas cuadradas (0px) en ningún componente interactivo.
 
 ## Components
 
@@ -219,3 +227,4 @@ Carácter general: preciso y sin fricción — bordes definidos, esquinas modera
 - **Don't** agregar sombra decorativa a una tarjeta o superficie en reposo — rompe The Flat-At-Rest Rule.
 - **Don't** usar tarjetas gigantes con mucho espacio en blanco tipo landing SaaS — la densidad alta es intencional (ver Overview, anti-referente confirmado).
 - **Don't** usar un carácter Unicode como ícono (glifo, emoji) en contenido nuevo — dibujar un SVG propio con el mismo trazo que ya usan el rail y los estados vacíos.
+- **Don't** agregar un `border-left`/`border-right` de acento como decoración por defecto en tarjetas/callouts nuevos — es el tell más reconocible de UI genérica de IA (auditoría v96). Si hace falta distinguir 2-3 variantes relacionadas en contexto denso (ej. las 3 tarjetas de detalle de tiempos en `.tkpi`), un acento de **2px** como máximo es el límite aceptado — no 3-4px, y nunca si ya existe otro indicador (tag, ícono, color de texto) cubriendo la misma distinción.
