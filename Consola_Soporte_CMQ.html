@@ -1432,9 +1432,11 @@ function renderPanelTele(){
  box.innerHTML=`
   <div class="filtrow" style="align-items:center;flex-wrap:wrap;margin-bottom:14px">
    ${panelTreeChipsHtml(listScoped)}
-   <select class="sel" onchange="setPanelTreeRange(this.value)">${PANEL_TREE_RANGE_OPTS.map(([v,l])=>`<option value="${v}" ${panelTreeRange===v?'selected':''}>${esc(l)}</option>`).join('')}</select>
-   <div style="display:flex;align-items:center;gap:6px"><span class="tinfo">Desde</span><input type="date" class="finput" style="max-width:150px" value="${esc(panelTreeDesde)}" max="${esc(panelTreeHasta||'')}" onchange="setPanelTreeDesde(this.value)"></div>
-   <div style="display:flex;align-items:center;gap:6px"><span class="tinfo">Hasta</span><input type="date" class="finput" style="max-width:150px" value="${esc(panelTreeHasta)}" min="${esc(panelTreeDesde||'')}" onchange="setPanelTreeHasta(this.value)"></div>
+   <select class="sel" style="max-width:100px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap" onchange="setPanelTreeRange(this.value)">${PANEL_TREE_RANGE_OPTS.map(([v,l])=>`<option value="${v}" ${panelTreeRange===v?'selected':''}>${esc(l)}</option>`).join('')}</select>
+   <div style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap">
+    <div style="display:flex;align-items:center;gap:6px"><span class="tinfo">Desde</span><input type="date" class="finput" style="max-width:135px" value="${esc(panelTreeDesde)}" max="${esc(panelTreeHasta||'')}" onchange="setPanelTreeDesde(this.value)"></div>
+    <div style="display:flex;align-items:center;gap:6px"><span class="tinfo">Hasta</span><input type="date" class="finput" style="max-width:135px" value="${esc(panelTreeHasta)}" min="${esc(panelTreeDesde||'')}" onchange="setPanelTreeHasta(this.value)"></div>
+   </div>
    <button class="btn sm" onclick="panelTreeClearBtn()" style="${anyPanelTreeFilter?'':'display:none'}">Limpiar filtros ✕</button>
   </div>
   <details class="card" data-pc="teleTarea"${panelCardClosed.has('teleTarea')?'':' open'}>
@@ -2012,36 +2014,36 @@ const SURFSIGHT_AI12_FIELDS=[
  {k:'pin_incorrecto',l:'Código PIN incorrecto',type:'toggle'}
 ];
 const GO_FOCUS_PLUS_FIELDS=[
- {k:'grabar_audio',l:'Grabar audio',type:'toggle'},
+ {k:'grabar_audio',l:'Grabar audio — Tono y Alerta de voz',type:'toggle'},
  {k:'idioma',l:'Idioma de capacitación en cabina',type:'select',options:['Español (España)','Español (Latinoamérica)','Inglés','Portugués'],def:'Español (España)'},
  {k:'sexo_voz',l:'Sexo de la voz',type:'select',options:['Neutro','Femenino','Masculino'],def:'Neutro'},
  {k:'camara_conductor',l:'Cámara orientada hacia el conductor',type:'toggle'},
- {k:'ajustar_cabina',l:'Se recomienda ajustar la cabina',type:'toggle'},
- {k:'telefono',l:'Uso del teléfono celular',type:'toggle'},
+ {k:'ajustar_cabina',l:'Se recomienda ajustar la cabina — Tono y Alerta de voz',type:'toggle'},
+ {k:'telefono',l:'Uso del teléfono celular — Tono y Alerta de voz',type:'toggle'},
  {k:'telefono_severidad',l:'Uso del teléfono celular — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Alta'},
- {k:'cubierta',l:'Cubierta retirada',type:'toggle'},
- {k:'desmontada',l:'Cámara para vehículo desmontada',type:'toggle'},
- {k:'boton_camara',l:'Botón de cámara para vehículo presionado',type:'toggle'},
- {k:'ojos_abajo',l:'Distracción: ojos hacia abajo',type:'toggle'},
+ {k:'cubierta',l:'Cubierta retirada — Tono y Alerta de voz',type:'toggle'},
+ {k:'desmontada',l:'Cámara para vehículo desmontada — Tono y Alerta de voz',type:'toggle'},
+ {k:'boton_camara',l:'Botón de cámara para vehículo presionado — Tono y Alerta de voz',type:'toggle'},
+ {k:'ojos_abajo',l:'Distracción: ojos hacia abajo — Tono y Alerta de voz',type:'toggle'},
  {k:'ojos_abajo_severidad',l:'Distracción: ojos hacia abajo — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Alta'},
- {k:'giro_cabeza',l:'Distracción: giro de cabeza',type:'toggle'},
+ {k:'giro_cabeza',l:'Distracción: giro de cabeza — Tono y Alerta de voz',type:'toggle'},
  {k:'giro_cabeza_severidad',l:'Distracción: giro de cabeza — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Alta'},
- {k:'frotarse_ojos',l:'Conductor frotándose los ojos',type:'toggle'},
- {k:'bostezando',l:'Conductor bostezando',type:'toggle'},
- {k:'cinturon',l:'Conductor sin cinturón de seguridad',type:'toggle'},
- {k:'fumando',l:'Fumando',type:'toggle'},
- {k:'lente',l:'Obstrucción del lente',type:'toggle'},
- {k:'salida_carril',l:'Advertencia de salida del carril',type:'toggle'},
- {k:'parada_ignorada',l:'Señal de parada ignorada',type:'toggle'},
+ {k:'frotarse_ojos',l:'Conductor frotándose los ojos — Tono y Alerta de voz',type:'toggle'},
+ {k:'bostezando',l:'Conductor bostezando — Tono y Alerta de voz',type:'toggle'},
+ {k:'cinturon',l:'Conductor sin cinturón de seguridad — Tono y Alerta de voz',type:'toggle'},
+ {k:'fumando',l:'Fumando — Tono y Alerta de voz',type:'toggle'},
+ {k:'lente',l:'Obstrucción del lente — Tono y Alerta de voz',type:'toggle'},
+ {k:'salida_carril',l:'Advertencia de salida del carril — Tono y Alerta de voz',type:'toggle'},
+ {k:'parada_ignorada',l:'Señal de parada ignorada — Tono y Alerta de voz',type:'toggle'},
  {k:'parada_ignorada_severidad',l:'Señal de parada ignorada — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Baja'},
- {k:'distancia',l:'Conducción sin dejar la distancia de seguridad',type:'toggle'},
+ {k:'distancia',l:'Conducción sin dejar la distancia de seguridad — Tono y Alerta de voz',type:'toggle'},
  {k:'distancia_severidad',l:'Conducción sin dejar la distancia de seguridad — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Media'},
- {k:'comida',l:'Alimentos o bebidas',type:'toggle'},
- {k:'conduccion_defensiva',l:'Conducción defensiva',type:'toggle'},
+ {k:'comida',l:'Alimentos o bebidas — Tono y Alerta de voz',type:'toggle'},
+ {k:'conduccion_defensiva',l:'Conducción defensiva — Tono y Alerta de voz',type:'toggle'},
  {k:'conduccion_defensiva_severidad',l:'Conducción defensiva — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Alta'},
- {k:'riesgo_colision',l:'Advertencia de riesgo de colisión',type:'toggle'},
+ {k:'riesgo_colision',l:'Advertencia de riesgo de colisión — Tono y Alerta de voz',type:'toggle'},
  {k:'riesgo_colision_severidad',l:'Advertencia de riesgo de colisión — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Alta'},
- {k:'doble_linea',l:'Infracción por doble línea continua',type:'toggle'}
+ {k:'doble_linea',l:'Infracción por doble línea continua — Tono y Alerta de voz',type:'toggle'}
 ];
 // v94: "Tono" y "Alerta de voz" eran el mismo comando con dos checks separados — se fusionan
 // en uno solo (migrateFicha) la primera vez que se abre una ficha vieja. [nueva clave, tono viejo, voz vieja]
