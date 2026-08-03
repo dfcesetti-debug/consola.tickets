@@ -572,6 +572,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
   <div class="fRow"><label class="lab" for="loginPass" style="margin-top:0">Contraseña</label><input class="finput" id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
   <button class="btn primary" id="btnLogin">Ingresar</button>
   <p class="loginErr" id="loginError"></p>
+  <p class="tinfo" style="margin:14px 0 0;text-align:center">¿Primera vez acá? <a id="btnManualUsuarios" style="color:var(--accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer">Descargá el manual de uso</a></p>
  </div>
 </div>
 <div id="appRoot" style="display:none">
@@ -803,7 +804,8 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
    <div id="cfgPerfil" style="display:none">
     <div class="card" style="max-width:480px">
      <div class="lab" style="margin-top:0">Mi perfil</div>
-     <p class="tinfo" style="margin:0 0 12px">Se guarda para tu cuenta y se sincroniza si entrás desde otra PC.</p>
+     <p class="tinfo" id="perfRequiredNote" style="display:none;margin:0 0 12px;color:var(--cli);font-weight:600">Para poder usar el resto de la Consola, completá tu Nombre y Apellido y guardá — es un paso obligatorio la primera vez que entrás. Se usa para identificarte en Telemática, en el historial de cada ficha y en el historial de cambios. (<a id="btnManualUsuarios2" style="cursor:pointer;text-decoration:underline;text-underline-offset:2px">Descargá el manual de uso</a>)</p>
+     <p class="tinfo" id="perfNormalNote" style="margin:0 0 12px">Se guarda para tu cuenta y se sincroniza si entrás desde otra PC.</p>
      <div class="fRow"><label class="lab" for="perfNombre" style="margin-top:0">Nombre</label><input class="finput" id="perfNombre" placeholder="Ej: Diego"></div>
      <div class="fRow"><label class="lab" for="perfApellido">Apellido</label><input class="finput" id="perfApellido" placeholder="Ej: Ferreira"></div>
      <div class="fRow"><label class="lab" for="perfCorreo">Correo</label><input class="finput" id="perfCorreo" disabled></div>
@@ -2678,6 +2680,99 @@ ul.pfHist,ul.pfRefs{font-size:12px;padding-left:18px}
 ${fichaBodyHtml(f)}
 </body></html>`;
 }
+// Manual de uso descargable (para usuarios iniciales, ej. desde la pantalla de login antes de
+// tener sesión): mismo patrón de "documento imprimible en ventana aparte" que la ficha del cliente
+// y el árbol de grupos (fichaDocHtml/gtreeDocHtml) — self-contained, no depende del CSS de la app.
+function manualUsuariosDocHtml(){
+ const hoy=esc(new Date().toLocaleDateString('es-AR'));
+ return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Manual de uso — Consola de Soporte CMQ</title>
+<style>
+body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#0b1220;padding:30px;max-width:820px;margin:0 auto;line-height:1.5}
+h1{font-size:23px;margin:0 0 2px}
+h2{font-size:14px;color:#5c6b82;margin:0 0 18px;font-weight:600}
+h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#087f96;border-bottom:1px solid #dbe3ee;padding-bottom:4px;margin:26px 0 10px}
+p,li{font-size:13px}
+ol,ul{padding-left:20px}
+li{margin:4px 0}
+.pfMeta{font-size:11px;color:#8593a8;margin-bottom:16px}
+.pfBar{margin-bottom:16px}
+.pfBar button{background:#087f96;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer}
+.callout{background:#e2f5fa;border:1px solid #bfe6ee;border-radius:10px;padding:12px 14px;font-size:13px;margin:10px 0}
+.callout b{color:#087f96}
+table.pfTable{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0}
+table.pfTable th,table.pfTable td{border:1px solid #dbe3ee;padding:6px 8px;text-align:left}
+table.pfTable th{background:#eef2f8}
+@media print{ body{padding:0} .pfNoPrint{display:none} }
+</style></head><body>
+<div class="pfBar pfNoPrint"><button onclick="window.print()">&#128438; Imprimir / Guardar PDF</button></div>
+<h1>Consola de Soporte CMQ — Manual de uso para el equipo</h1>
+<h2>Guía práctica para empezar a usarla, para cualquier persona del equipo de soporte/telemática</h2>
+<div class="pfMeta">Generado desde la Consola de Soporte · ${hoy}</div>
+
+<h3>1. Cómo entrar</h3>
+<p>Entrá a la Consola con tu cuenta <b>@cesetti.com.ar</b>. No hace falta instalar nada.</p>
+<ul>
+ <li>Solo entran cuentas del dominio <b>@cesetti.com.ar</b> — cualquier otro correo queda rechazado.</li>
+ <li>Si te equivocás la contraseña, la Consola avisa "Email o contraseña incorrectos." Si no tenés cuenta, pedísela a quien administra el acceso.</li>
+ <li><b>La sesión se cierra sola a los 30 minutos sin actividad</b> (sin clics, sin escribir, sin tocar la pantalla) y vuelve a pedir inicio de sesión. Mientras la usás normalmente, el conteo se reinicia solo. Podés cerrar sesión vos mismo con el link <b>Cerrar sesión</b>, abajo del menú lateral.</li>
+</ul>
+
+<h3>2. Primer paso obligatorio: cargar tu perfil</h3>
+<div class="callout">Antes de poder usar el resto de la Consola, andá a <b>Configuración → Mi perfil</b> y completá tu <b>Nombre</b> y <b>Apellido</b> (el teléfono es opcional). Guardá con <b>Guardar perfil</b>. Mientras no lo completes, la Consola te va a redirigir automáticamente a esta pantalla.</div>
+<p><b>¿Por qué es obligatorio?</b> Tu nombre de perfil se usa automáticamente, sin que tengas que escribirlo cada vez, en tres lugares:</p>
+<ol>
+ <li><b>Telemática → Carga de tarea:</b> el campo Responsable de cada tarea nueva se completa solo con tu nombre.</li>
+ <li><b>Ficha del cliente → "Guardado por":</b> firma automáticamente cada cambio que guardás en la ficha técnica de un cliente.</li>
+ <li><b>Configuración → Historial de cambios:</b> el registro global de auditoría también usa tu nombre de perfil.</li>
+</ol>
+<p>Si todavía no cargaste tu perfil, en esos lugares aparecerías con tu email en crudo en vez de tu nombre.</p>
+
+<h3>3. Recorrido por las secciones (menú lateral)</h3>
+<p>El menú lateral se puede colapsar a solo íconos con la flecha en su borde. Cada pestaña también se puede abrir en una pestaña nueva del navegador con clic derecho, Ctrl/Cmd+clic o clic central.</p>
+<table class="pfTable"><thead><tr><th>Sección</th><th>Para qué sirve</th></tr></thead><tbody>
+<tr><td>Panel</td><td>Resumen operativo. Selector Jira / Telemática arriba para medir cada fuente por separado. Las tarjetas de KPI son clickeables.</td></tr>
+<tr><td>Matriz N1</td><td>Guía rápida de respuesta para Nivel 1: por tipo de ticket frecuente, qué preguntar y qué plantilla usar.</td></tr>
+<tr><td>Tickets</td><td>Historial completo de Jira, mezclado con las tareas de Telemática. Buscable y filtrable por tipo, estado, responsable, origen.</td></tr>
+<tr><td>Clientes</td><td>Lista, Fichas (ficha técnica + árbol de grupos Geotab + historial), Cartera por ejecutivo, e Implementación (clientes en Demo/desarrollo).</td></tr>
+<tr><td>Telemática</td><td>Carga manual de trabajo con clientes sin Jira. Ver paso a paso en la sección 4.</td></tr>
+<tr><td>Configuración</td><td>Conexión de datos, Apariencia, Mi perfil (sección 2), e Historial de cambios (sección 5).</td></tr>
+</tbody></table>
+
+<h3>4. Cómo cargar una tarea en Telemática, paso a paso</h3>
+<ol>
+ <li>Andá a la pestaña <b>Telemática</b>.</li>
+ <li>Abrí <b>Carga de tarea</b> (desplegable, arriba).</li>
+ <li>Cargá la <b>Fecha</b> (compartida por todas las tareas de esta tanda).</li>
+ <li>Por cada tarea: <b>Cliente</b>, <b>Categoría → Sub tipo</b>, <b>Cantidad de horas</b>, <b>Estado</b> y <b>Detalle</b> (opcional). El <b>Responsable</b> ya viene con tu nombre — tocalo solo si la tarea es de otro compañero.</li>
+ <li>Con <b>+ Agregar tarea</b> sumás más filas a la misma tanda.</li>
+ <li>Guardá. La lista de abajo muestra todo lo cargado, de más reciente a más antiguo, filtrable por Categoría/Tipo/Cliente/Responsable.</li>
+ <li>Para editar o eliminar una tarea ya cargada, usá <b>Ver / Editar</b> o <b>Eliminar</b> en su tarjeta — eliminar siempre pide confirmación.</li>
+</ol>
+
+<h3>5. Buenas prácticas</h3>
+<ul>
+ <li><b>Eliminar siempre pide confirmación</b> en toda la Consola: fichas, tareas de Telemática, clientes, grupos del árbol Geotab, filas de Configuración técnica y Referentes.</li>
+ <li><b>Configuración → Historial de cambios</b> junta todo lo que se modificó (fichas, tareas, altas/bajas de clientes, vaciar/restablecer la base), filtrable por Tipo/Cliente/Usuario.</li>
+ <li>En el Panel, cualquier filtro activo se puede sacar con el ✕ junto al título.</li>
+ <li>La barra de cliente arriba de todo se puede esconder con la flecha, para ganar espacio en pantallas chicas.</li>
+</ul>
+
+<h3>6. Preguntas frecuentes</h3>
+<p><b>No aparece mi nombre en "Responsable", aparece mi email.</b><br>Todavía no cargaste tu perfil — Configuración → Mi perfil (sección 2).</p>
+<p><b>Se cerró sola la sesión mientras trabajaba.</b><br>Pasaron 30 minutos sin actividad. Volvé a iniciar sesión — no perdiste nada, todo lo guardado ya está sincronizado.</p>
+<p><b>Cargué un cliente/ficha/tarea por error.</b><br>Podés editarlo o eliminarlo (con confirmación) desde su propia pantalla. Los cambios quedan visibles en Configuración → Historial de cambios.</p>
+<p><b>Entré desde otra PC y no veo mis datos de perfil.</b><br>Tu perfil se guarda por email en la nube — cargalo una vez desde esa PC y va a estar disponible en cualquier equipo con el mismo login.</p>
+</body></html>`;
+}
+function openManualUsuarios(){
+ const w=window.open('','_blank');
+ if(!w){ alert('El navegador bloqueó la ventana. Habilitá pop-ups para este sitio e intentá de nuevo.'); return; }
+ w.document.write(manualUsuariosDocHtml()); w.document.close();
+}
+// disponible desde la pantalla de login (usuarios iniciales, sin sesión) y desde el aviso de
+// perfil obligatorio — por eso se cablea acá, fuera de initAuth(), sin depender de Firebase.
+document.getElementById('btnManualUsuarios').onclick=openManualUsuarios;
+document.getElementById('btnManualUsuarios2').onclick=openManualUsuarios;
 function printFicha(f){
  const w=window.open('','_blank');
  if(!w){ alert('El navegador bloqueó la ventana de impresión. Habilitá pop-ups para este sitio e intentá de nuevo.'); return; }
@@ -3291,6 +3386,13 @@ const PROFILESTORE='kb_cmq_profiles_v1';
 let PROFILES={};
 function loadProfiles(){ try{PROFILES=JSON.parse(localStorage.getItem(PROFILESTORE))||{};}catch(e){PROFILES={};} }
 function saveProfiles(){ try{localStorage.setItem(PROFILESTORE,JSON.stringify(PROFILES));}catch(e){} }
+// Perfil completo = tiene nombre y apellido cargados. Mientras no lo esté, navTo() (sección 6 del
+// manual de usuarios) redirige a Configuración → Mi perfil en cada intento de navegar, para que
+// cargar el perfil sea un paso obligatorio antes de usar el resto de la Consola.
+function profileComplete(){
+ const p=PROFILES[currentUserEmail];
+ return !!(p && (p.nombre||'').trim() && (p.apellido||'').trim());
+}
 function renderPerfil(){
  const p=PROFILES[currentUserEmail]||{};
  document.getElementById('perfCorreo').value=currentUserEmail;
@@ -3298,9 +3400,13 @@ function renderPerfil(){
  document.getElementById('perfApellido').value=p.apellido||'';
  document.getElementById('perfTelefono').value=p.telefono||'';
  document.getElementById('perfSaved').textContent='';
+ const req=!profileComplete();
+ document.getElementById('perfRequiredNote').style.display=req?'':'none';
+ document.getElementById('perfNormalNote').style.display=req?'none':'';
 }
 document.getElementById('btnSavePerfil').onclick=()=>{
  if(!currentUserEmail)return;
+ const wasIncomplete=!profileComplete();
  PROFILES[currentUserEmail]={
   nombre:document.getElementById('perfNombre').value.trim(),
   apellido:document.getElementById('perfApellido').value.trim(),
@@ -3309,6 +3415,12 @@ document.getElementById('btnSavePerfil').onclick=()=>{
  saveProfiles(); pushState();
  const s=document.getElementById('perfSaved'); s.textContent='✔ Guardado'; s.classList.remove('flashIn'); void s.offsetWidth; s.classList.add('flashIn');
  setTimeout(()=>{s.textContent=''; s.classList.remove('flashIn');},2000);
+ // se completó el perfil recién ahora: deja de ser obligatorio y te lleva al Panel automáticamente
+ if(wasIncomplete && profileComplete()){
+  document.getElementById('perfRequiredNote').style.display='none';
+  document.getElementById('perfNormalNote').style.display='';
+  setTimeout(()=>navTo('panel'),700);
+ }
 };
 // Historial de cambios global (v86): combina el historial propio de cada ficha y cada ticket de
 // Telemática con el registro de acciones de sistema (AUDIT) en una sola lista cronológica, para que
@@ -3626,13 +3738,23 @@ function curViewId(){ const el=document.querySelector('.view.on'); return el?el.
 // historial del navegador: cada cambio de pestaña (directo o vía un drill-down que ya usa navTo)
 // queda como una entrada — Atrás/Adelante mueven entre pestañas visitadas, como cualquier sitio.
 // Nota: solo recuerda QUÉ PESTAÑA estaba abierta, no los filtros/cliente elegidos en ese momento.
+// Mientras el perfil no esté completo (nombre y apellido), CUALQUIER intento de navegar —
+// clic en el menú, drill-down, atrás/adelante del navegador— se redirige a Configuración → Mi
+// perfil, para que cargarlo sea de verdad un paso obligatorio antes de usar el resto de la Consola.
+function guardProfileGate(v){
+ if(currentUserEmail && !profileComplete() && v!=='config'){ v='config'; }
+ return v;
+}
 function navTo(v){
+ v=guardProfileGate(v);
  if(curViewId()!==v) history.pushState({v},'','#'+v);
  if(document.startViewTransition){ document.startViewTransition(()=>_navToImpl(v)); } else { _navToImpl(v); }
+ if(v==='config' && currentUserEmail && !profileComplete()) setCfgView('perfil');
 }
 window.addEventListener('popstate',(e)=>{
- const v=(e.state&&e.state.v)||(location.hash?location.hash.slice(1):'panel');
+ let v=guardProfileGate((e.state&&e.state.v)||(location.hash?location.hash.slice(1):'panel'));
  if(document.startViewTransition){ document.startViewTransition(()=>_navToImpl(v)); } else { _navToImpl(v); }
+ if(v==='config' && currentUserEmail && !profileComplete()) setCfgView('perfil');
 });
 document.getElementById('nav').addEventListener('click',e=>{
  const a=e.target.closest('a[data-v]'); if(!a) return;
@@ -3712,9 +3834,10 @@ function showApp(email){
  if(!idleCheckTimer) idleCheckTimer=setInterval(()=>{ if(sessionIdleExpired()) doIdleLogout(); },60000);
  if(!appBooted){ appBooted=true; load(); DATA.forEach(prep); rebuildAll(); pullState();
   const hashV=location.hash?location.hash.slice(1):'';
-  const initV=NAV_VIEWS.includes(hashV)?hashV:(curViewId()||'panel');
+  const initV=guardProfileGate(NAV_VIEWS.includes(hashV)?hashV:(curViewId()||'panel'));
   if(initV!==curViewId()) _navToImpl(initV);
   history.replaceState({v:initV},'','#'+initV);
+  if(initV==='config' && !profileComplete()) setCfgView('perfil');
   autoFetchAbiertosOnLogin();
  }
 }

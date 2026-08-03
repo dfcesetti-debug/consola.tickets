@@ -2,7 +2,7 @@
 
 **Para quién es este documento:** cualquier persona del equipo de soporte/telemática que va a usar la Consola día a día. Si buscás arquitectura técnica (Firebase, Cloudflare Worker, contrato de datos), eso está en `DOCUMENTACION_TECNICA.md`. Este documento es la guía práctica: cómo entrar, qué cargar primero y por qué, y cómo se usa cada sección.
 
-Fecha: 03/08/2026. Cubre hasta v89.
+Fecha: 03/08/2026. Cubre hasta v90.
 
 ---
 
@@ -18,7 +18,7 @@ Entrá a `https://dfcesetti-debug.github.io/consola.tickets/Consola_Soporte_CMQ.
 
 ## 2. Primer paso obligatorio: cargar tu perfil
 
-Antes de cargar tu primera tarea, andá a **Configuración → Mi perfil** y completá tu **Nombre** y **Apellido** (el teléfono es opcional). Guardá con el botón **Guardar perfil**.
+**Es un paso realmente obligatorio, no una sugerencia**: si tu perfil no tiene Nombre y Apellido cargados, la Consola te lleva directo a **Configuración → Mi perfil** apenas entrás, y te deja ahí — cualquier intento de ir a otra sección (menú lateral, un link que hace drill-down, atrás/adelante del navegador) te devuelve a esta pantalla, con un aviso explicando por qué. Completá **Nombre** y **Apellido** (el teléfono es opcional) y guardá con **Guardar perfil** — apenas lo hacés, la Consola te lleva sola al Panel y podés navegar libre.
 
 **¿Por qué es obligatorio?** Tu nombre de perfil es lo que la Consola usa automáticamente, sin que tengas que escribirlo cada vez, en tres lugares:
 
@@ -26,7 +26,7 @@ Antes de cargar tu primera tarea, andá a **Configuración → Mi perfil** y com
 2. **Ficha del cliente → "Guardado por"**: firma automáticamente cada cambio que guardás en la ficha técnica de un cliente.
 3. **Configuración → Historial de cambios**: el registro global de auditoría (quién cambió qué y cuándo) también usa tu nombre de perfil.
 
-**Si todavía no cargaste tu perfil**, en esos tres lugares vas a aparecer con tu email en crudo (ej. `nuevo@cesetti.com.ar`) en vez de tu nombre — sigue funcionando, pero se ve poco prolijo y es más difícil de leer para el resto del equipo. Es la primera cosa que tenés que hacer al entrar por primera vez.
+Antes de que este paso fuera obligatorio, quien no cargaba su perfil aparecía en esos tres lugares con su email en crudo (ej. `nuevo@cesetti.com.ar`) en vez de su nombre.
 
 Tu perfil se guarda por email y te sigue si entrás desde otra PC.
 
