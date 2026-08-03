@@ -1816,6 +1816,14 @@ const FICHASTORE='kb_cmq_fichas_v1';
 const LASTUSER_KEY='kb_cmq_lastuser_v1';
 function getLastUser(){ try{return localStorage.getItem(LASTUSER_KEY)||'';}catch(e){return '';} }
 function setLastUser(v){ try{localStorage.setItem(LASTUSER_KEY,v);}catch(e){} }
+// Nombre de la persona con la sesión iniciada — para eso cada usuario tiene su perfil (v66):
+// se usa como firma por defecto del historial de la ficha; si el perfil no tiene nombre
+// cargado todavía, cae al email de la sesión.
+function sessionUserName(){
+ const p=(typeof PROFILES!=='undefined'&&PROFILES)?PROFILES[currentUserEmail]:null;
+ const n=p?String((p.nombre||'')+' '+(p.apellido||'')).trim():'';
+ return n||currentUserEmail||'';
+}
 // compara una foto de la ficha antes de editar contra el estado actual y arma un resumen legible de qué cambió
 function diffFicha(before,after){
  const changes=[]; const d0=before.datos, d1=after.datos;
@@ -1868,7 +1876,8 @@ const CONFIG_SECTIONS=[
   {k:'frecuencia',l:'Frecuencia'},
   {k:'participantes',l:'Referentes / participantes'}
  ]},
- {key:'grupos',label:'Grupos',fields:[{k:'nombre',l:'Nombre'},{k:'descripcion',l:'Descripción'}]},
+ // 'grupos' tabular eliminada en v83 — la reemplaza el árbol "Grupos · estructura Geotab" (grupos_arbol).
+ // Los datos viejos de configuracion.grupos se migran al árbol una sola vez en migrateFicha y no se borran del JSON.
  {key:'autorizaciones',label:'Autorizaciones de seguridad',fields:[{k:'usuario',l:'Usuario'},{k:'rol',l:'Rol'},{k:'nivel_acceso',l:'Nivel de acceso'},{k:'alcance',l:'Alcance'}]},
  {key:'reglas',label:'Reglas',fields:[{k:'nombre',l:'Nombre'},{k:'tipo',l:'Tipo'},{k:'accion_alerta',l:'Acción / alerta'},{k:'observaciones',l:'Observaciones'}]},
  {key:'zonas',label:'Zonas',fields:[{k:'nombre',l:'Nombre'},{k:'tipo_zona',l:'Tipo de zona'},{k:'coordenadas_kml',l:'Coordenadas / KML'},{k:'grupos_aplica',l:'Grupos a los que aplica'}]},
@@ -2013,6 +2022,14 @@ function migrateFicha(raw,name){
   f.historial=f.historial||[];
   f.cliente=f.cliente||name;
   if(!f.grupos_arbol||!f.grupos_arbol.n) f.grupos_arbol=defaultGruposArbol(name);
+  // v83: la sección tabular "Grupos" de Configuración técnica se retiró — si esta ficha
+  // tenía filas cargadas ahí, se pasan una sola vez al árbol como subgrupos del cliente
+  // (los datos originales quedan en el JSON por las dudas, solo dejan de mostrarse).
+  if(!f.grupos_migrado&&f.configuracion&&Array.isArray(f.configuracion.grupos)&&f.configuracion.grupos.length){
+   const cliNode=f.grupos_arbol.k&&f.grupos_arbol.k[0];
+   if(cliNode){ cliNode.k=cliNode.k||[]; f.configuracion.grupos.forEach(g=>{ const nom=String(g.nombre||'').trim(); if(nom&&!cliNode.k.some(x=>x.n===nom)) cliNode.k.push({n:nom,k:[]}); }); }
+   f.grupos_migrado=true;
+  }
   return f;
  }
  const nf=emptyFicha(name);
@@ -2261,6 +2278,10 @@ function refSectionHtml(sec,rows){
 // Estado de UI del árbol: qué nodos están colapsados (clave cliente|path) y qué tarjetas de
 // la ficha cerró el usuario — ambos sobreviven a los re-renders de renderFichas.
 let fichaCardClosed=new Set(), gtCollapsed=new Set();
+// Cambios del árbol de grupos todavía no guardados, por cliente — al Guardar la ficha se
+// vuelcan al historial con el detalle de cada operación (agregado/renombrado/eliminado/copiado).
+let _gtreePending={};
+function gtreeLog(cli,msg){ (_gtreePending[cli]=_gtreePending[cli]||[]).push(msg); }
 function gtFind(root,pathArr){ let n=root; for(const i of pathArr){ if(!n||!n.k)return null; n=n.k[i]; } return n; }
 function gtreeHtml(node,path,cliente){
  const pkey=cliente+'|'+path.join('.');
@@ -2309,7 +2330,7 @@ function renderFichas(){
    ${f.actualizado?` <span class="tinfo">Última actualización: ${esc(f.actualizado)}</span>`:''}
    <span class="tinfo" id="fichaSavedNote" style="margin-left:10px;color:var(--sig);font-weight:700"></span>
    <div class="fRow" style="margin-top:12px;max-width:280px"><div class="lab" style="margin-top:0">Guardado por</div>
-    <input class="finput" id="fUsuario" list="dlUsuarios" value="${esc(getLastUser())}" placeholder="Tu nombre">
+    <input class="finput" id="fUsuario" list="dlUsuarios" value="${esc(sessionUserName()||getLastUser())}" placeholder="Tu nombre" title="Firma de los cambios en el historial — por defecto, el nombre del perfil de tu sesión (Configuración → Mi perfil)">
     <datalist id="dlUsuarios">${[...TEAM].sort().map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
    </div>
    <div class="tools" style="margin-top:12px">
@@ -2367,7 +2388,7 @@ function renderFichas(){
 
   <details class="card" data-fc="config"${fichaCardClosed.has('config')?'':' open'}>
    <summary class="lab" style="margin-top:0">Configuración técnica</summary>
-   <p class="tinfo" style="margin:6px 0 6px">Toda la configuración realizada para este cliente. Agregá o quitá filas por sección.</p>
+   <p class="tinfo" style="margin:6px 0 6px">Toda la configuración realizada para este cliente. Agregá o quitá filas por sección. <b>Grupos:</b> visualizá la información de grupos en la tarjeta "Grupos · estructura Geotab" de este perfil del cliente.</p>
    ${cfgSectionHtml(CONFIG_SECTIONS.find(s=>s.key==='dispositivos_go'),cfg.dispositivos_go)}
    ${DEVICE_SPECS.map(spec=>deviceSpecHtml(spec,cfg[spec.key])).join('')}
    ${CONFIG_SECTIONS.filter(s=>s.key!=='dispositivos_go').map(sec=>cfgSectionHtml(sec,cfg[sec.key])).join('')}
@@ -2467,11 +2488,13 @@ function renderFichas(){
   const name=(prompt('Nombre del nuevo subgrupo:')||'').trim(); if(!name)return;
   node.k=node.k||[]; node.k.push({n:name,k:[]});
   gtCollapsed.delete(ejecCliente+'|'+b.dataset.gadd);
+  gtreeLog(ejecCliente,'Grupo "'+name+'" agregado bajo "'+node.n+'"');
   renderFichas();
  });
  box.querySelectorAll('[data-gren]').forEach(b=>b.onclick=(e)=>{ e.stopPropagation();
   const node=gtFind(gtRoot,gtPath(b.dataset.gren)); if(!node)return;
-  const name=(prompt('Nuevo nombre:',node.n)||'').trim(); if(!name)return;
+  const name=(prompt('Nuevo nombre:',node.n)||'').trim(); if(!name||name===node.n)return;
+  gtreeLog(ejecCliente,'Grupo "'+node.n+'" renombrado a "'+name+'"');
   node.n=name; renderFichas();
  });
  box.querySelectorAll('[data-gdel]').forEach(b=>b.onclick=(e)=>{ e.stopPropagation();
@@ -2479,7 +2502,9 @@ function renderFichas(){
   const idx=path.pop(), parent=gtFind(gtRoot,path); if(!parent||!parent.k)return;
   const node=parent.k[idx];
   if(!confirm('¿Eliminar el grupo "'+node.n+'"'+((node.k||[]).length?' y sus '+node.k.length+' subgrupos':'')+'?'))return;
-  parent.k.splice(idx,1); renderFichas();
+  parent.k.splice(idx,1);
+  gtreeLog(ejecCliente,'Grupo "'+node.n+'" eliminado'+((node.k||[]).length?' (con '+node.k.length+' subgrupos)':''));
+  renderFichas();
  });
  const bGtVer=document.getElementById('btnGtreeVer');
  if(bGtVer) bGtVer.onclick=()=>{
@@ -2497,17 +2522,24 @@ function renderFichas(){
   const copy=JSON.parse(JSON.stringify(src));
   // el 2° nivel es el nombre del cliente de origen — se renombra al cliente actual
   if(copy.k&&copy.k.length&&copy.k[0]&&copy.k[0].n===from) copy.k[0].n=ejecCliente;
-  f.grupos_arbol=copy; renderFichas();
+  f.grupos_arbol=copy;
+  gtreeLog(ejecCliente,'Árbol de grupos copiado desde "'+from+'"');
+  renderFichas();
  };
  document.getElementById('btnExportJson').onclick=()=>downloadFichaJson(f);
  document.getElementById('btnPrintFicha').onclick=()=>printFicha(f);
  document.getElementById('fUsuario').oninput=e=>setLastUser(e.target.value);
  document.getElementById('btnGuardarFicha').onclick=()=>{
-  const usuario=(document.getElementById('fUsuario').value||'').trim();
+  const usuario=(document.getElementById('fUsuario').value||'').trim()||sessionUserName();
   setLastUser(usuario);
   f.actualizado=new Date().toISOString();
   f.historial=f.historial||[];
-  const changes=diffFicha(_before,f);
+  let changes=diffFicha(_before,f);
+  // los cambios del árbol de grupos entran con su detalle operación por operación —
+  // si hay detalle, reemplaza al aviso genérico de diffFicha para no duplicar
+  const gtDetail=_gtreePending[ejecCliente]||[];
+  if(gtDetail.length){ changes=changes.filter(c=>!c.includes('Árbol de grupos')); changes=changes.concat(gtDetail); }
+  delete _gtreePending[ejecCliente];
   f.historial.push({fecha:f.actualizado,usuario:usuario||'Sin identificar',resumen:changes.length?changes.join(' · '):'Sin cambios detectados'});
   FICHAS[ejecCliente]=f;
   delete _newFichaDrafts[ejecCliente];
