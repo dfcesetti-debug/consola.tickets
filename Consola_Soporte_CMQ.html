@@ -412,6 +412,9 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 .cfgCheckDev.on{background:var(--sigbg);border-color:var(--sig);color:var(--sig)}
 .cfgCheckDev.off{background:var(--dangerbg);border-color:var(--danger);color:var(--danger)}
 .cfgCheckDev:hover{filter:brightness(1.08)}
+.cfgPair2{display:flex;gap:12px;justify-content:flex-end}
+.cfgPair2Item{display:flex;flex-direction:column;align-items:center;gap:4px}
+.cfgPair2Lab{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--mut2)}
 .execFichaCard{border:1px solid var(--edge);border-radius:12px;padding:12px 14px;margin:10px 0;background:var(--panel);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
 .execFichaCard:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(16,32,60,.1)}
 .efHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
@@ -1984,33 +1987,22 @@ const CONFIG_SECTIONS=[
 ];
 const SURFSIGHT_AI12_FIELDS=[
  {k:'tipo_vehiculo',l:'Tipo de vehículo',type:'select',options:['Privado','Comercial','Otro']},
- {k:'tel_audio',l:'Uso del teléfono celular — Alertas de audio',type:'toggle'},
- {k:'tel_visual',l:'Uso del teléfono celular — Alertas visuales',type:'toggle'},
- {k:'distraida_audio',l:'Conducción distraída — Alertas de audio',type:'toggle'},
- {k:'distraida_visual',l:'Conducción distraída — Alertas visuales',type:'toggle'},
- {k:'cinturon_audio',l:'Conductor sin cinturón de seguridad — Alertas de audio',type:'toggle'},
- {k:'cinturon_visual',l:'Conductor sin cinturón de seguridad — Alertas visuales',type:'toggle'},
- {k:'comida_audio',l:'Alimentos o bebidas — Alertas de audio',type:'toggle'},
- {k:'comida_visual',l:'Alimentos o bebidas — Alertas visuales',type:'toggle'},
- {k:'fumando_audio',l:'Fumando — Alertas de audio',type:'toggle'},
- {k:'fumando_visual',l:'Fumando — Alertas visuales',type:'toggle'},
- {k:'lente_audio',l:'Obstrucción del lente — Alertas de audio',type:'toggle'},
- {k:'lente_visual',l:'Obstrucción del lente — Alertas visuales',type:'toggle'},
- {k:'bostezo_audio',l:'Bostezo — Alertas de audio',type:'toggle'},
- {k:'bostezo_visual',l:'Bostezo — Alertas visuales',type:'toggle'},
+ {k:'tel',l:'Uso del teléfono celular',type:'toggle2',pairKeys:['tel_audio','tel_visual'],pairLabels:['Audio','Visual']},
+ {k:'distraida',l:'Conducción distraída',type:'toggle2',pairKeys:['distraida_audio','distraida_visual'],pairLabels:['Audio','Visual']},
+ {k:'cinturon',l:'Conductor sin cinturón de seguridad',type:'toggle2',pairKeys:['cinturon_audio','cinturon_visual'],pairLabels:['Audio','Visual']},
+ {k:'comida',l:'Alimentos o bebidas',type:'toggle2',pairKeys:['comida_audio','comida_visual'],pairLabels:['Audio','Visual']},
+ {k:'fumando',l:'Fumando',type:'toggle2',pairKeys:['fumando_audio','fumando_visual'],pairLabels:['Audio','Visual']},
+ {k:'lente',l:'Obstrucción del lente',type:'toggle2',pairKeys:['lente_audio','lente_visual'],pairLabels:['Audio','Visual']},
+ {k:'bostezo',l:'Bostezo',type:'toggle2',pairKeys:['bostezo_audio','bostezo_visual'],pairLabels:['Audio','Visual']},
  {k:'bostezo_num',l:'Bostezo — Número de bostezos',type:'text',def:'3 bostezos'},
  {k:'bostezo_intervalo',l:'Bostezo — Intervalo de tiempo',type:'text',def:'120 segundos'},
- {k:'colision_audio',l:'Posible colisión — Alertas de audio',type:'toggle'},
- {k:'colision_visual',l:'Posible colisión — Alertas visuales',type:'toggle'},
- {k:'sos_audio',l:'Botón SOS — Alertas de audio',type:'toggle'},
- {k:'sos_visual',l:'Botón SOS — Alertas visuales',type:'toggle'},
- {k:'distancia_audio',l:'Conducción sin dejar la distancia de seguridad — Alertas de audio',type:'toggle'},
- {k:'distancia_visual',l:'Conducción sin dejar la distancia de seguridad — Alertas visuales',type:'toggle'},
+ {k:'colision',l:'Posible colisión',type:'toggle2',pairKeys:['colision_audio','colision_visual'],pairLabels:['Audio','Visual']},
+ {k:'sos',l:'Botón SOS',type:'toggle2',pairKeys:['sos_audio','sos_visual'],pairLabels:['Audio','Visual']},
+ {k:'distancia',l:'Conducción sin dejar la distancia de seguridad',type:'toggle2',pairKeys:['distancia_audio','distancia_visual'],pairLabels:['Audio','Visual']},
  {k:'distancia_dia',l:'Tiempo hasta la colisión (día)',type:'text',def:'2 segundos'},
  {k:'distancia_noche',l:'Tiempo hasta la colisión (noche)',type:'text',def:'3 segundos'},
  {k:'distancia_sensibilidad',l:'Sensibilidad dentro del intervalo',type:'text',def:'30 segundos (Recomendado)'},
- {k:'carriles_audio',l:'Cambios peligrosos entre carriles — Alertas de audio',type:'toggle'},
- {k:'carriles_visual',l:'Cambios peligrosos entre carriles — Alertas visuales',type:'toggle'},
+ {k:'carriles',l:'Cambios peligrosos entre carriles',type:'toggle2',pairKeys:['carriles_audio','carriles_visual'],pairLabels:['Audio','Visual']},
  {k:'carriles_cantidad',l:'Cantidad de carriles',type:'text',def:'3 carriles'},
  {k:'carriles_intervalo',l:'Intervalo de tiempo (carriles)',type:'text',def:'30 segundos'},
  {k:'proteccion_abierta',l:'Protección abierta',type:'toggle'},
@@ -2020,36 +2012,36 @@ const SURFSIGHT_AI12_FIELDS=[
  {k:'pin_incorrecto',l:'Código PIN incorrecto',type:'toggle'}
 ];
 const GO_FOCUS_PLUS_FIELDS=[
- {k:'grabar_audio',l:'Grabar audio — Tono y Alerta de voz',type:'toggle'},
+ {k:'grabar_audio',l:'Grabar audio',type:'toggle2',pairKeys:['grabar_audio_tono','grabar_audio_voz'],pairLabels:['Tono','Alerta de voz']},
  {k:'idioma',l:'Idioma de capacitación en cabina',type:'select',options:['Español (España)','Español (Latinoamérica)','Inglés','Portugués'],def:'Español (España)'},
  {k:'sexo_voz',l:'Sexo de la voz',type:'select',options:['Neutro','Femenino','Masculino'],def:'Neutro'},
  {k:'camara_conductor',l:'Cámara orientada hacia el conductor',type:'toggle'},
- {k:'ajustar_cabina',l:'Se recomienda ajustar la cabina — Tono y Alerta de voz',type:'toggle'},
- {k:'telefono',l:'Uso del teléfono celular — Tono y Alerta de voz',type:'toggle'},
+ {k:'ajustar_cabina',l:'Se recomienda ajustar la cabina',type:'toggle2',pairKeys:['ajustar_cabina_tono','ajustar_cabina_voz'],pairLabels:['Tono','Alerta de voz']},
+ {k:'telefono',l:'Uso del teléfono celular',type:'toggle2',pairKeys:['telefono_tono','telefono_voz'],pairLabels:['Tono','Alerta de voz']},
  {k:'telefono_severidad',l:'Uso del teléfono celular — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Alta'},
- {k:'cubierta',l:'Cubierta retirada — Tono y Alerta de voz',type:'toggle'},
- {k:'desmontada',l:'Cámara para vehículo desmontada — Tono y Alerta de voz',type:'toggle'},
- {k:'boton_camara',l:'Botón de cámara para vehículo presionado — Tono y Alerta de voz',type:'toggle'},
- {k:'ojos_abajo',l:'Distracción: ojos hacia abajo — Tono y Alerta de voz',type:'toggle'},
+ {k:'cubierta',l:'Cubierta retirada',type:'toggle2',pairKeys:['cubierta_tono','cubierta_voz'],pairLabels:['Tono','Alerta de voz']},
+ {k:'desmontada',l:'Cámara para vehículo desmontada',type:'toggle2',pairKeys:['desmontada_tono','desmontada_voz'],pairLabels:['Tono','Alerta de voz']},
+ {k:'boton_camara',l:'Botón de cámara para vehículo presionado',type:'toggle2',pairKeys:['boton_camara_tono','boton_camara_voz'],pairLabels:['Tono','Alerta de voz']},
+ {k:'ojos_abajo',l:'Distracción: ojos hacia abajo',type:'toggle2',pairKeys:['ojos_abajo_tono','ojos_abajo_voz'],pairLabels:['Tono','Alerta de voz']},
  {k:'ojos_abajo_severidad',l:'Distracción: ojos hacia abajo — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Alta'},
- {k:'giro_cabeza',l:'Distracción: giro de cabeza — Tono y Alerta de voz',type:'toggle'},
+ {k:'giro_cabeza',l:'Distracción: giro de cabeza',type:'toggle2',pairKeys:['giro_cabeza_tono','giro_cabeza_voz'],pairLabels:['Tono','Alerta de voz']},
  {k:'giro_cabeza_severidad',l:'Distracción: giro de cabeza — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Alta'},
- {k:'frotarse_ojos',l:'Conductor frotándose los ojos — Tono y Alerta de voz',type:'toggle'},
- {k:'bostezando',l:'Conductor bostezando — Tono y Alerta de voz',type:'toggle'},
- {k:'cinturon',l:'Conductor sin cinturón de seguridad — Tono y Alerta de voz',type:'toggle'},
- {k:'fumando',l:'Fumando — Tono y Alerta de voz',type:'toggle'},
- {k:'lente',l:'Obstrucción del lente — Tono y Alerta de voz',type:'toggle'},
- {k:'salida_carril',l:'Advertencia de salida del carril — Tono y Alerta de voz',type:'toggle'},
- {k:'parada_ignorada',l:'Señal de parada ignorada — Tono y Alerta de voz',type:'toggle'},
+ {k:'frotarse_ojos',l:'Conductor frotándose los ojos',type:'toggle2',pairKeys:['frotarse_ojos_tono','frotarse_ojos_voz'],pairLabels:['Tono','Alerta de voz']},
+ {k:'bostezando',l:'Conductor bostezando',type:'toggle2',pairKeys:['bostezando_tono','bostezando_voz'],pairLabels:['Tono','Alerta de voz']},
+ {k:'cinturon',l:'Conductor sin cinturón de seguridad',type:'toggle2',pairKeys:['cinturon_tono','cinturon_voz'],pairLabels:['Tono','Alerta de voz']},
+ {k:'fumando',l:'Fumando',type:'toggle2',pairKeys:['fumando_tono','fumando_voz'],pairLabels:['Tono','Alerta de voz']},
+ {k:'lente',l:'Obstrucción del lente',type:'toggle2',pairKeys:['lente_tono','lente_voz'],pairLabels:['Tono','Alerta de voz']},
+ {k:'salida_carril',l:'Advertencia de salida del carril',type:'toggle2',pairKeys:['salida_carril_tono','salida_carril_voz'],pairLabels:['Tono','Alerta de voz']},
+ {k:'parada_ignorada',l:'Señal de parada ignorada',type:'toggle2',pairKeys:['parada_ignorada_tono','parada_ignorada_voz'],pairLabels:['Tono','Alerta de voz']},
  {k:'parada_ignorada_severidad',l:'Señal de parada ignorada — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Baja'},
- {k:'distancia',l:'Conducción sin dejar la distancia de seguridad — Tono y Alerta de voz',type:'toggle'},
+ {k:'distancia',l:'Conducción sin dejar la distancia de seguridad',type:'toggle2',pairKeys:['distancia_tono','distancia_voz'],pairLabels:['Tono','Alerta de voz']},
  {k:'distancia_severidad',l:'Conducción sin dejar la distancia de seguridad — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Media'},
- {k:'comida',l:'Alimentos o bebidas — Tono y Alerta de voz',type:'toggle'},
- {k:'conduccion_defensiva',l:'Conducción defensiva — Tono y Alerta de voz',type:'toggle'},
+ {k:'comida',l:'Alimentos o bebidas',type:'toggle2',pairKeys:['comida_tono','comida_voz'],pairLabels:['Tono','Alerta de voz']},
+ {k:'conduccion_defensiva',l:'Conducción defensiva',type:'toggle2',pairKeys:['conduccion_defensiva_tono','conduccion_defensiva_voz'],pairLabels:['Tono','Alerta de voz']},
  {k:'conduccion_defensiva_severidad',l:'Conducción defensiva — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Alta'},
- {k:'riesgo_colision',l:'Advertencia de riesgo de colisión — Tono y Alerta de voz',type:'toggle'},
+ {k:'riesgo_colision',l:'Advertencia de riesgo de colisión',type:'toggle2',pairKeys:['riesgo_colision_tono','riesgo_colision_voz'],pairLabels:['Tono','Alerta de voz']},
  {k:'riesgo_colision_severidad',l:'Advertencia de riesgo de colisión — Severidad',type:'select',options:['Alta','Media','Baja'],def:'Alta'},
- {k:'doble_linea',l:'Infracción por doble línea continua — Tono y Alerta de voz',type:'toggle'}
+ {k:'doble_linea',l:'Infracción por doble línea continua',type:'toggle2',pairKeys:['doble_linea_tono','doble_linea_voz'],pairLabels:['Tono','Alerta de voz']}
 ];
 // v94: "Tono" y "Alerta de voz" eran el mismo comando con dos checks separados — se fusionan
 // en uno solo (migrateFicha) la primera vez que se abre una ficha vieja. [nueva clave, tono viejo, voz vieja]
@@ -2122,14 +2114,15 @@ function migrateFicha(raw,name){
   f.configuracion=f.configuracion||{};
   CONFIG_SECTIONS.forEach(s=>{ f.configuracion[s.key]=f.configuracion[s.key]||[]; });
   DEVICE_SPECS.forEach(s=>{ f.configuracion[s.key]=f.configuracion[s.key]||{activo:false}; });
-  // v94: fusiona los checks viejos de "Tono"/"Alerta de voz" de GO Focus Plus en uno solo por comando (una sola vez)
-  if(!f.gofocus_migrado&&f.configuracion.go_focus_plus){
+  // v94 fusionó "Tono"/"Alerta de voz" de GO Focus Plus en un solo check por comando; v97 volvió a
+  // separarlos (control independiente), así que las fichas que ya tenían el check único fusionado
+  // (v94-v96) se reparten una sola vez a los dos checks — sin esto perderían el valor ya cargado.
+  if(!f.gofocus_split_v97&&f.configuracion.go_focus_plus){
    const gp=f.configuracion.go_focus_plus;
-   GOFOCUS_TONO_VOZ_MERGE.forEach(([nuevo,tono,voz])=>{
-    if(gp[tono]==='Activado'||gp[voz]==='Activado') gp[nuevo]='Activado';
-    else if(gp[tono]==='Desactivado'||gp[voz]==='Desactivado') gp[nuevo]='Desactivado';
+   GOFOCUS_TONO_VOZ_MERGE.forEach(([fusionado,tono,voz])=>{
+    if(gp[fusionado]!=null&&gp[tono]==null&&gp[voz]==null){ gp[tono]=gp[fusionado]; gp[voz]=gp[fusionado]; }
    });
-   f.gofocus_migrado=true;
+   f.gofocus_split_v97=true;
   }
   f.historial=f.historial||[];
   f.cliente=f.cliente||name;
@@ -2360,7 +2353,7 @@ function cfgSectionHtml(sec,rows){
   </div>
  </details>`;
 }
-function cfgDeviceFieldInput(dev,field,val){
+function cfgDeviceFieldInput(dev,field,val,obj){
  if(field.type==='select'){
   const cur=val||field.def||'';
   const opts=['<option value="">—</option>'].concat((field.options||[]).map(o=>`<option value="${esc(o)}" ${cur===o?'selected':''}>${esc(o)}</option>`));
@@ -2369,6 +2362,13 @@ function cfgDeviceFieldInput(dev,field,val){
  if(field.type==='toggle'){
   const on=val==='Activado';
   return `<button type="button" class="cfgCheckDev ${on?'on':'off'}" data-dev="${dev}" data-k="${field.k}" title="${on?'Activado — click para desactivar':'Desactivado — click para activar'}">${on?'✓':'✕'}</button>`;
+ }
+ if(field.type==='toggle2'){
+  obj=obj||{};
+  return `<div class="cfgPair2">${field.pairKeys.map((k,i)=>{
+   const on=obj[k]==='Activado', lab=field.pairLabels[i];
+   return `<div class="cfgPair2Item"><span class="cfgPair2Lab">${esc(lab)}</span><button type="button" class="cfgCheckDev ${on?'on':'off'}" data-dev="${dev}" data-k="${k}" title="${lab}: ${on?'Activado — click para desactivar':'Desactivado — click para activar'}">${on?'✓':'✕'}</button></div>`;
+  }).join('')}</div>`;
  }
  return `<input type="text" class="finput cfgDeviceInput" data-dev="${dev}" data-k="${field.k}" value="${esc(val!=null&&val!==''?val:(field.def||''))}">`;
 }
@@ -2392,7 +2392,7 @@ function deviceSpecHtml(spec,obj){
     <button type="button" data-v="0" class="${!active?'on no':''}">Desactivado</button>
    </div>
    ${active?`<table class="cfgTable"><tbody>
-    ${spec.fields.map(x=>`<tr><td style="min-width:280px">${esc(x.l)}</td><td>${cfgDeviceFieldInput(spec.key,x,obj[x.k])}</td></tr>`).join('')}
+    ${spec.fields.map(x=>`<tr><td style="min-width:280px">${esc(x.l)}</td><td>${cfgDeviceFieldInput(spec.key,x,obj[x.k],obj)}</td></tr>`).join('')}
    </tbody></table>`:'<p class="tinfo" style="margin-top:8px">Marcá "Activado" para cargar la configuración detallada de este dispositivo.</p>'}
   </div>
  </details>`;
@@ -2743,6 +2743,13 @@ function fichaBodyHtml(f){
    if(x.type==='toggle'){
     const on=obj[x.k]==='Activado';
     return `<tr><td>${esc(x.l)}</td><td style="text-align:center;font-weight:700;color:${on?'#16b364':'#c0392b'}">${on?'✓':'✕'}</td></tr>`;
+   }
+   if(x.type==='toggle2'){
+    const cell=x.pairKeys.map((k,i)=>{
+     const on=obj[k]==='Activado';
+     return `<span style="font-weight:700;color:${on?'#16b364':'#c0392b'}">${esc(x.pairLabels[i])}: ${on?'✓':'✕'}</span>`;
+    }).join(' &nbsp;·&nbsp; ');
+    return `<tr><td>${esc(x.l)}</td><td>${cell}</td></tr>`;
    }
    return `<tr><td>${esc(x.l)}</td><td>${esc(obj[x.k]||x.def||'—')}</td></tr>`;
   }).join('');
