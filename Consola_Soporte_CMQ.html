@@ -412,6 +412,13 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 .cfgCheckDev.on{background:var(--sigbg);border-color:var(--sig);color:var(--sig)}
 .cfgCheckDev.off{background:var(--dangerbg);border-color:var(--danger);color:var(--danger)}
 .cfgCheckDev:hover{filter:brightness(1.08)}
+/* Botón de selección de fila (vista previa de import, v104) — mismo tamaño/forma que .cfgCheckDev
+   (toggle en celda de tabla) pero con semántica de selección, no de Activado/Desactivado: "on" usa
+   el teal de señal (interactivo/elegido), nunca rojo — no tildar una fila no es un error. */
+.rowSelectBtn{width:28px;height:28px;border-radius:8px;border:1px solid var(--edge);background:var(--panel);cursor:pointer;font-size:14px;font-weight:800;line-height:1;color:var(--accent2);display:inline-flex;align-items:center;justify-content:center;transition:background .15s var(--ease),border-color .15s var(--ease)}
+.rowSelectBtn.on{background:var(--accdim);border-color:var(--accent)}
+.rowSelectBtn:hover:not(:disabled){border-color:var(--accent)}
+.rowSelectBtn:disabled{opacity:.4;cursor:not-allowed;color:var(--mut)}
 .execFichaCard{border:1px solid var(--edge);border-radius:12px;padding:12px 14px;margin:10px 0;background:var(--panel);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
 .execFichaCard:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(16,32,60,.1)}
 .efHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
@@ -4010,15 +4017,26 @@ function renderTeleImportPreview(){
    ${items.map((t,i)=>{
     const dis=!!t._errores.length;
     const tag=dis?` <span class="tag" title="Faltan o son inválidos: ${esc(t._errores.join(', '))}">✕ fila ${t._row}</span>`:(t._dup?` <span class="tag st" title="Ya hay una tarea cargada con estos mismos datos">Duplicada</span>`:'');
-    const lab=`Importar tarea de ${t.cliente||'cliente sin nombre'}, ${t.tipo||'sin tipo'}, ${t.fecha||'sin fecha'}${t.horas!=null?', '+t.horas+' horas':''}`;
-    return `<tr style="${dis?'opacity:.55':''}"><td><input type="checkbox" data-ti="${i}" aria-label="${esc(lab)}" style="width:17px;height:17px;accent-color:var(--accent)" ${t._checked?'checked':''} ${dis?'disabled':''}></td><td>${esc(t.cliente)||'—'}</td><td>${esc(t.tipo)||'—'}</td><td>${esc(t.fecha)||'—'}</td><td>${t.horas==null?'—':t.horas}</td><td>${esc(t.estado)}</td><td>${esc(t.responsable)||'—'}</td><td>${esc(t.detalle)||'—'}${tag}</td></tr>`;
+    const lab=`${t.cliente||'cliente sin nombre'}, ${t.tipo||'sin tipo'}, ${t.fecha||'sin fecha'}${t.horas!=null?', '+t.horas+' horas':''}`;
+    const btnTitle=dis?`No se puede importar — faltan o son inválidos: ${t._errores.join(', ')}`:(t._checked?`Se importa: ${lab} — click para destildar`:`No se importa: ${lab} — click para tildar`);
+    return `<tr style="${dis?'opacity:.55':''}"><td><button type="button" class="rowSelectBtn${t._checked?' on':''}" data-ti="${i}" aria-pressed="${!!t._checked}" aria-label="${esc(lab)}" title="${esc(btnTitle)}" ${dis?'disabled':''}>${t._checked?'✓':''}</button></td><td>${esc(t.cliente)||'—'}</td><td>${esc(t.tipo)||'—'}</td><td>${esc(t.fecha)||'—'}</td><td>${t.horas==null?'—':t.horas}</td><td>${esc(t.estado)}</td><td>${esc(t.responsable)||'—'}</td><td>${esc(t.detalle)||'—'}${tag}</td></tr>`;
    }).join('')}
   </tbody></table></div>
   <div class="tools" style="margin-top:10px">
    <button class="btn primary" id="btnTeleImportConfirm"${nChecked?'':' disabled'}>Confirmar importación (${nChecked})</button>
    <button class="btn" id="btnTeleImportCancel">Cancelar</button>
   </div>`;
- box.querySelectorAll('[data-ti]').forEach(cb=>cb.onchange=()=>{ teleImportPending[+cb.dataset.ti]._checked=cb.checked; renderTeleImportPreview(); });
+ box.querySelectorAll('.rowSelectBtn').forEach(btn=>{
+  btn.onclick=()=>{
+   const i=+btn.dataset.ti, t=teleImportPending[i], nowOn=!t._checked;
+   t._checked=nowOn;
+   btn.classList.toggle('on',nowOn); btn.setAttribute('aria-pressed',nowOn); btn.textContent=nowOn?'✓':'';
+   const lab=`${t.cliente||'cliente sin nombre'}, ${t.tipo||'sin tipo'}, ${t.fecha||'sin fecha'}${t.horas!=null?', '+t.horas+' horas':''}`;
+   btn.title=nowOn?`Se importa: ${lab} — click para destildar`:`No se importa: ${lab} — click para tildar`;
+   const n=teleImportPending.filter(x=>x._checked).length, confirmBtn=document.getElementById('btnTeleImportConfirm');
+   confirmBtn.textContent=`Confirmar importación (${n})`; confirmBtn.disabled=!n;
+  };
+ });
  document.getElementById('btnTeleImportConfirm').onclick=teleImportConfirm;
  document.getElementById('btnTeleImportCancel').onclick=()=>{ teleImportPending=null; renderTeleImportPreview(); fileHoras.value=''; };
 }
