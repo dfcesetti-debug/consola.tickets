@@ -5,7 +5,7 @@ con conexión en vivo a los proyectos **Quilmes (SG)** y **Cervepar (CERVEPAR)**
 Reúne el historial de tickets, una matriz de respuestas para Nivel 1, análisis de
 tiempos y métricas, todo separado por cliente.
 
-> **Estado de la documentación:** este README cubre hasta **v103**. Para el detalle
+> **Estado de la documentación:** este README cubre hasta **v104**. Para el detalle
 > histórico completo ver [`tablero/CHANGELOG.md`](tablero/CHANGELOG.md) y `git log`.
 
 ---
@@ -41,11 +41,11 @@ tiempos y métricas, todo separado por cliente.
 | `tablero/DESIGN.md` + `tablero/.impeccable/design.json` | Sistema de diseño capturado del código (paleta, tipografía, reglas nombradas). Norte creativo "The Situation Room". |
 | `tablero/kb_state.json` | Ya no se usa para guardar (desde v30 eso va a Firebase). Resabio de versiones previas de esta carpeta. |
 | `tablero/token_local.json` | Token de Jira para desarrollo local (no se sube a git). |
-| `tablero/CHANGELOG.md` | Detalle completo versión por versión (v1–v103 y siguientes). El README mantiene solo el resumen de hitos. |
+| `tablero/CHANGELOG.md` | Detalle completo versión por versión (v1–v104 y siguientes). El README mantiene solo el resumen de hitos. |
 | `README.md` | Este documento. |
 
 > ⚠️ **Nota de desfase:** `DOCUMENTACION_TECNICA.md` describe la plataforma hasta **v74**
-> y `MANUAL_USUARIOS.md` hasta **v94**, mientras que este README cubre hasta **v103**.
+> y `MANUAL_USUARIOS.md` hasta **v94**, mientras que este README cubre hasta **v104**.
 > La doc técnica deberá actualizarse cuando haya un cambio estructural (arquitectura,
 > pestañas, contrato de datos). Consultá siempre el changelog para lo más reciente.
 
@@ -177,9 +177,9 @@ Arquitectura completa y diagrama de flujo: `tablero/DOCUMENTACION_TECNICA.md`.
 
 ## Registro de cambios (resumido)
 
-La Consola tiene **103 versiones** a esta fecha. Para no hacer eterno este documento, acá quedan
+La Consola tiene **104 versiones** a esta fecha. Para no hacer eterno este documento, acá quedan
 solo los **hitos importantes** — los cambios que movieron la aguja en arquitectura, seguridad
-o cómo se usa la app día a día. El **detalle completo versión por versión** (v1–v103 y siguientes)
+o cómo se usa la app día a día. El **detalle completo versión por versión** (v1–v104 y siguientes)
 vive en [`tablero/CHANGELOG.md`](tablero/CHANGELOG.md), y también en git: cada commit del repo
 corresponde a una versión y trae ese detalle en su propio mensaje —
 `git log --oneline` para la lista, `git show <hash>` para el detalle de una en particular.
@@ -199,7 +199,8 @@ corresponde a una versión y trae ese detalle en su propio mensaje —
 - **v100–v101** — Auditoría y endurecimiento de seguridad: se vació el seed de datos de ejemplo que tenía PII real de clientes, se cerró un vector de inyección JQL en el conector de Jira (nube y local), y se versionaron las reglas de Firestore (`firestore.rules`/`firebase.json`) que antes solo existían desplegadas, sin poder auditarlas desde el repo.
 - **v102** — Gráficos dinámicos en Panel Telemática: la tarjeta "Tiempos por categoría, sub categoría, responsable y cliente" pasa de barras a mano a **Chart.js** (vendorizado, sin CDN) con selector Barras/Columnas/Tendencia/Dona, mismo filtro cruzado de siempre al hacer clic, y una leyenda de botones reales como control accesible (el `<canvas>` no es operable por teclado).
 - **v103** — Export con filtros aplicados (Tickets, Telemática, Panel Telemática) e **import de horas desde un Excel externo**: script offline `tablero/importar_horas_telematica.py` (mapeo de columnas configurable + validación) que convierte el `.xlsx` a un `.json`, y un uploader nuevo en Configuración con **vista previa, detección de duplicados y confirmación** antes de cargar de verdad a Telemática.
+- **v104** — `/impeccable audit` sobre v99–v103: encontró y corrigió un hallazgo real de accesibilidad (los checkboxes de la vista previa de importación de horas eran nativos, sin `aria-label` y de 13px, por debajo del touch target mínimo); todo lo demás (gráficos, exports, uploader) dio limpio contra `DESIGN.md`.
 
 ---
 
-*Para el detalle completo versión por versión (v1–v103 y siguientes), ver [`tablero/CHANGELOG.md`](tablero/CHANGELOG.md) y `git log`.*
+*Para el detalle completo versión por versión (v1–v104 y siguientes), ver [`tablero/CHANGELOG.md`](tablero/CHANGELOG.md) y `git log`.*

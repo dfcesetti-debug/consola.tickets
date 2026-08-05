@@ -4010,7 +4010,8 @@ function renderTeleImportPreview(){
    ${items.map((t,i)=>{
     const dis=!!t._errores.length;
     const tag=dis?` <span class="tag" title="Faltan o son inválidos: ${esc(t._errores.join(', '))}">✕ fila ${t._row}</span>`:(t._dup?` <span class="tag st" title="Ya hay una tarea cargada con estos mismos datos">Duplicada</span>`:'');
-    return `<tr style="${dis?'opacity:.55':''}"><td><input type="checkbox" data-ti="${i}" ${t._checked?'checked':''} ${dis?'disabled':''}></td><td>${esc(t.cliente)||'—'}</td><td>${esc(t.tipo)||'—'}</td><td>${esc(t.fecha)||'—'}</td><td>${t.horas==null?'—':t.horas}</td><td>${esc(t.estado)}</td><td>${esc(t.responsable)||'—'}</td><td>${esc(t.detalle)||'—'}${tag}</td></tr>`;
+    const lab=`Importar tarea de ${t.cliente||'cliente sin nombre'}, ${t.tipo||'sin tipo'}, ${t.fecha||'sin fecha'}${t.horas!=null?', '+t.horas+' horas':''}`;
+    return `<tr style="${dis?'opacity:.55':''}"><td><input type="checkbox" data-ti="${i}" aria-label="${esc(lab)}" style="width:17px;height:17px;accent-color:var(--accent)" ${t._checked?'checked':''} ${dis?'disabled':''}></td><td>${esc(t.cliente)||'—'}</td><td>${esc(t.tipo)||'—'}</td><td>${esc(t.fecha)||'—'}</td><td>${t.horas==null?'—':t.horas}</td><td>${esc(t.estado)}</td><td>${esc(t.responsable)||'—'}</td><td>${esc(t.detalle)||'—'}${tag}</td></tr>`;
    }).join('')}
   </tbody></table></div>
   <div class="tools" style="margin-top:10px">
