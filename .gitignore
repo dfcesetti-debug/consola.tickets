@@ -12,6 +12,7 @@ tablero/*
 !tablero/MANUAL_USUARIOS.md
 !tablero/main.py
 !tablero/run_local.py
+!tablero/importar_horas_telematica.py
 
 # Contexto del skill "impeccable" (producto + sistema de diseño) — se sube para
 # que persista entre sesiones/máquinas, ver tablero/PRODUCT.md y DESIGN.md.

@@ -671,6 +671,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
      <option value="key">Ordenar: por ticket</option>
     </select>
     <button class="btn sm" id="btnClearFilters" style="display:none">Limpiar filtros ✕</button>
+    <button class="btn sm" id="btnExportFiltered" title="Exporta exactamente lo que ves ahora: tickets de Jira + tareas de Telemática, con los filtros y la búsqueda activos">&#8675; Exportar vista (.csv)</button>
     <span class="count" id="tkCount"></span>
    </div>
    <div id="tickets"></div>
@@ -746,7 +747,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
     <div class="seg" id="segTeleMetric" style="margin-left:auto"></div>
    </div>
    <div id="analisisTele"></div>
-   <div class="card"><div class="lab" style="margin-top:0">Tickets cargados</div><div id="teleList"></div></div>
+   <div class="card"><div class="lab" style="margin-top:0;display:flex;align-items:center;justify-content:space-between;gap:10px"><span>Tickets cargados</span><button class="btn sm" id="btnTeleExportCsv" title="Exporta las horas cargadas con los filtros de arriba activos">&#8675; Exportar horas (.csv)</button></div><div id="teleList"></div></div>
   </section>
 
   <section class="view" id="v-config">
@@ -791,6 +792,16 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
       <p>o hacé clic para elegirlo · Jira (.doc/.html) o respaldo (.json)</p>
       <input type="file" id="file" accept=".doc,.html,.htm,.xml,.json" style="display:none" multiple>
      </div>
+    </details>
+    <details id="uploadHorasSec" style="margin-top:8px">
+     <summary style="font-size:12px;color:var(--mut);cursor:pointer">Importar horas de Telemática desde otro sistema (.json)</summary>
+     <p class="tinfo" style="margin:6px 0 8px">Si las horas vienen de un Excel de otro sistema, primero convertilo con <code>tablero/importar_horas_telematica.py</code> (corre en tu PC, no acá) — te deja un .json listo para subir acá. Antes de cargarse de verdad vas a ver una vista previa para revisar y destildar lo que no corresponda.</p>
+     <div class="drop" id="dropHoras" style="margin-top:8px">
+      <div class="ic">&#11123;</div><h3>Soltá el .json de horas acá</h3>
+      <p>o hacé clic para elegirlo</p>
+      <input type="file" id="fileHoras" accept=".json" style="display:none">
+     </div>
+     <div id="teleImportPreview" style="display:none"></div>
     </details>
     <div class="tools">
      <button class="btn" id="btnJson">&#8675; Descargar respaldo (.json)</button>
@@ -1533,6 +1544,7 @@ function renderPanelTele(){
     <div style="display:flex;align-items:center;gap:6px"><span class="tinfo">Hasta</span><input type="date" class="finput" style="max-width:135px" value="${esc(panelTreeHasta)}" min="${esc(panelTreeDesde||'')}" onchange="setPanelTreeHasta(this.value)"></div>
    </div>
    <button class="btn sm" onclick="panelTreeClearBtn()" style="${anyPanelTreeFilter?'':'display:none'}">Limpiar filtros ✕</button>
+   <button class="btn sm" onclick="exportPanelTreeCsv()" title="Exporta las horas de Telemática con estos filtros (Categoría/Sub categoría/Cliente/Responsable/rango) aplicados" style="margin-left:auto">&#8675; Exportar horas (.csv)</button>
   </div>
   <details class="card" data-pc="teleTarea"${panelCardClosed.has('teleTarea')?'':' open'}>
    <summary class="lab">Tiempos por tarea, responsable y cliente${scopeCli?' · '+esc(scopeCli):''}</summary>
@@ -3475,6 +3487,7 @@ function renderTelematica(){
  });
 }
 document.getElementById('btnTeleAddRow').onclick=()=>addTeleRow();
+document.getElementById('btnTeleExportCsv').onclick=()=>exportTeleCsv(teleFiltered(),'horas_telematica.csv');
 document.getElementById('btnTeleGuardar').onclick=()=>{
  const fecha=document.getElementById('teleFecha').value;
  if(!fecha){ alert('Completá la fecha.'); return; }
@@ -3948,11 +3961,122 @@ renderMselTipos(); renderMselClientes(); updateMselLabels();
 ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('hot');}));
 ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('hot');}));
 drop.addEventListener('drop',e=>handleFiles(e.dataTransfer.files));
+
+/* import de horas de Telemática (fase 4: .xlsx externo -> importar_horas_telematica.py -> este
+   .json). A propósito NO comparte el uploader de arriba: ese espera tickets de Jira o un respaldo
+   {seed:[...]}, y volcarlo ahí mezclaría filas de horas dentro de la base de tickets. */
+const dropHoras=document.getElementById('dropHoras'), fileHoras=document.getElementById('fileHoras');
+let teleImportPending=null;
+const ESTADOS_TELE=['Pendiente','En curso','Resuelto'];
+// clave de "es la misma tarea" para el aviso de duplicado — no es una igualdad estricta de objeto,
+// alcanza con que coincidan los campos que identifican la tarea para la vista previa.
+const teleImportKey=t=>[t.cliente,t.tipo,t.fecha,t.horas==null?'':t.horas,t.responsable||''].join('|').toLowerCase();
+function handleHorasFile(f){
+ if(!f)return;
+ const r=new FileReader();
+ r.onload=()=>{
+  try{
+   const j=JSON.parse(r.result);
+   const arr=Array.isArray(j)?j:(j.tareas||[]);
+   if(!arr.length){ log(`✖ ${f.name}: el archivo no tiene tareas.`,'e'); return; }
+   const known=new Set(TELE.map(teleImportKey));
+   teleImportPending=arr.map((raw,i)=>{
+    const horas=raw.horas==null||raw.horas===''?null:Number(raw.horas);
+    const t={cliente:String(raw.cliente||'').trim(),tipo:String(raw.tipo||'').trim(),fecha:String(raw.fecha||'').trim(),
+     horas, estado:ESTADOS_TELE.includes(raw.estado)?raw.estado:'Pendiente',
+     responsable:String(raw.responsable||'').trim(),detalle:String(raw.detalle||'').trim()};
+    const errores=[];
+    if(!t.cliente)errores.push('cliente'); if(!t.tipo)errores.push('tipo'); if(!t.fecha)errores.push('fecha');
+    if(raw.horas!=null&&raw.horas!==''&&isNaN(horas))errores.push('horas'); else if(horas==null)errores.push('horas');
+    const dup=!errores.length&&known.has(teleImportKey(t));
+    return {...t,_row:raw._origenFila||(i+1),_errores:errores,_dup:dup,_checked:!errores.length&&!dup};
+   });
+   log(`↳ ${f.name}: ${teleImportPending.length} fila(s) leídas, ${teleImportPending.filter(x=>!x._errores.length).length} válidas.`,'d');
+   renderTeleImportPreview();
+  }catch(e){ log(`✖ Error leyendo ${f.name}: ${e.message}`,'e'); teleImportPending=null; renderTeleImportPreview(); }
+ };
+ r.onerror=()=>log(`✖ No se pudo leer ${f.name}`,'e');
+ r.readAsText(f,'UTF-8');
+}
+function renderTeleImportPreview(){
+ const box=document.getElementById('teleImportPreview'); if(!box)return;
+ if(!teleImportPending){ box.style.display='none'; box.innerHTML=''; return; }
+ box.style.display='block';
+ const items=teleImportPending;
+ const nOk=items.filter(x=>!x._errores.length).length, nDup=items.filter(x=>x._dup).length, nChecked=items.filter(x=>x._checked).length;
+ box.innerHTML=`
+  <p class="tinfo" style="margin:10px 0 6px">${items.length} fila(s) · ${nOk} válida(s) · ${nDup} ya cargada(s) en Telemática (destildadas por defecto, se pueden tildar igual) · ${items.length-nOk} con error (no se pueden importar).</p>
+  <div class="cfgTableWrap"><table class="cfgTable"><thead><tr><th></th><th>Cliente</th><th>Tipo</th><th>Fecha</th><th>Horas</th><th>Estado</th><th>Responsable</th><th>Detalle</th></tr></thead><tbody>
+   ${items.map((t,i)=>{
+    const dis=!!t._errores.length;
+    const tag=dis?` <span class="tag" title="Faltan o son inválidos: ${esc(t._errores.join(', '))}">✕ fila ${t._row}</span>`:(t._dup?` <span class="tag st" title="Ya hay una tarea cargada con estos mismos datos">Duplicada</span>`:'');
+    return `<tr style="${dis?'opacity:.55':''}"><td><input type="checkbox" data-ti="${i}" ${t._checked?'checked':''} ${dis?'disabled':''}></td><td>${esc(t.cliente)||'—'}</td><td>${esc(t.tipo)||'—'}</td><td>${esc(t.fecha)||'—'}</td><td>${t.horas==null?'—':t.horas}</td><td>${esc(t.estado)}</td><td>${esc(t.responsable)||'—'}</td><td>${esc(t.detalle)||'—'}${tag}</td></tr>`;
+   }).join('')}
+  </tbody></table></div>
+  <div class="tools" style="margin-top:10px">
+   <button class="btn primary" id="btnTeleImportConfirm"${nChecked?'':' disabled'}>Confirmar importación (${nChecked})</button>
+   <button class="btn" id="btnTeleImportCancel">Cancelar</button>
+  </div>`;
+ box.querySelectorAll('[data-ti]').forEach(cb=>cb.onchange=()=>{ teleImportPending[+cb.dataset.ti]._checked=cb.checked; renderTeleImportPreview(); });
+ document.getElementById('btnTeleImportConfirm').onclick=teleImportConfirm;
+ document.getElementById('btnTeleImportCancel').onclick=()=>{ teleImportPending=null; renderTeleImportPreview(); fileHoras.value=''; };
+}
+function teleImportConfirm(){
+ const items=(teleImportPending||[]).filter(t=>t._checked&&!t._errores.length);
+ if(!items.length)return;
+ items.forEach(t=>{
+  TELE.push({id:'t'+Date.now().toString(36)+Math.random().toString(36).slice(2,7), cliente:t.cliente, tipo:t.tipo, fecha:t.fecha, horas:t.horas, estado:t.estado, responsable:t.responsable, detalle:t.detalle, creado:new Date().toISOString(),
+   historial:[{fecha:new Date().toLocaleString('es-AR'),ts:Date.now(),usuario:t.responsable||'Sin identificar',resumen:'Tarea importada desde archivo (.xlsx → .json)'}]});
+ });
+ auditLog('Telemática',`Importación de horas: ${items.length} tarea(s) desde archivo.`);
+ saveTele(); pushState();
+ log(`✔ Importadas ${items.length} tarea(s) de Telemática.`);
+ teleImportPending=null; renderTeleImportPreview(); fileHoras.value='';
+ renderTelematica(); refresh();
+}
+dropHoras.onclick=()=>fileHoras.click();
+fileHoras.onchange=()=>{handleHorasFile(fileHoras.files[0]);};
+['dragenter','dragover'].forEach(ev=>dropHoras.addEventListener(ev,e=>{e.preventDefault();dropHoras.classList.add('hot');}));
+['dragleave','drop'].forEach(ev=>dropHoras.addEventListener(ev,e=>{e.preventDefault();dropHoras.classList.remove('hot');}));
+dropHoras.addEventListener('drop',e=>handleHorasFile(e.dataTransfer.files[0]));
+
 document.getElementById('btnJson').onclick=()=>{ const clean=DATA.map(({_blob,_cblob,_n,_d,_cli,...r})=>r); dl('base_conocimiento_cmq.json',JSON.stringify({seed:clean,clients:CLIENTS,overrides:OVERRIDES},null,1),'application/json'); };
 document.getElementById('btnCsv').onclick=()=>{ const h=['key','cliente','tipo','estado','prioridad','informador','asignado','creada','actualizada','respuestas','titulo']; const rows=[h.join(',')];
  DATA.forEach(i=>rows.push([i.key,i._cli,i.tipo,i.estado,i.prioridad,i.informador,i.asignado,i.creada,i.actualizada,i._n,i.title].map(v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`).join(',')));
  dl('tickets_cmq.csv','﻿'+rows.join('\n'),'text/csv'); };
+// A diferencia de btnCsv (toda la base, sin filtrar), este exporta exactamente lo que la pestaña
+// Tickets tiene en pantalla — mismo array "filtered" que arma _applyTicketsImpl() (Jira + Telemática
+// mezclados, con tipo/estado/responsable/origen/búsqueda/cliente ya aplicados).
+document.getElementById('btnExportFiltered').onclick=()=>{
+ const h=['key','cliente','tipo','estado','prioridad','informador','asignado','creada','actualizada','respuestas','titulo','origen','horas'];
+ const rows=[h.join(',')];
+ filtered.forEach(i=>{
+  const origen=i._tele?'Telemática':'Jira';
+  const horas=i._tele&&i._teleHorasMs!=null?(i._teleHorasMs/3600000).toFixed(2):'';
+  rows.push([i.key,i._cli,i.tipo,i.estado,i.prioridad,i.informador,i.asignado,i.creada,i.actualizada,i._n,i.title,origen,horas].map(csvCell).join(','));
+ });
+ dl('tickets_filtrado.csv','﻿'+rows.join('\n'),'text/csv');
+};
 function dl(name,content,type){ const b=new Blob([content],{type}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u;a.download=name;a.click(); setTimeout(()=>URL.revokeObjectURL(u),1000); }
+const csvCell=v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`;
+// Export de horas de Telemática — mismas columnas que espera el importador (fase 4: script .py que
+// normaliza un Excel externo a este mismo shape), para que export/import se lean como un solo círculo.
+function exportTeleCsv(list,filename){
+ const h=['cliente','categoria','tipo','fecha','horas','estado','responsable','detalle'];
+ const rows=[h.join(',')];
+ list.forEach(t=>{ const horas=t.horas==null||t.horas===''?'':Number(t.horas);
+  rows.push([t.cliente,categoriaOf(t.tipo),t.tipo,t.fecha,isNaN(horas)?'':horas,t.estado,t.responsable,t.detalle].map(csvCell).join(','));
+ });
+ dl(filename,'﻿'+rows.join('\n'),'text/csv');
+}
+// Mismo filtro (Categoría/Sub categoría/Cliente/Responsable/rango de fechas) que ya arma
+// panelTreeGroups() para el gráfico — separado en su propia función para no depender de una
+// variable local de renderPanelTele() al exportar desde el botón de la tarjeta.
+function panelTreeFilteredList(){
+ const listScoped=scopeCli?TELE.filter(t=>t.cliente===scopeCli):TELE;
+ return listScoped.filter(t=>panelTreeMatch(t,null));
+}
+window.exportPanelTreeCsv=()=>exportTeleCsv(panelTreeFilteredList(),'horas_telematica_filtrado.csv');
 
 const NAV_VIEWS=['panel','matriz','tickets','clientes','telematica','config'];
 function _navToImpl(v){ document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v)); document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v)); const cb=document.getElementById('clientbar'); if(cb)cb.style.display=(v==='panel'||v==='tickets')?'':'none'; const m=document.querySelector('.main'); if(m&&m.scrollTo)m.scrollTo({top:0,behavior:'smooth'}); }
