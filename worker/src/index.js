@@ -277,7 +277,7 @@ async function build(env, query, projName, debug, maxResults) {
   const F = await detectFields(base, auth);
   if (debug === "fields") return { reqtype_field: F.reqtype, sla_fields: F.slas };
   const pn = String(projName || "").toLowerCase();
-  const pk = ["", "ambos", "todos"].includes(pn) ? "" : PROJECTS[String(projName).toUpperCase()] || String(projName).toUpperCase();
+  const pk = ["", "ambos", "todos"].includes(pn) ? "" : PROJECTS[String(projName).toUpperCase()] || "";
   const fields = ["summary", "status", "priority", "assignee", "reporter", "created", "resolutiondate", "updated", "issuetype", "description", "comment"];
   if (F.reqtype) fields.push(F.reqtype);
   fields.push(...Object.keys(F.slas || {}));
@@ -314,7 +314,7 @@ async function buildPage(env, query, projName, pageToken) {
   const auth = authHeader(email, token);
   const F = await detectFields(base, auth);
   const pn = String(projName || "").toLowerCase();
-  const pk = ["", "ambos", "todos"].includes(pn) ? "" : PROJECTS[String(projName).toUpperCase()] || String(projName).toUpperCase();
+  const pk = ["", "ambos", "todos"].includes(pn) ? "" : PROJECTS[String(projName).toUpperCase()] || "";
   const fields = ["summary", "status", "priority", "assignee", "reporter", "created", "resolutiondate", "updated", "issuetype", "description", "comment"];
   if (F.reqtype) fields.push(F.reqtype);
   fields.push(...Object.keys(F.slas || {}));

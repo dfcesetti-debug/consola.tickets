@@ -39,3 +39,10 @@ worker/src/*
 # puede contener tokens de sesión de "wrangler login") nunca se suben.
 worker/node_modules/
 worker/.wrangler/
+
+# Firebase — reglas de Firestore versionadas (firestore.rules) y config de deploy
+# (firebase.json) se suben. El secreto de Firebase (apiKey, etc.) nunca — vive
+# hardcodeado en el HTML (es público en apps web) pero se valida server-side con
+# las reglas de abajo.
+!firestore.rules
+!firebase.json

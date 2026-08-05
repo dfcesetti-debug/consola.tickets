@@ -310,7 +310,7 @@ def build(query, proj_name, debug="", max_results=0):
     F = detect_fields()
     if debug == "fields":
         return {"reqtype_field": F["reqtype"], "sla_fields": F["slas"]}
-    pk = "" if str(proj_name or "").lower() in ("", "ambos", "todos") else PROJECTS.get(str(proj_name).upper(), str(proj_name).upper())
+    pk = "" if str(proj_name or "").lower() in ("", "ambos", "todos") else PROJECTS.get(str(proj_name).upper(), "")
     fields = ["summary", "status", "priority", "assignee", "reporter", "created",
               "resolutiondate", "updated", "issuetype", "description", "comment"]
     if F["reqtype"]:
