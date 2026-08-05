@@ -412,9 +412,6 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 .cfgCheckDev.on{background:var(--sigbg);border-color:var(--sig);color:var(--sig)}
 .cfgCheckDev.off{background:var(--dangerbg);border-color:var(--danger);color:var(--danger)}
 .cfgCheckDev:hover{filter:brightness(1.08)}
-.cfgCheckCol{display:grid;grid-template-columns:repeat(2,60px);gap:10px;justify-content:end}
-.cfgCheckColItem{display:flex;flex-direction:column;align-items:center;gap:4px}
-.cfgCheckColLab{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--mut2)}
 .execFichaCard{border:1px solid var(--edge);border-radius:12px;padding:12px 14px;margin:10px 0;background:var(--panel);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
 .execFichaCard:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(16,32,60,.1)}
 .efHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
@@ -2068,8 +2065,8 @@ const GOFOCUS_TONO_VOZ_MERGE=[
  ['doble_linea','doble_linea_tono','doble_linea_voz']
 ];
 const DEVICE_SPECS=[
- {key:'go_focus_plus',label:'GO Focus Plus',fields:GO_FOCUS_PLUS_FIELDS},
- {key:'surfsight_ai12',label:'Surfsight AI-12',fields:SURFSIGHT_AI12_FIELDS}
+ {key:'go_focus_plus',label:'GO Focus Plus',fields:GO_FOCUS_PLUS_FIELDS,pairHeader:['Tono','Alerta de voz']},
+ {key:'surfsight_ai12',label:'Surfsight AI-12',fields:SURFSIGHT_AI12_FIELDS,pairHeader:['Audio','Visual']}
 ];
 const REF_SECTIONS=[
  {key:'referentes_cliente',label:'Referente(s) del cliente',fields:[{k:'nombre',l:'Nombre'},{k:'cargo',l:'Cargo'},{k:'telefono',l:'Teléfono'},{k:'email',l:'Email'}]},
@@ -2353,24 +2350,35 @@ function cfgSectionHtml(sec,rows){
   </div>
  </details>`;
 }
-function cfgDeviceFieldInput(dev,field,val,obj){
+function cfgDeviceFieldInput(dev,field,val){
  if(field.type==='select'){
   const cur=val||field.def||'';
   const opts=['<option value="">—</option>'].concat((field.options||[]).map(o=>`<option value="${esc(o)}" ${cur===o?'selected':''}>${esc(o)}</option>`));
   return `<select class="finput cfgDeviceInput" data-dev="${dev}" data-k="${field.k}">${opts.join('')}</select>`;
  }
- if(field.type==='toggle'){
-  const on=val==='Activado';
-  return `<div class="cfgCheckCol"><div class="cfgCheckColItem" style="grid-column:2"><button type="button" class="cfgCheckDev ${on?'on':'off'}" data-dev="${dev}" data-k="${field.k}" title="${on?'Activado — click para desactivar':'Desactivado — click para activar'}">${on?'✓':'✕'}</button></div></div>`;
- }
- if(field.type==='toggle2'){
-  obj=obj||{};
-  return `<div class="cfgCheckCol">${field.pairKeys.map((k,i)=>{
-   const on=obj[k]==='Activado', lab=field.pairLabels[i];
-   return `<div class="cfgCheckColItem"><span class="cfgCheckColLab">${esc(lab)}</span><button type="button" class="cfgCheckDev ${on?'on':'off'}" data-dev="${dev}" data-k="${k}" title="${lab}: ${on?'Activado — click para desactivar':'Desactivado — click para activar'}">${on?'✓':'✕'}</button></div>`;
-  }).join('')}</div>`;
- }
  return `<input type="text" class="finput cfgDeviceInput" data-dev="${dev}" data-k="${field.k}" value="${esc(val!=null&&val!==''?val:(field.def||''))}">`;
+}
+// una fila por campo: los campos toggle2 (Tono/Alerta de voz, Audio/Visual) ocupan las dos
+// columnas de check bajo el encabezado de la tabla; el resto (toggle único, select, texto)
+// ocupa esas mismas dos columnas fusionadas (colspan), para que la tabla quede pareja de verdad
+// en vez de que cada fila arme su propia alineación por separado.
+function deviceCheckBtnHtml(dev,k,on,title){
+ return `<button type="button" class="cfgCheckDev ${on?'on':'off'}" data-dev="${dev}" data-k="${k}" title="${esc(title)}">${on?'✓':'✕'}</button>`;
+}
+function deviceFieldRowHtml(dev,field,obj){
+ const labelTd=`<td style="min-width:280px">${esc(field.l)}</td>`;
+ if(field.type==='toggle2'){
+  const cells=field.pairKeys.map((k,i)=>{
+   const on=obj[k]==='Activado', lab=field.pairLabels[i];
+   return `<td style="text-align:center">${deviceCheckBtnHtml(dev,k,on,lab+': '+(on?'Activado — click para desactivar':'Desactivado — click para activar'))}</td>`;
+  }).join('');
+  return `<tr>${labelTd}${cells}</tr>`;
+ }
+ if(field.type==='toggle'){
+  const on=obj[field.k]==='Activado';
+  return `<tr>${labelTd}<td></td><td style="text-align:center">${deviceCheckBtnHtml(dev,field.k,on,on?'Activado — click para desactivar':'Desactivado — click para activar')}</td></tr>`;
+ }
+ return `<tr>${labelTd}<td colspan="2">${cfgDeviceFieldInput(dev,field,obj[field.k])}</td></tr>`;
 }
 function deviceCopySelHtml(spec){
  const opts=Object.keys(FICHAS).filter(k=>k!==ejecCliente&&(((FICHAS[k].configuracion||{})[spec]||{}).activo===true)).map(k=>`<option value="${esc(k)}">${esc(k)}</option>`).join('');
@@ -2383,6 +2391,8 @@ function deviceSpecHtml(spec,obj){
  obj=obj||{activo:false};
  const active=obj.activo===true;
  const openAttr=ejecOpenSections.has(spec.key)?' open':'';
+ const hasPairs=spec.fields.some(f=>f.type==='toggle2');
+ const ph=spec.pairHeader||['',''];
  return `<details class="cfgSec" data-sec="${spec.key}"${openAttr}>
   <summary>${esc(spec.label)} <span class="tinfo">(${active?'Activado':'Desactivado'})</span></summary>
   <div class="cfgTableWrap">
@@ -2391,8 +2401,8 @@ function deviceSpecHtml(spec,obj){
     <button type="button" data-v="1" class="${active?'on yes':''}">Activado</button>
     <button type="button" data-v="0" class="${!active?'on no':''}">Desactivado</button>
    </div>
-   ${active?`<table class="cfgTable"><tbody>
-    ${spec.fields.map(x=>`<tr><td style="min-width:280px">${esc(x.l)}</td><td>${cfgDeviceFieldInput(spec.key,x,obj[x.k],obj)}</td></tr>`).join('')}
+   ${active?`<table class="cfgTable">${hasPairs?`<thead><tr><th></th><th style="text-align:center">${esc(ph[0])}</th><th style="text-align:center">${esc(ph[1])}</th></tr></thead>`:''}<tbody>
+    ${spec.fields.map(x=>deviceFieldRowHtml(spec.key,x,obj)).join('')}
    </tbody></table>`:'<p class="tinfo" style="margin-top:8px">Marcá "Activado" para cargar la configuración detallada de este dispositivo.</p>'}
   </div>
  </details>`;
