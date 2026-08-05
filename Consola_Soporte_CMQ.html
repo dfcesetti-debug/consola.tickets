@@ -864,6 +864,7 @@ select.finput{padding-right:28px;appearance:none;-webkit-appearance:none;-moz-ap
 </div>
 </div>
 
+<script src="vendor/chart.umd.min.js"></script>
 <script>
 const APP ={"seed": [], "matrix": {"Desagios": {"sintoma": "El cliente pide 'desagiar' (descartar) excesos de velocidad porque el GPS toma mal una calle cercana, o por sensores mal instalados que generan desvíos.", "datos": ["Unidad (patente)", "Chofer", "Fecha y hora del evento", "Dirección/calle exacta", "Límite de velocidad indicado", "Reporte adjunto (Excel de infracciones)"], "pasos": ["Confirmar que el cliente aporte: unidad, fecha/hora, dirección y chofer. Sin estos datos NO se puede desagiar.", "Verificar en el mapa si la calle está 'mal tomada' por el GPS (evento sobre una calle paralela con distinto límite).", "Si corresponde, aplicar el desagío del evento y confirmar al cliente.", "Si el desvío se repite por la misma calle, escalar para revisar el límite/geocerca de la zona."], "plantilla": "Buenos días, gracias por el detalle. Verificamos el evento de la unidad {UNIDAD} del {FECHA} sobre {DIRECCION}. Se confirma que la calle fue mal tomada por el GPS y se procede al desagío del exceso. Cualquier otra novedad quedamos a disposición. Saludos.", "asignar": "Marcos Marin (desagíos de velocidad)"}, "Límites de velocidad": {"sintoma": "Consulta sobre qué límite aplica en una ruta, o pedido de desagío por un límite mal configurado (p. ej. tramo tomado como 60 cuando corresponde 80).", "datos": ["Unidad (patente)", "Chofer", "Fecha", "Dirección/ruta", "Reporte de infracciones adjunto"], "pasos": ["Pedir el reporte de infracciones y la dirección exacta del evento.", "Verificar el límite real de la ruta vs el límite configurado en la plataforma.", "Si el límite estaba mal, corregir la configuración y desagiar los eventos afectados.", "Informar al cliente el límite correcto de la ruta."], "plantilla": "Buenos días, nos podrías enviar el reporte con la unidad, chofer y fecha del evento. Con eso verificamos el límite correcto de la ruta y, de corresponder, aplicamos el desagío. Aguardo tu respuesta. Saludos.", "asignar": "Marcos Marin / Diego Ferreira"}, "Solicitud de revisión de hardware": {"sintoma": "Un dispositivo no funciona: NFC/identificación de conductor no registra, o el GPS marca cortes/pérdida de datos en los recorridos.", "datos": ["Unidad (patente)", "Fecha del video/evidencia", "Descripción de la falla", "Video o reporte adjunto"], "pasos": ["Pedir evidencia (video/reporte) y la FECHA exacta de la falla.", "Cruzar contra los datos de conductor registrado / posición del equipo en esa fecha.", "Si se confirma el mal funcionamiento (GPS erróneo, NFC sin registrar), generar el servicio de mantenimiento para la unidad.", "Informar al cliente que se generó el servicio y quedar a la espera del retiro/visita."], "plantilla": "Buenos días, ¿de qué día es el video/evidencia? Lo consulto para cruzar con los datos de conductor registrado. Si se confirma la falla, generamos el servicio de mantenimiento para la unidad {UNIDAD}. Saludos.", "asignar": "Agustina Vallejos / Julian Toros (mantenimiento)"}, "Nueva instalación / Desinstalación": {"sintoma": "Pedido de instalar un satelital en una unidad nueva, o dar de baja/retirar equipos de unidades vendidas o renovadas.", "datos": ["Patentes (alta y/o baja)", "OK del referente/aprobación", "Qué se desconecta (GPS, cinturón, NFC)", "Fecha deseada"], "pasos": ["Confirmar patentes y el OK del referente antes de coordinar (sin aprobación no se avanza).", "Generar la solicitud al equipo de coordinación para la visita del técnico.", "Dejar el ticket EN CURSO hasta que los equipos sean instalados/retirados.", "Confirmar al cliente cuando la instalación/desinstalación esté efectivizada."], "plantilla": "Buenos días, para avanzar necesitamos el OK del referente y las patentes involucradas. Con eso generamos la solicitud al equipo de coordinación, que se contactará a la brevedad. El ticket queda en curso hasta concretar. Saludos.", "asignar": "Julian Toros (retiros) / Agustina Vallejos"}, "Dispositivo de coaching audible": {"sintoma": "Pedido de alerta audible por excesos en una dirección, o revisión del sistema audible que presenta fallas.", "datos": ["Unidad (patente)", "Dirección/zona", "Video o reporte que muestre la falla"], "pasos": ["Si es pedido de alerta: crear geocerca con alerta audible (ej. 'Alerta zona 40').", "Si es falla del audible: pedir video/reporte que muestre el problema.", "Verificar el funcionamiento y, si hay falla de hardware, generar servicio de mantenimiento.", "Confirmar al cliente la creación de la alerta o el diagnóstico."], "plantilla": "Buenas tardes, nos podrías enviar un video o reporte que muestre la falla del audible en la unidad {UNIDAD}. Con eso verificamos y, de confirmarse, generamos el servicio correspondiente. Saludos.", "asignar": "Melisa Aranda / Agustina Vallejos"}, "Geocercas / Zonas": {"sintoma": "Pedido de crear/agregar una geocerca o zona por multiplicidad de excesos, con reglas de ingreso/egreso.", "datos": ["Archivo KML con coordenadas", "Grupos a los que aplica la zona", "Tipo de regla (ingreso/egreso/velocidad)"], "pasos": ["Solicitar el KML con coordenadas y los grupos a los que aplica.", "Crear la zona y la regla de ingreso/egreso solicitada.", "Informar por el mismo ticket cuando la zona quede activa."], "plantilla": "Buenas tardes, para iniciar el pedido necesitamos el archivo KML con las coordenadas y los grupos a los que aplica. Creamos la geocerca con la regla solicitada y te informamos por este medio cuando quede activa. Saludos.", "asignar": "Melisa Aranda / Lucas Di Luca"}, "Cinturón de seguridad": {"sintoma": "La unidad presenta desvíos de cinturón aunque el chofer lo usa correctamente (sospecha de sensor con falla).", "datos": ["Unidad (patente)", "Rango de fechas de los desvíos", "Validación con el chofer"], "pasos": ["Validar con el cliente que el chofer usa el cinturón correctamente.", "Verificar el funcionamiento del sensor de cinturón.", "Si el sensor falla, generar servicio de mantenimiento y descartar/desagiar los eventos del período.", "Atención: pueden aparecer eventos nuevos posteriores; revisar el rango completo."], "plantilla": "Buenos días, se verifica el mal funcionamiento del sensor de cinturón de la unidad {UNIDAD}. Generamos el servicio de mantenimiento y descartamos los eventos del período informado. Si aparecen nuevos eventos, avisanos para revisarlos. Saludos.", "asignar": "Agustina Vallejos"}, "Otros": {"sintoma": "Consultas varias: alarmas/coaching de las unidades, cambio de sensores, excesos puntuales, dudas de configuración.", "datos": ["Unidad (patente)", "Descripción del requerimiento", "Reporte/evidencia si aplica"], "pasos": ["Leer bien el requerimiento y pedir el dato faltante (unidad, fecha, reporte).", "Si es una duda de configuración/alarmas, explicar o escalar al técnico que configuró.", "Derivar al responsable según el tema (instalación, velocidad, hardware)."], "plantilla": "Buenos días, para ayudarte necesitamos {DATO FALTANTE} (unidad, fecha o reporte). Con eso revisamos el caso y te respondemos a la brevedad. Saludos.", "asignar": "Según tema (Agustina/Marcos/Lucas)"}, "Solicitud de capacitación / reunión": {"sintoma": "El cliente solicita una reunión o capacitación para implementar o entender mejor una funcionalidad.", "datos": ["Nombre y contacto del solicitante", "Objetivo de la reunión", "Disponibilidad horaria"], "pasos": ["Agradecer y pedir disponibilidad y objetivo concreto.", "Coordinar la reunión con el referente interno.", "Confirmar día y hora."], "plantilla": "Buenos días, {NOMBRE}. Nos ponemos en contacto para coordinar una reunión y entender mejor el requerimiento. ¿Qué disponibilidad horaria tenés esta semana? Saludos.", "asignar": "Diego Ferreira"}}};
 const MATRIX_CONTENT = APP.matrix;
@@ -1020,6 +1021,18 @@ function teleClientStats(list){
 }
 
 function clientColor(name){ if(name===UNASSIGNED)return '#9aa7bd'; const c=CLIENTS.find(x=>x.name===name); return c?c.color:'#9aa7bd'; }
+// Paleta categórica para gráficos Chart.js (dimensiones sin color propio, ej. Categoría/Responsable —
+// "cliente" reusa clientColor() para quedar coherente con el resto de la app). Misma familia
+// teal/gris del sistema "Situation Room" más un puñado de tonos que se distinguen bien entre sí,
+// igual en claro y oscuro (son colores saturados, no dependen del fondo).
+const CHART_PALETTE=['#0aa2c0','#7c5cff','#f2a93b','#e8598a','#3fae67','#c2554d','#2e86de','#9c6b4f'];
+// Lee los tokens de color/tipografía activos (claro u oscuro) para que Chart.js, que pinta en un
+// <canvas> y no puede resolver var() solo, quede temeado igual que el resto de la interfaz.
+function chartTheme(){
+ const cs=getComputedStyle(document.documentElement);
+ const v=n=>cs.getPropertyValue(n).trim();
+ return {ink:v('--ink'),mut:v('--mut'),edge:v('--edge'),accent:v('--accent'),accent2:v('--accent2'),panel:v('--panel'),sans:v('--sans')};
+}
 function detectClient(i){ if(OVERRIDES[i.key])return OVERRIDES[i.key];
  const pref=String((i.key||'').split('-')[0]||'').toUpperCase();
  for(const c of CLIENTS){ if(c.prefix && pref===String(c.prefix).toUpperCase().replace(/-$/,'')) return c.name; }
@@ -1297,6 +1310,12 @@ function panelTeleBarsHtml(rows){
 // 4 filtros cruzados (mismo patrón msel de Tickets/Telemática) + rango de fecha + selector de qué
 // dimensión graficar. Clic en una barra alterna esa opción como filtro de su propia dimensión.
 let panelTreeCat=new Set(), panelTreeSub=new Set(), panelTreeCli=new Set(), panelTreeResp=new Set(), panelTreeRange='', panelTreeMselOpenKey='', panelTeleTreeDim='categoria';
+// Tipo de gráfico de la tarjeta "Tiempos por categoría..." — Chart.js sobre la misma agregación
+// (groups/rows) que ya arma panelTreeGroups(). "linea" es la única que no agrupa por dimensión:
+// muestra la tendencia real semana a semana del conjunto ya filtrado.
+let panelTreeChartType='barras', panelTreeChart=null;
+const PANEL_TREE_CHART_TYPES=[['barras','Barras'],['columnas','Columnas'],['linea','Tendencia'],['dona','Dona']];
+window.setPanelTreeChartType=(t)=>{ panelTreeChartType=t; renderPanelTele(); };
 // Rango específico (Desde/Hasta, fechas exactas) — convive con el desplegable de rangos relativos
 // de arriba (Último mes, etc.) pero es excluyente con él: elegir uno limpia el otro, para no tener
 // dos definiciones de "rango" activas a la vez.
@@ -1366,18 +1385,88 @@ function panelTreeChipsHtml(list){
   </div>`;
  }).join('');
 }
-function panelTreeBarsHtml(list){
+// Agregación compartida por el gráfico y por la leyenda accesible de abajo: mismo criterio de
+// filtrado (panelTreeMatch) y de agrupamiento que usaba el render en <div> original.
+function panelTreeGroups(list){
  const dimDef=PANEL_TREE_DIMS2[panelTeleTreeDim]||PANEL_TREE_DIMS2.categoria;
  const matched=list.filter(t=>panelTreeMatch(t,null));
  const groups={};
  matched.forEach(t=>{ const ms=tiempoAsignadoMs(t); if(ms==null)return; const k=dimDef.get(t); groups[k]=(groups[k]||0)+ms; });
  const rows=Object.entries(groups).sort((a,b)=>b[1]-a[1]);
+ return {dimDef,matched,rows};
+}
+// Serie real por semana (para el tipo de gráfico "Tendencia"), sobre el conjunto ya filtrado —
+// no agrupa por dimensión, así que ignora "sel"/click de filtro (es temporal, no categórico).
+function panelTreeTimeSeries(matched){
+ const wkStart=ts=>{const d=new Date(ts);const off=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-off);return d.getTime();};
+ const byWeek={};
+ matched.forEach(t=>{ const ms=tiempoAsignadoMs(t); const ts=parseDate(t.fecha); if(ms==null||!ts)return; const wk=wkStart(ts); byWeek[wk]=(byWeek[wk]||0)+ms; });
+ const weeks=Object.keys(byWeek).map(Number).sort((a,b)=>a-b);
+ return weeks.map(w=>({label:new Date(w).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'}),ms:byWeek[w]}));
+}
+// El <canvas> de Chart.js no es operable por teclado ni legible por lector de pantalla, así que
+// abajo del gráfico queda esta leyenda de botones reales (mismo patrón .chip que el resto de la
+// app) con la misma acción de filtro que antes tenían las barras — el gráfico es el complemento
+// visual, la leyenda sigue siendo el control accesible.
+function panelTreeBarsHtml(list){
+ const {rows}=panelTreeGroups(list);
  if(!rows.length) return '<p class="tinfo">Sin datos para esta combinación.</p>';
- const mx=Math.max(...rows.map(r=>r[1]),1); const sel=panelTreeSets()[panelTeleTreeDim];
+ const sel=panelTreeSets()[panelTeleTreeDim];
  const total=rows.reduce((a,r)=>a+r[1],0)||1;
- return rows.map(r=>{const w=Math.max(3,Math.round(r[1]/mx*100)); const pct=Math.round(r[1]/total*100);
-  return `<div class="bar pct noKpi rbar${sel.has(r[0])?' on':''}" data-v="${esc(r[0])}" onclick="panelTreeBarClick(this.dataset.v)" title="Clic para filtrar por &quot;${esc(r[0])}&quot;"><span class="bn" title="${esc(r[0])}">${esc(r[0])}</span><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="bv">${fmtDur(r[1])}</span><span class="bpct" title="% sobre el total mostrado">${pct}%</span></div>`;
+ const legend=rows.map(([k,ms],i)=>{
+  const pct=Math.round(ms/total*100);
+  const col=panelTeleTreeDim==='cliente'?clientColor(k):CHART_PALETTE[i%CHART_PALETTE.length];
+  return `<button type="button" class="chip${sel.has(k)?' on':''}" data-v="${esc(k)}" onclick="panelTreeBarClick(this.dataset.v)" title="Clic para filtrar por &quot;${esc(k)}&quot;"><span class="cdot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${col};margin-right:6px"></span>${esc(k)} <span class="c">${fmtDur(ms)} · ${pct}%</span></button>`;
  }).join('');
+ return `
+  <div class="seg" role="group" aria-label="Tipo de gráfico" style="margin-bottom:10px">${PANEL_TREE_CHART_TYPES.map(([v,l])=>`<button class="${panelTreeChartType===v?'on':''}" onclick="setPanelTreeChartType('${v}')">${esc(l)}</button>`).join('')}</div>
+  <div style="position:relative;height:260px;margin-bottom:12px"><canvas id="panelTreeCanvas" aria-hidden="true"></canvas></div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px">${legend}</div>`;
+}
+// Construye/actualiza el Chart.js de la tarjeta "Tiempos por categoría..." sobre el <canvas> que
+// acaba de quedar en el DOM (panelTreeBarsHtml de arriba). Se llama después de setear innerHTML,
+// nunca antes — Chart.js necesita el <canvas> ya montado para medirlo.
+function renderPanelTreeChart(list){
+ if(panelTreeChart){ panelTreeChart.destroy(); panelTreeChart=null; }
+ const canvas=document.getElementById('panelTreeCanvas');
+ if(!canvas||typeof Chart==='undefined')return;
+ const {matched,rows}=panelTreeGroups(list);
+ if(!rows.length)return;
+ const t=chartTheme(), sel=panelTreeSets()[panelTeleTreeDim], anySel=sel.size>0;
+ const labels=rows.map(r=>r[0]);
+ const hours=rows.map(r=>r[1]/3600000);
+ const colors=labels.map((k,i)=>panelTeleTreeDim==='cliente'?clientColor(k):CHART_PALETTE[i%CHART_PALETTE.length]);
+ const bg=labels.map((k,i)=>anySel&&!sel.has(k)?colors[i]+'45':colors[i]);
+ const font={family:t.sans,size:11.5};
+ const common={maintainAspectRatio:false,animation:{duration:250},
+  plugins:{legend:{display:false},tooltip:{titleFont:font,bodyFont:font,backgroundColor:t.panel,titleColor:t.ink,bodyColor:t.ink,borderColor:t.edge,borderWidth:1,padding:9}}};
+ if(panelTreeChartType==='linea'){
+  const series=panelTreeTimeSeries(matched);
+  panelTreeChart=new Chart(canvas,{type:'line',
+   data:{labels:series.map(s=>s.label),datasets:[{data:series.map(s=>s.ms/3600000),borderColor:t.accent,backgroundColor:t.accent+'26',fill:true,tension:.3,pointRadius:2.5,pointBackgroundColor:t.accent}]},
+   options:{...common,plugins:{...common.plugins,tooltip:{...common.plugins.tooltip,callbacks:{label:c=>c.parsed.y.toFixed(1)+' h'}}},
+    scales:{x:{ticks:{color:t.mut,font},grid:{display:false}},y:{beginAtZero:true,ticks:{color:t.mut,font,callback:v=>v+'h'},grid:{color:t.edge}}}}});
+  return;
+ }
+ if(panelTreeChartType==='dona'){
+  panelTreeChart=new Chart(canvas,{type:'doughnut',
+   data:{labels,datasets:[{data:hours,backgroundColor:bg,borderColor:t.panel,borderWidth:2,hoverOffset:6}]},
+   options:{...common,cutout:'62%',onClick:(evt,els)=>{ if(els.length)panelTreeBarClick(labels[els[0].index]); },
+    plugins:{...common.plugins,tooltip:{...common.plugins.tooltip,callbacks:{label:c=>labels[c.dataIndex]+': '+fmtDur(rows[c.dataIndex][1])}}}}});
+  return;
+ }
+ const horiz=panelTreeChartType!=='columnas';
+ panelTreeChart=new Chart(canvas,{type:'bar',
+  data:{labels,datasets:[{data:hours,backgroundColor:bg,borderRadius:4,maxBarThickness:28}]},
+  options:{...common,indexAxis:horiz?'y':'x',onClick:(evt,els)=>{ if(els.length)panelTreeBarClick(labels[els[0].index]); },
+   plugins:{...common.plugins,tooltip:{...common.plugins.tooltip,callbacks:{label:c=>fmtDur(rows[c.dataIndex][1])}}},
+   scales:{
+    // ojo: pasar callback:undefined explícito (en vez de omitir la clave) pisa el formateador
+    // por defecto del eje de categorías y hace que muestre el índice numérico en vez de la
+    // etiqueta — por eso el spread condicional, no un ternario con `undefined` como rama.
+    x:{ticks:{color:t.mut,font,...(horiz?{callback:v=>v+'h'}:{})},grid:{color:horiz?t.edge:'transparent'}},
+    y:{ticks:{color:t.mut,font,...(horiz?{}:{callback:v=>v+'h'})},grid:{color:horiz?'transparent':t.edge}},
+   }}});
 }
 // KPIs instrumento del Panel Telemática — mismo lenguaje que Panel Jira, pero con las métricas
 // propias de Telemática (dedicación por cliente/responsable). Todo de datos reales; si falta, "—".
@@ -1466,8 +1555,9 @@ function renderPanelTele(){
    <p class="tinfo" style="margin:0 0 6px">Clic en una barra para usarla como filtro (se combina con los de arriba de todo).</p>
    ${panelTreeBarsHtml(filtered)}
   </details>`;
+ renderPanelTreeChart(filtered);
  box.querySelectorAll(':scope > [data-pc]').forEach(d=>{
-  d.addEventListener('toggle',()=>{ const k=d.dataset.pc; if(d.open)panelCardClosed.delete(k); else panelCardClosed.add(k); });
+  d.addEventListener('toggle',()=>{ const k=d.dataset.pc; if(d.open){ panelCardClosed.delete(k); if(k==='teleArbol'&&panelTreeChart)panelTreeChart.resize(); } else panelCardClosed.add(k); });
  });
  box.querySelectorAll('[data-ptmsel]').forEach(btn=>{
   btn.onclick=(e)=>{ e.stopPropagation(); const k=btn.dataset.ptmsel; panelTreeMselOpenKey=(panelTreeMselOpenKey===k?'':k); renderPanelTele(); };
@@ -3918,6 +4008,9 @@ function applyTheme(t){
  document.getElementById('themeIcSun').style.display = dark ? 'none' : '';
  document.getElementById('themeIcMoon').style.display = dark ? '' : 'none';
  document.getElementById('themeLabel').textContent = dark ? 'Claro' : 'Oscuro';
+ // El <canvas> de Chart.js pinta colores resueltos, no var() — si el gráfico de Panel Telemática
+ // está en pantalla, hay que reconstruirlo para que tome la paleta del tema nuevo.
+ if(document.getElementById('panelTreeCanvas')&&typeof renderPanelTele==='function') renderPanelTele();
 }
 (function initTheme(){ let saved=null; try{ saved=localStorage.getItem(THEME_KEY); }catch(e){} applyTheme(saved); })();
 document.getElementById('btnTheme').onclick=()=>{

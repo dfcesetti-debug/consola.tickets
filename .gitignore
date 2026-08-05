@@ -7,6 +7,7 @@
 !tablero/
 tablero/*
 !tablero/README.md
+!tablero/CHANGELOG.md
 !tablero/DOCUMENTACION_TECNICA.md
 !tablero/MANUAL_USUARIOS.md
 !tablero/main.py
@@ -46,3 +47,9 @@ worker/.wrangler/
 # las reglas de abajo.
 !firestore.rules
 !firebase.json
+
+# Chart.js vendorizado (gráficos dinámicos de Panel Telemática, v102) — build UMD
+# minificado commiteado en el repo, sin CDN ni build step.
+!vendor/
+!vendor/chart.umd.min.js
+!vendor/chart.js.LICENSE.md
