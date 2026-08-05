@@ -106,12 +106,14 @@ Los **tickets de Jira en sí no se guardan ahí** — se traen en vivo cada vez 
 **Secciones (menú lateral):**
 - **Panel**: selector arriba **Panel Jira / Panel Telemática** (v69) para medir los tiempos de cada fuente por separado.
   - **Panel Jira**: KPIs de tiempo con tendencia vs. semana/periodo previo y sparkline (v76/v78), tarjetas seleccionables que llevan al detalle (v79), gráficos y tiempos de respuesta/resolución con SLA real de Jira.
-  - **Panel Telemática**: KPIs de tiempo total, promedio semanal, cliente/responsable con más carga (v76/v80); filtros globales de la vista (Categoría/Sub categoría/Cliente/Responsable/rango) arriba de todo (v91) y rango exacto **Desde/Hasta** (v92). Es la vista que usa gerencia para seguimiento.
+  - **Panel Telemática**: KPIs de tiempo total, promedio semanal, cliente/responsable con más carga (v76/v80); filtros globales de la vista (Categoría/Sub categoría/Cliente/Responsable/rango) arriba de todo (v91) y rango exacto **Desde/Hasta** (v92). Es la vista que usa gerencia para seguimiento. La tarjeta "Tiempos por categoría, sub categoría, responsable y cliente" tiene gráficos **Chart.js** con selector Barras/Columnas/Tendencia/Dona (v102) — clic en una barra o porción filtra igual que antes; abajo queda una leyenda de botones como control accesible. Botón **"Exportar horas (.csv)"** con esos mismos filtros aplicados (v103).
 - **Matriz N1**: por tipo de solicitud — síntoma, datos a pedir, pasos, plantilla de respuesta (copiable), a quién escalar y tickets de referencia.
-- **Tickets**: historial de Jira mezclado con las tareas de Telemática (etiquetadas "Telemática", v68), con filtros multi-selección (tipo, estado, responsable, origen) y contadores dinámicos; búsqueda; reasignación de cliente.
+- **Tickets**: historial de Jira mezclado con las tareas de Telemática (etiquetadas "Telemática", v68), con filtros multi-selección (tipo, estado, responsable, origen) y contadores dinámicos; búsqueda; reasignación de cliente; botón **"Exportar vista (.csv)"** que respeta todos los filtros y la búsqueda activos (v103).
 - **Clientes**: 4 sub-pestañas — **Lista** (configuración y detección), **Fichas** (ficha técnica histórica por cliente, con árbol de grupos Geotab), **Cartera** por ejecutivo, e **Implementación** (seguimiento de clientes en Demo/desarrollo, v82).
-- **Telemática**: registro manual de solicitudes para clientes sin Jira (o coordinaciones que no pasan por Jira), con sus propias métricas.
-- **Configuración**: 4 sub-pestañas — **Conexión de datos** (traer tickets, subir archivos, exportar), **Apariencia** (modo claro/oscuro), **Mi perfil**, e **Historial de cambios** (auditoría global, v86).
+- **Telemática**: registro manual de solicitudes para clientes sin Jira (o coordinaciones que no pasan por Jira), con sus propias métricas y botón **"Exportar horas (.csv)"** con sus propios filtros (v103).
+- **Configuración**: 4 sub-pestañas — **Conexión de datos** (traer tickets, subir archivos, exportar, e **importar horas de Telemática desde un Excel externo**, v103 — ver más abajo), **Apariencia** (modo claro/oscuro), **Mi perfil**, e **Historial de cambios** (auditoría global, v86).
+
+**Importar horas desde otro sistema (v103):** si el equipo carga horas en un sistema externo (Excel), se pueden traer a Telemática sin recargarlas a mano. Pasos: 1) correr `tablero/importar_horas_telematica.py` en tu PC sobre el `.xlsx` (`python tablero/importar_horas_telematica.py entrada.xlsx` — mapeo de columnas configurable con `--mapeo`, ver el `--help` del script); 2) en la Consola, Configuración → Conexión de datos → "Importar horas de Telemática desde otro sistema" → subir el `.json` que generó el script; 3) revisar la **vista previa** (fila inválida = no se puede tildar; fila ya cargada = "Duplicada", destildada por defecto) y **Confirmar importación**.
 
 **Filtros interactivos**: multi-selección en tipo, estado y responsable; actualizan KPIs y gráficos del Panel; los contadores de cada filtro se ajustan según lo ya filtrado (facetas). El selector de cliente (arriba) acota todo por proyecto. Todo filtro activo se puede quitar desde el Panel con su **✕** (v82).
 
@@ -135,6 +137,10 @@ respuestas abiertas y resaltadas.
 - **Perfil obligatorio** (v90): cargar Nombre y Apellido es requisito para usar la Consola; se usa como responsable y firma en el historial.
 - **Autoservicio de contraseña** (v93): link "Creá tu contraseña por email" en el login permite a cada usuario definir su propia contraseña.
 - El token de Jira nunca está en el HTML ni en el navegador: vive como secreto cifrado de Cloudflare (producción) o en `tablero/token_local.json`, que no se sube a git (desarrollo local).
+- **Reglas de Firestore versionadas** (v101): `firestore.rules` exige `request.auth != null` + email `@cesetti.com.ar` para leer/escribir `kb_state/main`, y deniega todo lo demás.
+- **Whitelist anti-inyección JQL** (v101): el parámetro `proyecto` del conector (nube y local) solo acepta los valores conocidos (`CMQ`/`CERVEPAR`) — cualquier otro se descarta en vez de interpolarse en la consulta.
+
+> ⚠️ **Pendiente de acción manual (v101):** `firestore.rules` está en el repo pero falta desplegarlo — correr `firebase deploy --only firestore:rules` con una cuenta logueada en Firebase CLI con permisos sobre el proyecto `tickets-be0af`. Hasta que se corra, las reglas activas en Firebase pueden no coincidir con las versionadas acá.
 
 ---
 
